@@ -1,0 +1,187 @@
+{
+  "skill": {
+    "name": "webgl2-systems-architect",
+    "version": "1.0.0"
+  },
+  "task": {
+    "intent": "architecture",
+    "project_class": "sdf-raymarch",
+    "subject": "human face bust",
+    "target_platforms": [
+      "mobile Safari",
+      "desktop Chrome"
+    ],
+    "fps_target": 60
+  },
+  "inputs": {
+    "artifacts": [
+      {
+        "kind": "prompt-only",
+        "label": "user brief",
+        "used": true
+      }
+    ],
+    "hardware_data_quality": "estimated",
+    "constraints": [
+      "phone-sized canvas",
+      "60 FPS target",
+      "anatomical credibility at medium-close framing",
+      "tiered feature fallback required"
+    ]
+  },
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/02-hardware-budget.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/04-subject-audit.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "assumptions": [
+    {
+      "statement": "Target DPR should be capped near 2.0 unless measurements prove extra headroom.",
+      "confidence": "medium"
+    },
+    {
+      "statement": "The renderer uses a single fullscreen pass for primary raymarch plus selective auxiliary passes.",
+      "confidence": "medium"
+    },
+    {
+      "statement": "No mesh assets are required for the first milestone.",
+      "confidence": "low"
+    }
+  ],
+  "decisions": [
+    {
+      "area": "pipeline",
+      "decision": "Use a fullscreen SDF raymarch core with tier-gated AO and shadows.",
+      "rationale": "The subject brief emphasizes procedural face construction and medium-close credibility more than large scene complexity.",
+      "confidence": "high"
+    },
+    {
+      "area": "async",
+      "decision": "Parallelize shader-source preparation, capability detection, and subject audit; keep draw submission serial.",
+      "rationale": "One WebGL context remains ordered, but CPU-side planning and compile polling can overlap.",
+      "confidence": "high"
+    },
+    {
+      "area": "quality tiering",
+      "decision": "Make AO, soft-shadow step count, and micro skin detail tier-controlled.",
+      "rationale": "These features are visually helpful but fragment-cost heavy on phone-sized devices.",
+      "confidence": "high"
+    }
+  ],
+  "derivations": [
+    {
+      "name": "frame_budget_ms",
+      "formula": "1000 / targetFPS",
+      "values": {
+        "targetFPS": 60
+      },
+      "result": 16.67,
+      "units": "ms",
+      "notes": "Total frame budget for a 60 FPS target."
+    },
+    {
+      "name": "planning_gpu_budget_ms",
+      "formula": "frameBudgetMs * 0.70",
+      "values": {
+        "frameBudgetMs": 16.67
+      },
+      "result": 11.67,
+      "units": "ms",
+      "notes": "Conservative planning split reserving room for browser and JS overhead."
+    },
+    {
+      "name": "normal_epsilon_rule",
+      "formula": "max(0.0002, 0.5 * pixelFootprint)",
+      "values": {
+        "minimumFloor": 0.0002,
+        "pixelFootprintFactor": 0.5
+      },
+      "result": "depends on projected pixel size",
+      "units": "world units",
+      "notes": "Keeps normal estimation tied to screen resolution."
+    }
+  ],
+  "parallel_plan": {
+    "execution_mode": "parallel",
+    "lanes": [
+      {
+        "lane": "A",
+        "purpose": "capability and budget profile",
+        "independent_of": [
+          "B"
+        ],
+        "outputs": [
+          "capability tier",
+          "DPR cap",
+          "feature gates"
+        ]
+      },
+      {
+        "lane": "B",
+        "purpose": "subject audit for face anatomy and materials",
+        "independent_of": [
+          "A"
+        ],
+        "outputs": [
+          "P0/P1/P2 facial features",
+          "definition of done"
+        ]
+      },
+      {
+        "lane": "C",
+        "purpose": "pipeline and startup flow",
+        "independent_of": [],
+        "outputs": [
+          "pass graph",
+          "async boot sequence",
+          "compile strategy"
+        ]
+      },
+      {
+        "lane": "D",
+        "purpose": "shader and runtime risk review",
+        "independent_of": [],
+        "outputs": [
+          "numeric rules",
+          "state policy",
+          "context-loss plan"
+        ]
+      }
+    ]
+  },
+  "deliverables": [
+    {
+      "type": "architecture-plan",
+      "summary": "Tiered SDF face renderer with explicit async/serial split."
+    },
+    {
+      "type": "feature-checklist",
+      "summary": "P0/P1/P2 subject audit for facial anatomy and materials."
+    },
+    {
+      "type": "validation-plan",
+      "summary": "Compile, profile, visual, and portability checks before ship."
+    }
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "issue": "Soft shadows plus AO may exceed phone fragment budget at high DPR.",
+      "mitigation": "Gate both by tier, reduce resolution first, then lower step counts."
+    },
+    {
+      "severity": "medium",
+      "issue": "Anatomical credibility may fail if eyelids, nostrils, or lip transitions are under-specified.",
+      "mitigation": "Use a subject audit before polishing micro skin detail."
+    },
+    {
+      "severity": "medium",
+      "issue": "Startup hitching may occur if program compile and texture upload are serialized behind the first frame.",
+      "mitigation": "Show an early placeholder image and overlap preparation tasks."
+    }
+  ]
+}

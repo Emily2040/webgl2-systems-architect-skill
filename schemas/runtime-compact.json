@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/runtime-compact.json",
+  "title": "WebGL 2 Systems Architect - Runtime Compact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "intent",
+    "project_class",
+    "modules",
+    "key_decisions",
+    "parallel_tasks",
+    "risks",
+    "next_steps"
+  ],
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "architecture",
+        "implementation",
+        "debug",
+        "optimize",
+        "review",
+        "migration"
+      ]
+    },
+    "project_class": {
+      "type": "string",
+      "enum": [
+        "raster-mesh",
+        "sdf-raymarch",
+        "hybrid",
+        "postprocess",
+        "data-vis",
+        "ui"
+      ]
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "key_decisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "parallel_tasks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

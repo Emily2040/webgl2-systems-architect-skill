@@ -1,0 +1,32 @@
+{
+  "intent": "optimize",
+  "project_class": "raster-mesh",
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/02-hardware-budget.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "key_decisions": [
+    "Measure low-altitude camera passes separately from high-altitude passes because overdraw and fill-rate likely change dramatically.",
+    "Review fullscreen postprocess passes before chasing mesh draw-count reductions.",
+    "Keep texture fetch/decode async, but treat the actual render pass chain as serial."
+  ],
+  "parallel_tasks": [
+    "analyze capability limits while reviewing the pass graph",
+    "parse performance logs while drafting a feature-cut order",
+    "prepare regression checks in parallel with bottleneck review"
+  ],
+  "risks": [
+    "Low-altitude flight may shift the bottleneck from vertex work to fill-rate and overdraw.",
+    "Three fullscreen passes may dominate cost on mid-range Android.",
+    "Without capture data, recommendations remain partly assumption-based until differential measurements are gathered."
+  ],
+  "next_steps": [
+    "toggle postprocess passes one at a time and measure frame-time deltas",
+    "cap DPR before cutting terrain mesh fidelity",
+    "sort by framebuffer and reduce unnecessary target switches",
+    "collect timer-query or controlled differential timing data"
+  ]
+}

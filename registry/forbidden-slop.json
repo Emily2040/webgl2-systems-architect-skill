@@ -1,0 +1,46 @@
+{
+  "banned_phrases": [
+    "masterpiece",
+    "cutting-edge",
+    "state-of-the-art",
+    "robust and scalable",
+    "delve into",
+    "seamless experience",
+    "just optimize it",
+    "simply use",
+    "it should be fine",
+    "next-level visuals",
+    "high quality",
+    "beautifully rendered",
+    "magic number",
+    "cinematic feel",
+    "future-proof",
+    "AI-powered",
+    "industry-leading",
+    "best-in-class"
+  ],
+  "replacement_rules": [
+    {
+      "ban": "optimize it",
+      "use": "name the bottleneck, the pass, and the expected measured gain"
+    },
+    {
+      "ban": "realistic",
+      "use": "name the concrete cues that make the subject credible"
+    },
+    {
+      "ban": "high quality",
+      "use": "state the quality tier, cost, and visible benefit"
+    },
+    {
+      "ban": "scalable",
+      "use": "state the capability tiers and what changes between them"
+    }
+  ],
+  "style_contract": [
+    "Prefer numbers, named features, pass names, and failure modes.",
+    "Replace praise with evidence.",
+    "State assumptions when evidence is missing.",
+    "Do not inflate confidence beyond the available data."
+  ]
+}

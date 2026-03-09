@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/authoring-base.json",
+  "title": "WebGL 2 Systems Architect - Authoring Base",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "skill",
+    "task",
+    "inputs",
+    "modules",
+    "assumptions",
+    "decisions",
+    "derivations",
+    "parallel_plan",
+    "deliverables",
+    "risks"
+  ],
+  "properties": {
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intent",
+        "project_class",
+        "subject"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "architecture",
+            "implementation",
+            "debug",
+            "optimize",
+            "review",
+            "migration"
+          ]
+        },
+        "project_class": {
+          "type": "string",
+          "enum": [
+            "raster-mesh",
+            "sdf-raymarch",
+            "hybrid",
+            "postprocess",
+            "data-vis",
+            "ui"
+          ]
+        },
+        "subject": {
+          "type": "string"
+        },
+        "target_platforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "fps_target": {
+          "type": [
+            "number",
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifacts",
+        "hardware_data_quality",
+        "constraints"
+      ],
+      "properties": {
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "label",
+              "used"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "used": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "hardware_data_quality": {
+          "type": "string",
+          "enum": [
+            "provided",
+            "measured",
+            "estimated",
+            "unknown"
+          ]
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement",
+          "confidence"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "area",
+          "decision",
+          "rationale",
+          "confidence"
+        ],
+        "properties": {
+          "area": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        }
+      }
+    },
+    "derivations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "formula",
+          "result"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "formula": {
+            "type": "string"
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "number",
+                "string",
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "result": {
+            "type": [
+              "number",
+              "string"
+            ]
+          },
+          "units": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parallel_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_mode",
+        "lanes"
+      ],
+      "properties": {
+        "execution_mode": {
+          "type": "string",
+          "enum": [
+            "parallel",
+            "pseudo-parallel",
+            "serial"
+          ]
+        },
+        "lanes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lane",
+              "purpose",
+              "outputs"
+            ],
+            "properties": {
+              "lane": {
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "independent_of": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "outputs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "summary"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "issue",
+          "mitigation"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "issue": {
+            "type": "string"
+          },
+          "mitigation": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

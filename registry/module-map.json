@@ -1,0 +1,43 @@
+{
+  "architecture": [
+    "skills/core/01-triage.md",
+    "skills/core/02-hardware-budget.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/04-subject-audit.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "implementation": [
+    "skills/core/01-triage.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md"
+  ],
+  "debug": [
+    "skills/core/01-triage.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "optimize": [
+    "skills/core/01-triage.md",
+    "skills/core/02-hardware-budget.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "review": [
+    "skills/core/01-triage.md",
+    "skills/core/04-subject-audit.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "migration": [
+    "skills/core/01-triage.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ]
+}

@@ -32,7 +32,7 @@ This is not a monolithic handbook stuffed into one prompt. The root `SKILL.md` i
 
 ## Architecture
 
-![Architecture diagram](docs/assets/architecture.svg)
+![Architecture diagram](./docs/assets/architecture.svg)
 
 A browser-friendly overview also lives at [`docs/index.html`](docs/index.html).
 

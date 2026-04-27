@@ -1,66 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="WebGL 2 Systems Architect Skill Architecture">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-label="WebGL 2 Systems Architect routing and lane architecture">
   <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#071126"/>
+      <stop offset="100%" stop-color="#0f1f45"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a2f62"/>
+      <stop offset="100%" stop-color="#14264f"/>
+    </linearGradient>
     <style>
-      .bg{fill:#0b1020}
-      .panel{fill:#121a31;stroke:#5b78c7;stroke-width:2;rx:16}
-      .panel2{fill:#16203d;stroke:#7aa2f7;stroke-width:2;rx:16}
-      .title{fill:#eef3ff;font:700 28px Arial, sans-serif}
-      .subtitle{fill:#d8e2ff;font:600 20px Arial, sans-serif}
-      .txt{fill:#d8e2ff;font:400 18px Arial, sans-serif}
-      .small{fill:#b8c7f5;font:400 16px Arial, sans-serif}
-      .arrow{stroke:#8fb2ff;stroke-width:3;fill:none;marker-end:url(#m)}
+      .title{fill:#eef4ff;font:700 42px Inter,Arial,sans-serif}
+      .sub{fill:#bcd1ff;font:500 21px Inter,Arial,sans-serif}
+      .h{fill:#e9f2ff;font:700 24px Inter,Arial,sans-serif}
+      .t{fill:#c6d9ff;font:500 18px Inter,Arial,sans-serif}
+      .box{fill:url(#panel);stroke:#7bb7ff;stroke-width:2.2;rx:20}
+      .lane{fill:#162c59;stroke:#88beff;stroke-width:2;rx:18}
+      .arr{stroke:#8dc4ff;stroke-width:3.5;fill:none;marker-end:url(#arrow)}
     </style>
-    <marker id="m" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M0,0 L12,6 L0,12 z" fill="#8fb2ff"/>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#8dc4ff"/>
     </marker>
   </defs>
-  <rect class="bg" x="0" y="0" width="1200" height="760"/>
-  <text class="title" x="60" y="58">WebGL 2 Systems Architect Skill</text>
-  <text class="small" x="60" y="86">Progressive disclosure • lane-based orchestration • schema-backed output</text>
 
-  <rect class="panel2" x="440" y="120" width="320" height="110" rx="18"/>
-  <text class="subtitle" x="520" y="160">SKILL.md</text>
-  <text class="txt" x="502" y="192">Tiny router</text>
-  <text class="small" x="468" y="216">Loads only the orchestrator</text>
+  <rect width="1400" height="900" fill="url(#bg)"/>
 
-  <rect class="panel" x="380" y="280" width="440" height="120" rx="18"/>
-  <text class="subtitle" x="468" y="322">references/00-orchestrator.md</text>
-  <text class="txt" x="452" y="354">Triage • module selection • lane join</text>
-  <text class="small" x="444" y="380">Parallel when real, serial when necessary</text>
+  <text class="title" x="70" y="74">WebGL 2 Systems Architect · Execution Blueprint</text>
+  <text class="sub" x="70" y="108">Triage-first routing, capability-aware decisions, and lane-joined outputs.</text>
 
-  <path class="arrow" d="M600 230 L600 280"/>
+  <rect class="box" x="500" y="150" width="400" height="120" rx="20"/>
+  <text class="h" x="650" y="198">SKILL.md</text>
+  <text class="t" x="598" y="226">Tiny router · canonical entrypoint</text>
 
-  <rect class="panel" x="70" y="470" width="210" height="150" rx="18"/>
-  <text class="subtitle" x="116" y="510">Hardware lane</text>
-  <text class="small" x="103" y="540">02-hardware-budget</text>
-  <text class="small" x="103" y="568">caps, DPR, timing, tiers</text>
+  <rect class="box" x="430" y="330" width="540" height="140" rx="20"/>
+  <text class="h" x="503" y="383">references/00-orchestrator.md</text>
+  <text class="t" x="486" y="414">Build task record · choose modules · join lanes</text>
+  <text class="t" x="496" y="440">Measured evidence &gt; capability limits &gt; constraints</text>
 
-  <rect class="panel" x="300" y="470" width="210" height="150" rx="18"/>
-  <text class="subtitle" x="350" y="510">Subject lane</text>
-  <text class="small" x="348" y="540">04-subject-audit</text>
-  <text class="small" x="334" y="568">P0/P1/P2 feature checklist</text>
+  <path class="arr" d="M700 270 L700 330"/>
 
-  <rect class="panel" x="530" y="470" width="210" height="150" rx="18"/>
-  <text class="subtitle" x="576" y="510">Pipeline lane</text>
-  <text class="small" x="555" y="540">03-pipeline-and-concurrency</text>
-  <text class="small" x="568" y="568">serial vs async tasks</text>
+  <rect class="lane" x="60" y="560" width="250" height="190" rx="18"/>
+  <text class="h" x="111" y="610">Hardware lane</text>
+  <text class="t" x="86" y="645">02-hardware-budget</text>
+  <text class="t" x="86" y="673">caps, tiers, frame budget</text>
+  <text class="t" x="86" y="701">DPR guardrails</text>
 
-  <rect class="panel" x="760" y="470" width="210" height="150" rx="18"/>
-  <text class="subtitle" x="818" y="510">Code lane</text>
-  <text class="small" x="798" y="540">05-shader-rules</text>
-  <text class="small" x="788" y="568">06-runtime-ops</text>
+  <rect class="lane" x="330" y="560" width="250" height="190" rx="18"/>
+  <text class="h" x="382" y="610">Subject lane</text>
+  <text class="t" x="358" y="645">04-subject-audit</text>
+  <text class="t" x="358" y="673">P0/P1/P2 definition</text>
+  <text class="t" x="358" y="701">missing-obvious checks</text>
 
-  <rect class="panel" x="990" y="470" width="150" height="150" rx="18"/>
-  <text class="subtitle" x="1010" y="510">Validation</text>
-  <text class="small" x="1010" y="540">07-validation</text>
-  <text class="small" x="1008" y="568">CI + confidence</text>
+  <rect class="lane" x="600" y="560" width="250" height="190" rx="18"/>
+  <text class="h" x="646" y="610">Pipeline lane</text>
+  <text class="t" x="628" y="645">03-pipeline-and-concurrency</text>
+  <text class="t" x="628" y="673">serial vs async truth</text>
+  <text class="t" x="628" y="701">pass graph & startup flow</text>
 
-  <path class="arrow" d="M600 400 L175 470"/>
-  <path class="arrow" d="M600 400 L405 470"/>
-  <path class="arrow" d="M600 400 L635 470"/>
-  <path class="arrow" d="M600 400 L865 470"/>
-  <path class="arrow" d="M600 400 L1065 470"/>
+  <rect class="lane" x="870" y="560" width="250" height="190" rx="18"/>
+  <text class="h" x="932" y="610">Code lane</text>
+  <text class="t" x="899" y="645">05-shader-rules</text>
+  <text class="t" x="899" y="673">06-runtime-ops</text>
+  <text class="t" x="899" y="701">stalls, leaks, correctness</text>
 
-  <rect class="panel2" x="360" y="650" width="480" height="72" rx="18"/>
-  <text class="subtitle" x="416" y="690">Schemas + examples + validator + wrappers</text>
+  <rect class="lane" x="1140" y="560" width="200" height="190" rx="18"/>
+  <text class="h" x="1167" y="610">Validation lane</text>
+  <text class="t" x="1167" y="645">07-validation-and-ci</text>
+  <text class="t" x="1167" y="673">regression + confidence</text>
+
+  <path class="arr" d="M700 470 L185 560"/>
+  <path class="arr" d="M700 470 L455 560"/>
+  <path class="arr" d="M700 470 L725 560"/>
+  <path class="arr" d="M700 470 L995 560"/>
+  <path class="arr" d="M700 470 L1240 560"/>
+
+  <rect class="box" x="370" y="790" width="660" height="72" rx="18"/>
+  <text class="h" x="454" y="834">Output contracts: prose sections or schema JSON (authoring-base/runtime-compact)</text>
 </svg>

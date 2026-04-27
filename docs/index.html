@@ -6,75 +6,193 @@
   <title>WebGL 2 Systems Architect Skill</title>
   <style>
     :root {
-      color-scheme: light dark;
-      --bg: #0b1020;
-      --panel: #121936;
-      --text: #e9eefc;
-      --muted: #a9b4d0;
-      --accent: #8ab4ff;
-      --border: rgba(255,255,255,0.12);
+      --bg: #070b17;
+      --bg-2: #0e1630;
+      --panel: rgba(13, 22, 46, 0.82);
+      --panel-soft: rgba(17, 30, 62, 0.74);
+      --text: #edf3ff;
+      --muted: #b2c2ea;
+      --accent: #7bc1ff;
+      --accent-2: #9d8cff;
+      --ok: #63e6be;
+      --border: rgba(159, 186, 255, 0.24);
+      --shadow: 0 20px 60px rgba(4, 10, 24, 0.5);
     }
+
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, var(--bg), #0f1730);
       color: var(--text);
+      background:
+        radial-gradient(circle at 10% -10%, #2f4ea8 0%, transparent 34%),
+        radial-gradient(circle at 90% 0%, #26457d 0%, transparent 38%),
+        linear-gradient(180deg, var(--bg), var(--bg-2));
+      font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
     }
-    main {
-      max-width: 960px;
+
+    .wrap {
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 40px 20px 56px;
+      padding: 30px 20px 56px;
     }
-    .card {
-      background: rgba(18,25,54,0.88);
+
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .hero {
+      padding: 30px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0;
+    }
+
+    h1, h2, h3 { line-height: 1.2; margin: 0; }
+    h1 { font-size: clamp(2rem, 5.5vw, 3.2rem); }
+    h2 { font-size: clamp(1.35rem, 3vw, 1.9rem); }
+    h3 { font-size: 1.02rem; }
+
+    p { color: var(--muted); margin: 0; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: .82rem;
+      color: #d8e8ff;
+      background: rgba(87, 139, 255, 0.09);
+    }
+
+    .section {
+      margin-top: 20px;
+      padding: 24px;
+      background: var(--panel-soft);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-      backdrop-filter: blur(8px);
     }
-    h1, h2 { line-height: 1.2; }
-    p, li { color: var(--muted); }
-    a { color: var(--accent); }
+
+    .grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(14, 24, 49, 0.8);
+    }
+
+    .kpi {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 1.08rem;
+      margin-bottom: 4px;
+    }
+
+    .visual {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
     img {
       width: 100%;
       height: auto;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid var(--border);
-      background: white;
+      background: #0a1327;
     }
-    footer {
-      margin-top: 32px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
+
+    .foot {
+      margin-top: 20px;
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      align-items: center;
+      gap: 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
     }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <main>
-    <section class="card">
-      <h1>WebGL 2 Systems Architect Skill</h1>
+  <main class="wrap">
+    <section class="panel hero">
+      <p class="eyebrow">WebGL 2.0 Skill System</p>
+      <h1>WebGL 2 Systems Architect</h1>
       <p>
-        A modular skill for WebGL 2.0 architecture, debugging, profiling, subject audits,
-        shader engineering, runtime operations, and production validation.
+        A production-minded skill for architecture, debugging, performance optimization,
+        and delivery validation. It routes from a tiny entrypoint into focused modules only when needed.
       </p>
-      <p>
-        This package keeps the root skill tiny, routes through an orchestrator, and loads deep
-        modules only when triage selects them.
-      </p>
-      <img src="assets/architecture.svg" alt="Architecture diagram for the WebGL 2 Systems Architect Skill">
-      <h2>Core promises</h2>
-      <ul>
-        <li>Measured decisions over folklore</li>
-        <li>Explicit parallel and async modeling</li>
-        <li>Schema-ready structured outputs</li>
-        <li>Validation and CI hooks for repository safety</li>
-      </ul>
-      <footer>
+
+      <div class="chips">
+        <span class="chip">Measured decisions over lore</span>
+        <span class="chip">Parallel lanes, honest serialization</span>
+        <span class="chip">Schema-ready output contracts</span>
+        <span class="chip">Validation-first repository design</span>
+      </div>
+
+      <section class="section">
+        <h2>What this skill guarantees</h2>
+        <div class="grid">
+          <article class="card">
+            <p class="kpi">Triage first</p>
+            <h3>Intent + constraints before advice</h3>
+            <p>The orchestrator classifies task intent, artifacts, and hardware confidence before selecting deep modules.</p>
+          </article>
+          <article class="card">
+            <p class="kpi">Capability aware</p>
+            <h3>Budgets, tiers, and DPR policy</h3>
+            <p>Recommendations include framerate/memory implications and failure modes instead of generic optimization slogans.</p>
+          </article>
+          <article class="card">
+            <p class="kpi">Reviewable output</p>
+            <h3>Structured authoring handoff</h3>
+            <p>Delivers consistent prose or JSON with assumptions, decisions, risk controls, and measurable next steps.</p>
+          </article>
+          <article class="card">
+            <p class="kpi">CI aligned</p>
+            <h3>Repo-quality enforcement</h3>
+            <p>Validation tooling checks wrappers, schemas, examples, and anti-placeholder hygiene to keep the skill coherent.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="visual">
+        <img src="assets/architecture.svg" alt="Architecture infographic showing router, orchestrator, and five execution lanes">
+        <img src="assets/skill-infographic.svg" alt="Capability and delivery infographic for WebGL 2 Systems Architect skill">
+      </section>
+
+      <footer class="foot">
         <span>Created by Iamemily2050</span>
         <a href="https://github.com/Emily2040">GitHub</a>
         <a href="https://Iamemily2050.com">Website</a>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-label="WebGL skill capability and delivery infographic">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#08152f"/>
+      <stop offset="100%" stop-color="#112752"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6dc7ff"/>
+      <stop offset="100%" stop-color="#9a8eff"/>
+    </linearGradient>
+    <style>
+      .title{fill:#edf4ff;font:700 38px Inter,Arial,sans-serif}
+      .sub{fill:#c9dbff;font:500 20px Inter,Arial,sans-serif}
+      .k{fill:#8fe3c7;font:700 33px Inter,Arial,sans-serif}
+      .h{fill:#ebf3ff;font:700 24px Inter,Arial,sans-serif}
+      .t{fill:#c8dbff;font:500 18px Inter,Arial,sans-serif}
+      .panel{fill:#152d5d;stroke:#84bcff;stroke-width:2;rx:18}
+      .bar{fill:url(#accent)}
+    </style>
+  </defs>
+
+  <rect width="1400" height="760" fill="url(#bg)"/>
+  <text class="title" x="60" y="76">Skill KPI + Delivery Infographic</text>
+  <text class="sub" x="60" y="106">Why teams use this skill: clarity, measurable constraints, and deterministic output shape.</text>
+
+  <rect class="panel" x="60" y="150" width="380" height="220" rx="18"/>
+  <text class="k" x="92" y="218">7 Core Modules</text>
+  <text class="t" x="92" y="250">Selected by triage intent and evidence quality.</text>
+  <text class="t" x="92" y="284">No monolithic dumping of unrelated doctrine.</text>
+
+  <rect class="panel" x="470" y="150" width="380" height="220" rx="18"/>
+  <text class="k" x="502" y="218">5 Parallel Lanes</text>
+  <text class="t" x="502" y="250">Hardware · Subject · Pipeline · Code · Validation.</text>
+  <text class="t" x="502" y="284">Executed in parallel only when work is independent.</text>
+
+  <rect class="panel" x="880" y="150" width="460" height="220" rx="18"/>
+  <text class="k" x="912" y="218">2 JSON Schemas</text>
+  <text class="t" x="912" y="250">authoring-base.json for detailed handoff.</text>
+  <text class="t" x="912" y="284">runtime-compact.json for compact runtime payloads.</text>
+
+  <text class="h" x="60" y="444">Decision Confidence Bands</text>
+  <text class="t" x="60" y="474">The skill explicitly separates measured evidence from assumptions and unknowns.</text>
+
+  <rect x="60" y="512" width="1240" height="22" rx="11" fill="#274476"/>
+  <rect class="bar" x="60" y="512" width="960" height="22" rx="11"/>
+  <text class="t" x="60" y="566">Measured data present</text>
+  <text class="t" x="520" y="566">Capability-derived</text>
+  <text class="t" x="980" y="566">Assumption-heavy</text>
+
+  <rect class="panel" x="60" y="610" width="1240" height="108" rx="16"/>
+  <text class="h" x="92" y="655">Delivery contract</text>
+  <text class="t" x="92" y="685">task summary → assumptions → loaded modules → decisions/budgets → async plan → risks → concrete next steps.</text>
+</svg>

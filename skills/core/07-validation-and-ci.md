@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Convert "this seems fine" into evidence. Validation is where pretty theories either survive contact with pixels or fall over like a cardboard dragon.
+Convert "this seems fine" into evidence. Validation is where theories either survive contact with pixels or fail in a way you can name.
 
 ## Validation layers
 

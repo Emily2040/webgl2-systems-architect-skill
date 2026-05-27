@@ -1,0 +1,9 @@
+interface:
+  display_name: "WebGL 2 Systems Architect"
+  short_description: "Plan, review, debug, and optimize WebGL2 renderers with measured GPU/browser evidence."
+  icon_small: "./docs/assets/architecture.svg"
+  icon_large: "./docs/assets/skill-infographic.svg"
+  brand_color: "#2563EB"
+  default_prompt: "Use this skill to review my WebGL2 renderer architecture, shader pipeline, performance bottlenecks, runtime safety, and validation plan."
+policy:
+  allow_implicit_invocation: true

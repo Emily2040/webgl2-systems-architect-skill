@@ -22,6 +22,8 @@ Use this skill when a user needs help with:
 
 This is not a monolithic handbook stuffed into one prompt. The root `SKILL.md` is a router. The orchestrator loads only the modules relevant to the current task.
 
+Implicit invocation should trigger on WebGL2 renderer architecture, GLSL shader review, GPU profiling, FBO or postprocess pipeline design, context-loss debugging, DPR/fill-rate optimization, visual regression, and migration planning.
+
 ## Design goals
 
 - keep the root skill tiny
@@ -42,14 +44,19 @@ A browser-friendly overview also lives at [`docs/index.html`](docs/index.html).
 SKILL.md
 AGENTS.md / CLAUDE.md / GEMINI.md
 LICENSE
+CHANGELOG.md / CONTRIBUTING.md / SECURITY.md
 .gitignore
+agents/
+  openai.yaml
 docs/
   index.html
   assets/
     architecture.svg
+    skill-infographic.svg
 references/
   00-orchestrator.md
   01-redesign-rationale.md
+  02-webgl2-source-table.md
 skills/core/
   01-triage.md
   02-hardware-budget.md
@@ -67,10 +74,15 @@ schemas/
 examples/
   *.input.md
   *.output.json
+fixtures/
+  webgl2-smoke/
 scripts/
   validate_repo.py
-.github/workflows/
-  validate.yml
+.github/
+  ISSUE_TEMPLATE/
+  PULL_REQUEST_TEMPLATE.md
+  workflows/
+    validate.yml
 ```
 
 ## How it works
@@ -93,7 +105,7 @@ This skill distinguishes between:
 - pipelined work
 - work that is still serial on a single WebGL context
 
-That means the skill will recommend `Promise.all`, workers, `OffscreenCanvas`, or `KHR_parallel_shader_compile` only when they remove actual waiting, not because “async” sounds fashionable.
+That means the skill will recommend `Promise.all`, workers, `OffscreenCanvas`, or `KHR_parallel_shader_compile` only when they remove actual waiting, not because "async" sounds fashionable.
 
 ## Installation
 
@@ -101,10 +113,12 @@ That means the skill will recommend `Promise.all`, workers, `OffscreenCanvas`, o
 
 ```bash
 mkdir -p .agents/skills
-cp -R webgl2-systems-architect-skill .agents/skills/webgl2-systems-architect
+cp -R webgl2-systems-architect-skill .agents/skills/webgl2-systems-architect-skill
 ```
 
 Load `SKILL.md` from the copied folder.
+
+The installed folder name should match the skill name in `SKILL.md`: `webgl2-systems-architect-skill`.
 
 ### Wrapper-friendly loaders
 
@@ -125,15 +139,29 @@ When structured output is requested, use:
 
 Examples live in the `examples/` directory.
 
+## Source grounding and testing
+
+The WebGL2 guidance is grounded in the reference matrix at [`references/02-webgl2-source-table.md`](references/02-webgl2-source-table.md). That file links the core modules to MDN WebGL best practices, the Khronos WebGL 2.0 specification, the WebGL extension registry, context-loss guidance, and browser/visual testing references.
+
+The repo includes a small browser fixture at [`fixtures/webgl2-smoke/index.html`](fixtures/webgl2-smoke/index.html). It creates a WebGL2 context, compiles and links one shader pair, draws a triangle, exposes a smoke-test result on `window.__webgl2Smoke`, and gives future Playwright checks a concrete target.
+
 ## Validation
 
 Run the validator:
 
 ```bash
-python3 scripts/validate_repo.py
+python scripts/validate_repo.py
 ```
 
-The GitHub Actions workflow runs the same check on pull requests.
+The GitHub Actions workflow runs the same check on pull requests across Ubuntu and Windows.
+
+## Release policy
+
+Keep `SKILL.md` metadata, README badges, examples, changelog entries, and GitHub tags synchronized. Use semantic versioning:
+
+- patch: wording, docs, validation, or compatible examples
+- minor: new modules, fields, or behavior that remains backward compatible
+- major: output schema or routing changes that can break existing consumers
 
 ## Notes on the redesign
 

@@ -93,7 +93,7 @@ Important: this is a planning sketch, not ground truth. Public core counts, cloc
 
 ## DPR and fill-rate policy
 
-Always derive a DPR recommendation, because pixel count is the sneaky goblin that eats mobile performance.
+Always derive a DPR recommendation, because pixel count is the hidden cost center that eats mobile performance.
 
 ```text
 pixelCount = cssWidth * cssHeight * targetDPR^2

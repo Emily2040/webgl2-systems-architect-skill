@@ -15,8 +15,15 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    name: validate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
 
     steps:
       - name: Checkout
@@ -28,4 +35,4 @@ jobs:
           python-version: '3.11'
 
       - name: Run repository validator
-        run: python3 scripts/validate_repo.py
+        run: python scripts/validate_repo.py

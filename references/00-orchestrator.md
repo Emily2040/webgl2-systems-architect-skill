@@ -38,6 +38,19 @@ Build a task record with these fields before loading deep modules:
 
 If information is missing, continue with explicit assumptions instead of stalling.
 
+## Multi-intent precedence
+
+When a request contains more than one intent, choose the intent that names the failure mode first:
+
+1. FPS drops, stalls, startup latency, memory growth, thermal issues, or battery drain -> `optimize`
+2. Compile errors, visual artifacts, crashes, context loss, or broken resources -> `debug`
+3. WebGPU, portability, or API replacement -> `migration`
+4. Code, patch, shader snippet, or pass-graph construction with no reported failure -> `implementation`
+5. Code or shader critique without a reported failure -> `review`
+6. New renderer design or major restructuring -> `architecture`
+
+Keep secondary intent as context. For example, "architecture review, but it drops frames" routes as `optimize` with architecture/review modules loaded only when they materially affect the bottleneck.
+
 ## Module loading matrix
 
 Load `skills/core/01-triage.md` first, then:
@@ -48,6 +61,7 @@ Load `skills/core/01-triage.md` first, then:
 - Load `05-shader-rules.md` for GLSL design, SDF math, numeric derivations, compile failures, loop limits, precision, or shader code review.
 - Load `06-runtime-ops.md` for state management, resources, draw ordering, context loss, leak prevention, frame loop safety, and instrumentation.
 - Load `07-validation-and-ci.md` for productionization, review checklists, regression tests, repo validation, or confidence scoring.
+- Load `references/02-webgl2-source-table.md` when an answer needs authoritative WebGL2 source anchors, compatibility gates, or a testing matrix.
 
 ## Parallel work graph
 

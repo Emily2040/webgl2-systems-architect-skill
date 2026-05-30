@@ -1,7 +1,7 @@
 {
   "skill": {
-    "name": "webgl2-systems-architect",
-    "version": "1.0.0"
+    "name": "webgl2-systems-architect-skill",
+    "version": "1.0.1"
   },
   "task": {
     "intent": "architecture",

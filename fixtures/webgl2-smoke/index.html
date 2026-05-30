@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebGL2 Smoke Fixture</title>
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #10151f;
+      color: #eef4ff;
+      font: 14px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      display: grid;
+      gap: 12px;
+      place-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    canvas {
+      width: min(80vw, 480px);
+      aspect-ratio: 4 / 3;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: #05070b;
+    }
+
+    output {
+      min-height: 1.5em;
+      color: #a7f3d0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <canvas id="gl" width="480" height="360" aria-label="WebGL2 smoke fixture"></canvas>
+    <output id="status">Running WebGL2 smoke fixture...</output>
+  </main>
+
+  <script>
+    (() => {
+      const result = {
+        ok: false,
+        webgl2: false,
+        compiled: false,
+        linked: false,
+        drew: false,
+        errors: []
+      };
+      window.__webgl2Smoke = result;
+
+      const status = document.getElementById("status");
+      const canvas = document.getElementById("gl");
+      const gl = canvas.getContext("webgl2", { alpha: true, antialias: false });
+
+      function syncStatus() {
+        status.dataset.smoke = JSON.stringify(result);
+      }
+
+      function fail(message) {
+        result.errors.push(message);
+        status.textContent = message;
+        status.style.color = "#fecaca";
+        syncStatus();
+      }
+
+      if (!gl) {
+        fail("WebGL2 context unavailable");
+        return;
+      }
+
+      result.webgl2 = true;
+
+      const vertexSource = `#version 300 es
+      precision highp float;
+      const vec2 POSITIONS[3] = vec2[3](
+        vec2(-0.75, -0.65),
+        vec2( 0.75, -0.65),
+        vec2( 0.00,  0.70)
+      );
+      out vec2 vUv;
+      void main() {
+        vec2 position = POSITIONS[gl_VertexID];
+        vUv = position * 0.5 + 0.5;
+        gl_Position = vec4(position, 0.0, 1.0);
+      }`;
+
+      const fragmentSource = `#version 300 es
+      precision highp float;
+      in vec2 vUv;
+      out vec4 outColor;
+      void main() {
+        vec3 sky = mix(vec3(0.08, 0.15, 0.26), vec3(0.14, 0.42, 0.58), vUv.y);
+        vec3 ridge = vec3(0.38, 0.62, 0.42) * smoothstep(0.18, 0.8, vUv.x);
+        outColor = vec4(mix(sky, ridge, 0.55), 1.0);
+      }`;
+
+      function compile(type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          const log = gl.getShaderInfoLog(shader) || "unknown shader compile error";
+          gl.deleteShader(shader);
+          throw new Error(log);
+        }
+        return shader;
+      }
+
+      try {
+        const vertex = compile(gl.VERTEX_SHADER, vertexSource);
+        const fragment = compile(gl.FRAGMENT_SHADER, fragmentSource);
+        result.compiled = true;
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertex);
+        gl.attachShader(program, fragment);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+          throw new Error(gl.getProgramInfoLog(program) || "unknown program link error");
+        }
+        result.linked = true;
+
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(0.02, 0.03, 0.05, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(program);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+        const pixel = new Uint8Array(4);
+        gl.readPixels(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        result.drew = pixel[3] === 255 && (pixel[0] + pixel[1] + pixel[2]) > 0;
+        result.ok = result.webgl2 && result.compiled && result.linked && result.drew;
+        status.textContent = result.ok ? "WebGL2 smoke fixture passed" : "WebGL2 draw produced an unexpected pixel";
+        if (!result.ok) status.style.color = "#fde68a";
+        syncStatus();
+      } catch (error) {
+        fail(error instanceof Error ? error.message : String(error));
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,13 +1,45 @@
-# WebGL 2 Systems Architect Skill
+<p align="center">
+  <img src="./docs/assets/webgl2-systems-hero.png" alt="WebGL 2 Systems Architect Skill hero image" width="100%">
+</p>
 
-A modular agent skill for designing, reviewing, debugging, and optimizing WebGL 2.0 projects from first principles.
+<h1 align="center">WebGL 2 Systems Architect Skill</h1>
 
-[![CI](https://github.com/Emily2040/webgl2-systems-architect-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/Emily2040/webgl2-systems-architect-skill/actions/workflows/validate.yml)
-![Version](https://img.shields.io/badge/version-1.0.1-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Pattern](https://img.shields.io/badge/design-progressive%20disclosure-purple)
+<p align="center">
+  <strong>A modular agent skill for renderer architecture, shader review, GPU profiling, context safety, and visual validation.</strong>
+</p>
 
-Repository: [Emily2040/webgl2-systems-architect-skill](https://github.com/Emily2040/webgl2-systems-architect-skill)
+<p align="center">
+  <a href="https://github.com/Emily2040/webgl2-systems-architect-skill/actions/workflows/validate.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Emily2040/webgl2-systems-architect-skill/validate.yml?branch=main&label=validation&style=for-the-badge&labelColor=06111F"></a>
+  <img alt="Version 1.0.1" src="https://img.shields.io/badge/version-1.0.1-38BDF8?style=for-the-badge&labelColor=06111F">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-A3E635?style=for-the-badge&labelColor=06111F">
+  <img alt="Progressive disclosure design" src="https://img.shields.io/badge/design-progressive%20disclosure-C084FC?style=for-the-badge&labelColor=06111F">
+</p>
+
+<p align="center">
+  <a href="https://github.com/Emily2040/webgl2-systems-architect-skill">Repository</a>
+  |
+  <a href="#capability-map">Capability Map</a>
+  |
+  <a href="#installation">Installation</a>
+  |
+  <a href="#validation">Validation</a>
+</p>
+
+## Capability Map
+
+<p align="center">
+  <img src="./docs/assets/webgl2-systems-infographic.png" alt="Color-coded systems map for the WebGL 2 Systems Architect Skill" width="100%">
+</p>
+
+| Lane | Color | What it protects |
+| --- | --- | --- |
+| Triage | ![Triage](https://img.shields.io/badge/scope%20%2B%20intent-22D3EE?style=flat-square&labelColor=06111F) | Turns ambiguous WebGL requests into a concrete task record. |
+| Hardware Budgets | ![Hardware budgets](https://img.shields.io/badge/caps%20%2B%20tiers-2DD4BF?style=flat-square&labelColor=06111F) | Keeps DPR, fill-rate, memory, and GPU limits honest. |
+| Pipeline + Async | ![Pipeline and async](https://img.shields.io/badge/passes%20%2B%20workers-A3E635?style=flat-square&labelColor=06111F) | Separates real parallel work from work that is serial on one WebGL context. |
+| Shader Rules | ![Shader rules](https://img.shields.io/badge/GLSL%20%2B%20FBO-FBBF24?style=flat-square&labelColor=06111F) | Reviews shader math, precision, postprocess passes, and framebuffer choices. |
+| Subject Audit | ![Subject audit](https://img.shields.io/badge/visual%20fidelity-FB7185?style=flat-square&labelColor=06111F) | Checks whether the rendered subject actually matches the visual goal. |
+| Runtime Ops | ![Runtime operations](https://img.shields.io/badge/context%20safety-C084FC?style=flat-square&labelColor=06111F) | Handles context loss, extensions, browser behavior, and production hardening. |
+| Validation + CI | ![Validation and CI](https://img.shields.io/badge/tests%20%2B%20checks-38BDF8?style=flat-square&labelColor=06111F) | Connects advice to smoke tests, visual checks, and repository validation. |
 
 ## What this is for
 
@@ -53,6 +85,8 @@ docs/
   assets/
     architecture.svg
     skill-infographic.svg
+    webgl2-systems-hero.png
+    webgl2-systems-infographic.png
 references/
   00-orchestrator.md
   01-redesign-rationale.md

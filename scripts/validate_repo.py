@@ -32,6 +32,8 @@ REQUIRED_FILES = [
     "docs/index.html",
     "docs/assets/architecture.svg",
     "docs/assets/skill-infographic.svg",
+    "docs/assets/webgl2-systems-hero.png",
+    "docs/assets/webgl2-systems-infographic.png",
     "references/00-orchestrator.md",
     "references/01-redesign-rationale.md",
     "references/02-webgl2-source-table.md",
@@ -486,7 +488,7 @@ def check_versions() -> None:
     version = metadata["version"]
     readme = read("README.md")
     changelog = read("CHANGELOG.md")
-    if f"version-{version}-blue" not in readme:
+    if f"version-{version}-" not in readme:
         fail("README version badge must match SKILL.md metadata.version")
     if f"## {version} -" not in changelog:
         fail("CHANGELOG.md must contain the current SKILL.md version")

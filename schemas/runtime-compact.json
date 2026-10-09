@@ -36,12 +36,36 @@
         "ui"
       ]
     },
+    "subject": {
+      "type": "string"
+    },
+    "locale": {
+      "type": "string",
+      "enum": [
+        "en",
+        "zh-CN",
+        "ja",
+        "ko"
+      ]
+    },
     "modules": {
       "type": "array",
       "items": {
         "type": "string"
       },
       "minItems": 1
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "derivations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "key_decisions": {
       "type": "array",
@@ -68,6 +92,12 @@
         "type": "string"
       },
       "minItems": 1
+    },
+    "validation_gates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

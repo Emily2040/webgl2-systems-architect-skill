@@ -2,113 +2,120 @@
 
 ## Mission
 
-Turn a WebGL 2.0 request into a disciplined plan, review, or implementation patch. This skill is a router and execution guide, not a monolithic handbook. Load only the modules required for the current task.
+Turn a WebGL 2.0 request into a disciplined plan, review, migration blueprint, or implementation patch. This skill acts as a task router and execution guide. Load only the modules required for the current task.
+
+## Language routing
+
+This repository provides native support for four locales:
+
+- **English (`en`)**: root `SKILL.md`, `references/00-orchestrator.md`, and `skills/core/*.md`
+- **Simplified Chinese (`zh-CN`)**: `locales/zh-CN/SKILL.md`, `locales/zh-CN/references/00-orchestrator.md`, and `locales/zh-CN/skills/core/*.md`
+- **Japanese (`ja`)**: `locales/ja/SKILL.md`, `locales/ja/references/00-orchestrator.md`, and `locales/ja/skills/core/*.md`
+- **Korean (`ko`)**: `locales/ko/SKILL.md`, `locales/ko/references/00-orchestrator.md`, and `locales/ko/skills/core/*.md`
+
+When the user writes in Simplified Chinese, Japanese, or Korean, load the matching locale tree and enforce that locale's section in `registry/forbidden-slop.json`.
 
 ## First-principles rules
 
 1. Separate **invariants** from **heuristics**.
-   - Invariants are always true inside the skill: no free variables, explicit assumptions, measured bottlenecks over vibes, no magic literals without derivation comments.
-   - Heuristics are conditional defaults: `alpha: true`, reversed-Z, workerization, deferred vs forward, DPR caps, shadow softness, AO reach. Treat them as benchmarked choices, not holy scripture.
+   - Invariants are always true inside the skill: no free variables, explicit assumptions, measured bottlenecks over guesses, no magic literals without derivation comments.
+   - Heuristics are conditional defaults: `alpha: true`, reversed-Z, workerization, deferred vs forward, DPR caps, shadow softness, AO reach. Treat them as benchmarked engineering choices.
 
 2. Prefer **measured evidence** over marketing numbers.
-   - WebGL exposes capabilities and timings better than it exposes GPU internals.
-   - If timer queries or live frame timings exist, they outrank guessed TFLOPS.
+   - WebGL 2.0 exposes capabilities (`gl.getParameter`, `gl.getExtension`) and GPU timings (`EXT_disjoint_timer_query_webgl2`) better than it exposes vendor shader-core counts.
+   - If timer queries or differential frame timings exist, they outrank guessed TFLOPS.
 
 3. Preserve **self-containment**.
    - Every recommendation must name its inputs, constraints, and failure modes.
-   - Every function or shader patch must declare its dependencies through parameters, uniforms, varyings, or `#define`s.
+   - Every function or `#version 300 es` shader patch must declare its dependencies through parameters, uniforms, `std140` uniform blocks, stage `in`/`out` attributes, or `#define`s.
 
 4. Use **progressive disclosure**.
-   - Do not dump the full doctrine when the user only needs one pass fix or one shader review.
+   - Do not dump the full doctrine when the user only needs one pass fix or one shader review. See `references/01-redesign-rationale.md` for why this skill uses routed lanes.
 
 5. Use **parallel lanes** only when the work is truly independent.
-   - A single WebGL context still serializes GPU commands. `Promise.all()` is not pixie dust.
+   - A single WebGL 2.0 context serializes GPU command submission. `Promise.all` helps with asset fetch, worker preparation, or independent analysis lanes, not with issuing dependent draw calls on one context.
 
-## Triage
+## Triage workflow
 
-Build a task record with these fields before loading deep modules:
+Always start with `skills/core/01-triage.md` and classify three things:
 
-- `intent`: `architecture | implementation | debug | optimize | review | migration`
-- `project_class`: `raster-mesh | sdf-raymarch | hybrid | postprocess | data-vis | ui`
-- `subject`: short noun phrase, for example `face bust`, `terrain`, `vehicle cockpit`, `node graph UI`
-- `artifacts_present`: `none | prompt-only | code | shaders | captures | perf data | mixed`
-- `hardware_data_quality`: `provided | measured | estimated | unknown`
-- `target`: platforms, browsers, FPS target, memory or battery constraints
-- `deliverable_type`: `plan | patch | checklist | repo-skill | audit | schema-json`
+### 1. Intent
+- `architecture` - greenfield design, pass graph, capability tiering, system layout
+- `implementation` - new shader, pass, mesh pipeline, UBO/VAO setup, or runtime feature
+- `debug` - broken rendering, NaNs, precision bugs, FBO completeness failure, context loss, state leaks
+- `optimize` - FPS drops, fill-rate pressure, overdraw, shader stalls, CPU/GPU sync bottlenecks
+- `review` - code review, visual critique, portability check, production readiness
+- `migration` - WebGL 1 to WebGL 2.0 or WebGL 2.0 to WebGPU architecture transition
 
-If information is missing, continue with explicit assumptions instead of stalling.
+### 2. Project class
+- `raster-mesh`
+- `sdf-raymarch`
+- `hybrid`
+- `postprocess`
+- `data-vis`
+- `ui`
 
-## Multi-intent precedence
+### 3. Available evidence
+- `measured` - profiler traces, frame times, device info, screenshots, code, or captures exist
+- `estimated` - device class is known, but some metrics must be inferred
+- `unknown` - prompt-only request; state assumptions explicitly
 
-When a request contains more than one intent, choose the intent that names the failure mode first:
+## Module matrix
 
-1. FPS drops, stalls, startup latency, memory growth, thermal issues, or battery drain -> `optimize`
-2. Compile errors, visual artifacts, crashes, context loss, or broken resources -> `debug`
-3. WebGPU, portability, or API replacement -> `migration`
-4. Code, patch, shader snippet, or pass-graph construction with no reported failure -> `implementation`
-5. Code or shader critique without a reported failure -> `review`
-6. New renderer design or major restructuring -> `architecture`
+Canonical intent-to-module mapping lives in `registry/module-map.json`:
 
-Keep secondary intent as context. For example, "architecture review, but it drops frames" routes as `optimize` with architecture/review modules loaded only when they materially affect the bottleneck.
+- Always load `skills/core/01-triage.md`.
+- Load `skills/core/02-hardware-budget.md` for `architecture` and `optimize` tasks (FPS drops, DPR clamping, bandwidth, capability limits, or thermal questions).
+- Load `skills/core/03-pipeline-and-concurrency.md` for `architecture`, `implementation`, `optimize`, and `migration` tasks (pass graphs, workers, async uploads, `KHR_parallel_shader_compile`, PBO readback, or startup orchestration).
+- Load `skills/core/04-subject-audit.md` for `architecture` and `review` tasks when visual credibility or P0/P1/P2 feature priority matters.
+- Load `skills/core/05-shader-rules.md` for `architecture`, `implementation`, `debug`, `optimize`, `review`, and `migration` tasks involving GLSL ES 3.00 math, derivatives, precision, `std140` layout, or WGSL translation.
+- Load `skills/core/06-runtime-ops.md` for all intents (`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`) covering VAOs, UBOs, immutable textures, FBO invalidation, context loss, and WebGPU mapping.
+- Load `skills/core/07-validation-and-ci.md` for `architecture`, `debug`, `optimize`, `review`, and `migration` tasks requiring FBO completeness checks, pixel readback verification, context-loss drills, or CI gates.
+- Load `references/02-webgl2-source-table.md` when an answer needs authoritative Khronos/MDN anchors, compatibility gates, or a full testing matrix.
 
-## Module loading matrix
+## Parallel lanes
 
-Load `skills/core/01-triage.md` first, then:
+When the host environment supports subagents, parallel tool calls, or independent workstreams, split analysis into these lanes:
 
-- Load `02-hardware-budget.md` for architecture, optimization, FPS drops, DPR, thermal, or capability questions.
-- Load `03-pipeline-and-concurrency.md` for pass design, FBO strategy, async loading, workers, OffscreenCanvas, compile latency, or startup orchestration.
-- Load `04-subject-audit.md` when the visual subject matters: faces, terrain, vehicles, UI, data visualization, particles, anatomical or environmental detail.
-- Load `05-shader-rules.md` for GLSL design, SDF math, numeric derivations, compile failures, loop limits, precision, or shader code review.
-- Load `06-runtime-ops.md` for state management, resources, draw ordering, context loss, leak prevention, frame loop safety, and instrumentation.
-- Load `07-validation-and-ci.md` for productionization, review checklists, regression tests, repo validation, or confidence scoring.
-- Load `references/02-webgl2-source-table.md` when an answer needs authoritative WebGL2 source anchors, compatibility gates, or a testing matrix.
+- **Lane A - Hardware & Budget** (`skills/core/02-hardware-budget.md`)
+  - Capability queries, frame budget math, DPR clamping, quality tiers, bottleneck hypothesis.
+- **Lane B - Subject & Visual Hierarchy** (`skills/core/04-subject-audit.md`)
+  - Subject cues, P0/P1/P2 hierarchy, cut order under budget pressure.
+- **Lane C - Pipeline & Startup** (`skills/core/03-pipeline-and-concurrency.md`)
+  - Pass graph, FBO attachments, async/worker prep, shader compile strategy, first-frame plan.
+- **Lane D - Shader & Runtime Rules** (`skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`)
+  - GLSL ES 3.00 precision, derivatives, state/resource discipline, context loss, WebGPU migration map.
+- **Lane E - Validation & CI** (`skills/core/07-validation-and-ci.md`)
+  - Compile checks, FBO completeness, PBO/fence readback, regression plan, confidence rating.
 
-## Parallel work graph
+### Merge order
 
-When the host platform supports concurrent file reads, searches, or analysis, use these independent lanes in parallel:
+Merge lane outputs in this exact order:
 
-- **Lane A - Hardware & caps**
-  - Module: `02-hardware-budget.md`
-  - Output: capability tier, frame budget, DPR guardrails, measured-vs-estimated confidence
+1. Hard constraints and missing evidence
+2. Bottleneck or risk ranking
+3. Chosen architecture or patch plan
+4. Verification steps and fallback tiers
 
-- **Lane B - Subject definition**
-  - Module: `04-subject-audit.md`
-  - Output: P0/P1/P2 feature checklist, visual definition of done, missing-obvious-features list
-
-- **Lane C - Pipeline & async design**
-  - Module: `03-pipeline-and-concurrency.md`
-  - Output: pass graph, context attributes, serial vs async tasks, worker/off-main-thread opportunities
-
-- **Lane D - Code/runtime risks**
-  - Modules: `05-shader-rules.md` and/or `06-runtime-ops.md`
-  - Output: correctness risks, performance risks, likely stalls, concrete patch targets
-
-- **Lane E - Validation**
-  - Module: `07-validation-and-ci.md`
-  - Output: profiling plan, regression checks, CI hooks, acceptance gates
-
-Then join the lanes into one answer. Resolve conflicts in this order:
-`measured evidence > API capability limits > explicit user constraints > safe defaults`.
-
-If the host cannot execute work in parallel, keep the same lane structure but run it serially and mark the execution mode as `pseudo-parallel`.
+If the host cannot run lanes concurrently, execute the same lanes in sequence and label the execution mode as `pseudo-parallel`.
 
 ## Async rules
 
 Recommend asynchronous or parallel project design only when there is real independent work:
 
-**Usually good candidates**
-- asset fetch, parse, decode, transcode, and CPU-side preprocessing
-- shader source generation or linting
-- shader compile polling through `KHR_parallel_shader_compile` when available
-- worker-side culling, terrain generation, animation baking, or data preparation
-- readback pipelining with PBOs and fences
-- placeholder-resource boot flows
+**True parallel or async candidates**
+- asset fetch, parse, decode, KTX2/Basis transcode, and CPU-side geometry preprocessing
+- shader source generation or offline/worker linting
+- non-blocking shader compile/link polling through `KHR_parallel_shader_compile` (`COMPLETION_STATUS_KHR`) when available
+- worker-side frustum/BVH culling, terrain chunk generation, animation baking, or typed-array packing
+- staged readback pipelining with `gl.PIXEL_PACK_BUFFER` (PBO) and `gl.fenceSync`
+- placeholder-resource boot flows that render Frame 1 before heavy assets finish loading
 
-**Usually not parallel on one context**
-- issuing draw calls on the same WebGL context
-- state mutation ordering inside one frame
-- FBO pass chains with hard dependencies
-- synchronous `readPixels` without a fence/PBO strategy
+**Serial on one WebGL 2.0 context**
+- issuing draw calls on the same `WebGL2RenderingContext`
+- GL state mutation ordering inside one frame
+- FBO pass chains with hard read-after-write dependencies
+- synchronous `gl.readPixels` into a CPU array without a PBO and fence strategy
 
 Never claim "parallelized" when the design only moved ordered GL calls behind `await`.
 
@@ -127,11 +134,11 @@ Internally assemble one `authoring-base` object. When the user requests structur
 
 ## Grounding and anti-slop rules
 
-Load `registry/forbidden-slop.json` mentally before drafting. Avoid generic filler such as "optimize it," "robust and scalable," or "masterpiece." Replace vague praise with evidence:
-- name the bottleneck
+Consult `registry/forbidden-slop.json` before drafting. Avoid generic filler or unquantified praise. Replace vague adjectives with concrete evidence:
+- name the bottleneck (fill-rate, bandwidth, vertex fetch, CPU driver overhead, or sync stall)
 - name the pass or shader
-- name the numeric threshold
-- name the missing feature
+- name the numeric threshold (ms, MB, Mpx/frame, sample count, or UBO alignment)
+- name the missing capability or extension gate
 - name the measured or assumed constraint
 
-The goal is plain technical speech, not decorative fog.
+Keep every claim grounded in plain technical speech.

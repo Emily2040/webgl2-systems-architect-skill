@@ -1,219 +1,160 @@
-<p align="center">
-  <img src="./docs/assets/webgl2-systems-hero.png" alt="WebGL 2 Systems Architect Skill hero image" width="100%">
-</p>
+# WebGL 2.0 Systems Architect Skill
 
-<h1 align="center">WebGL 2 Systems Architect Skill</h1>
+**English** · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md) · [한국어](./README.ko.md)
 
-<p align="center">
-  <strong>A modular agent skill for renderer architecture, shader review, GPU profiling, context safety, and visual validation.</strong>
-</p>
+[![Validate Skill Repository](https://github.com/Emily2040/webgl2-systems-architect-skill/actions/workflows/validate.yml/badge.svg)](https://github.com/Emily2040/webgl2-systems-architect-skill/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-38bdf8.svg)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-2.0.0-2dd4bf.svg)](./CHANGELOG.md)
+[![Locales](https://img.shields.io/badge/locales-EN%20%7C%20zh--CN%20%7C%20ja%20%7C%20ko-f59e0b.svg)](./locales)
 
-<p align="center">
-  <a href="https://github.com/Emily2040/webgl2-systems-architect-skill/actions/workflows/validate.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Emily2040/webgl2-systems-architect-skill/validate.yml?branch=main&label=validation&style=for-the-badge&labelColor=06111F"></a>
-  <img alt="Version 1.0.1" src="https://img.shields.io/badge/version-1.0.1-38BDF8?style=for-the-badge&labelColor=06111F">
-  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-A3E635?style=for-the-badge&labelColor=06111F">
-  <img alt="Progressive disclosure design" src="https://img.shields.io/badge/design-progressive%20disclosure-C084FC?style=for-the-badge&labelColor=06111F">
-</p>
+![WebGL 2.0 Systems Architect six-pillar engineering overview](./docs/assets/skill-infographic.svg)
 
-<p align="center">
-  <a href="https://github.com/Emily2040/webgl2-systems-architect-skill">Repository</a>
-  |
-  <a href="#capability-map">Capability Map</a>
-  |
-  <a href="#installation">Installation</a>
-  |
-  <a href="#validation">Validation</a>
-</p>
+`webgl2-systems-architect-skill` is a routed, multi-agent-ready engineering skill for **WebGL 2.0 renderer architecture, GLSL ES 3.00 (`#version 300 es`) shader discipline, GPU frame-budget derivation, non-blocking `PIXEL_PACK_BUFFER` + `gl.fenceSync` pipelines, context-loss recovery, and WebGL 2.0 to WebGPU migration**.
 
-## Capability Map
+The package ships with native documentation, localized skill modules, and anti-slop rules across four languages: **English (`en`)**, **Simplified Chinese (`zh-CN`)**, **Japanese (`ja`)**, and **Korean (`ko`)**.
 
-<p align="center">
-  <img src="./docs/assets/webgl2-systems-infographic.png" alt="Color-coded systems map for the WebGL 2 Systems Architect Skill" width="100%">
-</p>
+- **Repository**: <https://github.com/Emily2040/webgl2-systems-architect-skill>
+- **Interactive Workbench (`docs/index.html`)**: [Open local workbench](./docs/index.html)
+- **Live WebGL 2.0 Smoke Fixture**: [`fixtures/webgl2-smoke/index.html`](./fixtures/webgl2-smoke/index.html)
+- **Author**: Created by **Iamemily2050** (`Emily2040`) · [Website](https://Iamemily2050.com) · [X](https://x.com/iamemily2050) · [Instagram](https://instagram.com/iamemily2050)
 
-| Lane | Color | What it protects |
-| --- | --- | --- |
-| Triage | ![Triage](https://img.shields.io/badge/scope%20%2B%20intent-22D3EE?style=flat-square&labelColor=06111F) | Turns ambiguous WebGL requests into a concrete task record. |
-| Hardware Budgets | ![Hardware budgets](https://img.shields.io/badge/caps%20%2B%20tiers-2DD4BF?style=flat-square&labelColor=06111F) | Keeps DPR, fill-rate, memory, and GPU limits honest. |
-| Pipeline + Async | ![Pipeline and async](https://img.shields.io/badge/passes%20%2B%20workers-A3E635?style=flat-square&labelColor=06111F) | Separates real parallel work from work that is serial on one WebGL context. |
-| Shader Rules | ![Shader rules](https://img.shields.io/badge/GLSL%20%2B%20FBO-FBBF24?style=flat-square&labelColor=06111F) | Reviews shader math, precision, postprocess passes, and framebuffer choices. |
-| Subject Audit | ![Subject audit](https://img.shields.io/badge/visual%20fidelity-FB7185?style=flat-square&labelColor=06111F) | Checks whether the rendered subject actually matches the visual goal. |
-| Runtime Ops | ![Runtime operations](https://img.shields.io/badge/context%20safety-C084FC?style=flat-square&labelColor=06111F) | Handles context loss, extensions, browser behavior, and production hardening. |
-| Validation + CI | ![Validation and CI](https://img.shields.io/badge/tests%20%2B%20checks-38BDF8?style=flat-square&labelColor=06111F) | Connects advice to smoke tests, visual checks, and repository validation. |
+---
 
-## What this is for
+## Why This Skill Exists
 
-Use this skill when a user needs help with:
+Monolithic graphics prompts waste context tokens. Most graphics prompts dump an entire textbook into the context window, mixing incompatible rules (such as forcing SDF raymarching rules onto an instanced raster mesh pipeline) and encouraging vague advice.
 
-- WebGL 2.0 renderer architecture
-- shader engineering and SDF math
-- performance budgets and tiering
-- runtime orchestration and context safety
-- visual subject audits
-- validation, CI, and production hardening
+This repository treats WebGL 2.0 systems engineering as a routed workflow.
 
-This is not a monolithic handbook stuffed into one prompt. The root `SKILL.md` is a router. The orchestrator loads only the modules relevant to the current task.
+1. **Tiny router entrypoint**: [`SKILL.md`](./SKILL.md) stays under 800 characters and routes straight to [`references/00-orchestrator.md`](./references/00-orchestrator.md).
+2. **Triage-first module selection**: [`skills/core/01-triage.md`](./skills/core/01-triage.md) classifies the task across 6 intents (`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`) and 6 project classes (`raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`), loading only the modules mapped in [`registry/module-map.json`](./registry/module-map.json).
+3. **Invariants separated from heuristics**: Invariants (no free shader variables, explicit assumptions, derived numeric constants, bound VAOs, verified FBO completeness) always hold. Heuristics (`alpha: false`, reversed-Z, deferred vs forward, DPR caps, raymarch tap counts) depend on measured device budgets.
+4. **Honest WebGL 2.0 concurrency**: Web Workers parallelize asset fetch, glTF/Draco decoding, KTX2 transcoding, and culling; `KHR_parallel_shader_compile` and `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` pipeline GPU status across frames; single-context WebGL 2.0 draw submission remains strictly serial.
+5. **Executable verification gates**: [`scripts/validate_repo.py`](./scripts/validate_repo.py) checks JSON schemas, exact module-set equality, strict XML/SVG text-fit margins, four-language parity, forbidden-slop enforcement, and negative self-tests.
 
-Implicit invocation should trigger on WebGL2 renderer architecture, GLSL shader review, GPU profiling, FBO or postprocess pipeline design, context-loss debugging, DPR/fill-rate optimization, visual regression, and migration planning.
+---
 
-## Design goals
+## Architecture Blueprint
 
-- keep the root skill tiny
-- separate invariants from heuristics
-- favor measurements over lore
-- model parallel and async work honestly
-- produce outputs that are usable by both humans and downstream systems
+![WebGL 2.0 Systems Architect routed lane and concurrency blueprint](./docs/assets/architecture.svg)
 
-## Architecture
+---
 
-![Architecture diagram](./docs/assets/architecture.svg)
+## Four-Language Support (`en`, `zh-CN`, `ja`, `ko`)
 
-A browser-friendly overview also lives at [`docs/index.html`](docs/index.html).
+Engineers and coding agents can run the skill natively in four locales:
 
-## Repository map
+| Locale | Root README | Localized Skill Router | Localized Orchestrator | Core Modules (`01`..`07`) |
+|---|---|---|---|---|
+| **English (`en`)** | [`README.md`](./README.md) | [`SKILL.md`](./SKILL.md) | [`references/00-orchestrator.md`](./references/00-orchestrator.md) | [`skills/core/`](./skills/core) |
+| **Simplified Chinese (`zh-CN`)** | [`README.zh-CN.md`](./README.zh-CN.md) | [`locales/zh-CN/SKILL.md`](./locales/zh-CN/SKILL.md) | [`locales/zh-CN/references/00-orchestrator.md`](./locales/zh-CN/references/00-orchestrator.md) | [`locales/zh-CN/skills/core/`](./locales/zh-CN/skills/core) |
+| **Japanese (`ja`)** | [`README.ja.md`](./README.ja.md) | [`locales/ja/SKILL.md`](./locales/ja/SKILL.md) | [`locales/ja/references/00-orchestrator.md`](./locales/ja/references/00-orchestrator.md) | [`locales/ja/skills/core/`](./locales/ja/skills/core) |
+| **Korean (`ko`)** | [`README.ko.md`](./README.ko.md) | [`locales/ko/SKILL.md`](./locales/ko/SKILL.md) | [`locales/ko/references/00-orchestrator.md`](./locales/ko/references/00-orchestrator.md) | [`locales/ko/skills/core/`](./locales/ko/skills/core) |
+
+[`registry/forbidden-slop.json`](./registry/forbidden-slop.json) enforces locale-specific anti-slop rules across all four languages, replacing generic hype phrases with concrete bottleneck names, pass identifiers, and frame-time numbers.
+
+---
+
+## Core Modules & Intent Routing
+
+[`registry/module-map.json`](./registry/module-map.json) defines the exact module set loaded for each task intent:
+
+| Intent | Loaded Modules | Primary Deliverable |
+|---|---|---|
+| `architecture` | `01-triage`, `02-hardware-budget`, `03-pipeline-and-concurrency`, `04-subject-audit`, `05-shader-rules`, `06-runtime-ops`, `07-validation-and-ci` | Tiered system architecture, pass graph, frame-budget math, and P0/P1/P2 visual hierarchy |
+| `implementation` | `01-triage`, `03-pipeline-and-concurrency`, `05-shader-rules`, `06-runtime-ops` | Self-contained `#version 300 es` shaders, VAO/std140 UBO bindings, and pass code |
+| `debug` | `01-triage`, `05-shader-rules`, `06-runtime-ops`, `07-validation-and-ci` | Root-cause isolation for FBO completeness, `mediump` overflow, quad derivative seams, or context loss |
+| `optimize` | `01-triage`, `02-hardware-budget`, `03-pipeline-and-concurrency`, `05-shader-rules`, `06-runtime-ops`, `07-validation-and-ci` | Differential pass timing plan, dynamic `targetDPR` clamp formula, `invalidateFramebuffer`, and bandwidth reduction |
+| `review` | `01-triage`, `04-subject-audit`, `05-shader-rules`, `06-runtime-ops`, `07-validation-and-ci` | Code, state-isolation, visual hierarchy, and ship-readiness audit |
+| `migration` | `01-triage`, `03-pipeline-and-concurrency`, `05-shader-rules`, `06-runtime-ops`, `07-validation-and-ci` | WebGL 1 to WebGL 2.0 upgrade or WebGL 2.0 to WebGPU (`GPUBindGroup`, WGSL, clip-space `Z in [0, 1]`) blueprint |
+
+---
+
+## Structured Output Contracts & Examples
+
+Downstream tools and CI pipelines can request validated JSON output matching either schema:
+
+- [`schemas/authoring-base.json`](./schemas/authoring-base.json) defines the full architectural and migration contract (`skill`, `task`, `inputs`, `modules`, `assumptions`, `decisions`, `derivations`, `parallel_plan`, `deliverables`, `risks`, `validation_gates`).
+  - Example (`architecture` / `sdf-raymarch`): [`examples/face-raymarch.output.json`](./examples/face-raymarch.output.json)
+  - Example (`migration` / `hybrid`): [`examples/webgpu-migration-hybrid.output.json`](./examples/webgpu-migration-hybrid.output.json)
+- [`schemas/runtime-compact.json`](./schemas/runtime-compact.json) defines the compact engineering response (`intent`, `project_class`, `subject`, `locale`, `modules`, `assumptions`, `derivations`, `key_decisions`, `parallel_tasks`, `risks`, `next_steps`, `validation_gates`).
+  - Example (`optimize` / `raster-mesh`): [`examples/terrain-midrange.output.json`](./examples/terrain-midrange.output.json)
+  - Example (`debug` / `postprocess`): [`examples/postprocess-context-loss.output.json`](./examples/postprocess-context-loss.output.json)
+
+---
+
+## Repository Structure
 
 ```text
-SKILL.md
-AGENTS.md / CLAUDE.md / GEMINI.md
-LICENSE
-CHANGELOG.md / CONTRIBUTING.md / SECURITY.md
-.gitignore
-agents/
-  openai.yaml
-docs/
-  index.html
-  assets/
-    architecture.svg
-    skill-infographic.svg
-    webgl2-systems-hero.png
-    webgl2-systems-infographic.png
-references/
-  00-orchestrator.md
-  01-redesign-rationale.md
-  02-webgl2-source-table.md
-skills/core/
-  01-triage.md
-  02-hardware-budget.md
-  03-pipeline-and-concurrency.md
-  04-subject-audit.md
-  05-shader-rules.md
-  06-runtime-ops.md
-  07-validation-and-ci.md
-registry/
-  forbidden-slop.json
-  module-map.json
-schemas/
-  authoring-base.json
-  runtime-compact.json
-examples/
-  *.input.md
-  *.output.json
-fixtures/
-  webgl2-smoke/
-scripts/
-  validate_repo.py
-.github/
-  ISSUE_TEMPLATE/
-  PULL_REQUEST_TEMPLATE.md
-  workflows/
-    validate.yml
+webgl2-systems-architect-skill/
+├── SKILL.md                              # Compact router entrypoint (< 800 chars)
+├── AGENTS.md / CLAUDE.md / GEMINI.md     # Cross-agent startup instructions
+├── README.md / README.zh-CN.md / README.ja.md / README.ko.md
+├── agents/openai.yaml                    # OpenAI / Codex agent interface metadata
+├── references/
+│   ├── 00-orchestrator.md                # Lane orchestration, merge order & output rules
+│   ├── 01-redesign-rationale.md          # Architectural decisions & invariants
+│   └── 02-webgl2-source-table.md         # Khronos/MDN/WebGPU anchors & 7 compatibility gates
+├── skills/core/
+│   ├── 01-triage.md                      # 6 intents × 6 project classes classification
+│   ├── 02-hardware-budget.md             # gl.getParameter limits, disjoint timers & DPR math
+│   ├── 03-pipeline-and-concurrency.md    # Worker prep, KHR_parallel_shader_compile & PBOs
+│   ├── 04-subject-audit.md               # 5 observable layers & P0/P1/P2 cut order
+│   ├── 05-shader-rules.md                # GLSL ES 3.00, std140 UBOs, derivatives & precision
+│   ├── 06-runtime-ops.md                 # VAOs, texStorage2D, context loss & WebGPU map
+│   └── 07-validation-and-ci.md           # 5-stage verification ladder & CI gates
+├── locales/{zh-CN,ja,ko}/                # Native CJK skill routers, orchestrators & core modules
+├── registry/
+│   ├── module-map.json                   # Canonical intent -> module list
+│   └── forbidden-slop.json               # 4-locale banned phrases & evidence replacements
+├── schemas/
+│   ├── authoring-base.json               # Full structured output JSON Schema
+│   └── runtime-compact.json              # Compact runtime JSON Schema
+├── examples/                             # 4 schema-validated output examples across intents
+├── fixtures/webgl2-smoke/index.html      # Live WebGL2 VAO + std140 UBO + PBO/fenceSync fixture
+├── docs/
+│   ├── index.html                        # Interactive 4-language WebGL2 Workbench
+│   └── assets/                           # Validated SVG & PNG technical blueprints
+└── scripts/validate_repo.py              # Zero-dependency validator with negative self-tests
 ```
 
-## How it works
+---
 
-1. `SKILL.md` routes to the orchestrator.
-2. The orchestrator builds a task record and selects modules.
-3. Independent lanes can run in parallel:
-   - hardware and caps
-   - subject audit
-   - pipeline and async design
-   - shader/runtime review
-   - validation
-4. The answer is synthesized into prose or JSON.
+## Installation & Usage
 
-## Parallel and async stance
+### 1. Codex / Claude Code / Gemini / Antigravity Skill
 
-This skill distinguishes between:
-
-- truly parallel or asynchronous work
-- pipelined work
-- work that is still serial on a single WebGL context
-
-That means the skill will recommend `Promise.all`, workers, `OffscreenCanvas`, or `KHR_parallel_shader_compile` only when they remove actual waiting, not because "async" sounds fashionable.
-
-## Installation
-
-### AGENTS-style loaders
+Clone the repository into your skills directory:
 
 ```bash
-mkdir -p .agents/skills
-cp -R webgl2-systems-architect-skill .agents/skills/webgl2-systems-architect-skill
+git clone https://github.com/Emily2040/webgl2-systems-architect-skill.git
 ```
 
-Load `SKILL.md` from the copied folder.
+Invoke `$webgl2-systems-architect-skill` or point your agent to [`SKILL.md`](./SKILL.md) (or `locales/{zh-CN,ja,ko}/SKILL.md` for Simplified Chinese, Japanese, or Korean sessions).
 
-The installed folder name should match the skill name in `SKILL.md`: `webgl2-systems-architect-skill`.
+### 2. Run the Validator & Negative Self-Tests
 
-### Wrapper-friendly loaders
-
-If a host prefers alternate entry points, load one of:
-
-- `AGENTS.md`
-- `CLAUDE.md`
-- `GEMINI.md`
-
-Each wrapper points back to the canonical root skill so logic does not drift.
-
-## Output contracts
-
-When structured output is requested, use:
-
-- `schemas/authoring-base.json` for full authoring output
-- `schemas/runtime-compact.json` for compact handoff or runtime use
-
-Examples live in the `examples/` directory.
-
-## Source grounding and testing
-
-The WebGL2 guidance is grounded in the reference matrix at [`references/02-webgl2-source-table.md`](references/02-webgl2-source-table.md). That file links the core modules to MDN WebGL best practices, the Khronos WebGL 2.0 specification, the WebGL extension registry, context-loss guidance, and browser/visual testing references.
-
-The repo includes a small browser fixture at [`fixtures/webgl2-smoke/index.html`](fixtures/webgl2-smoke/index.html). It creates a WebGL2 context, compiles and links one shader pair, draws a triangle, exposes a smoke-test result on `window.__webgl2Smoke`, and gives future Playwright checks a concrete target.
-
-## Validation
-
-Run the validator:
+The validator uses only the Python 3 standard library:
 
 ```bash
 python scripts/validate_repo.py
 ```
 
-The GitHub Actions workflow runs the same check on pull requests across Ubuntu and Windows.
+### 3. Open the Interactive Workbench or Smoke Fixture
 
-## Release policy
+Serve the repository root with any static HTTP server and open `/docs/index.html` or `/fixtures/webgl2-smoke/index.html`:
 
-Keep `SKILL.md` metadata, README badges, examples, changelog entries, and GitHub tags synchronized. Use semantic versioning:
+```bash
+python -m http.server 8080
+```
 
-- patch: wording, docs, validation, or compatible examples
-- minor: new modules, fields, or behavior that remains backward compatible
-- major: output schema or routing changes that can break existing consumers
+---
 
-## Notes on the redesign
+## Release & Identity Metadata
 
-This skill intentionally converts several blanket rules from the source doctrine into measured policies. Examples include:
-
-- context attributes
-- DPR caps
-- workerization
-- reversed-Z usage
-- theoretical throughput math
-
-Those are important ideas, but they are not universal constants. The skill treats them as conditional decisions backed by project class, capability detection, and measurements.
-
-## Author
-
-Created by **Iamemily2050**.
-
-- GitHub: [Emily2040](https://github.com/Emily2040)
-- Website: [Iamemily2050.com](https://Iamemily2050.com)
-- X: [@iamemily2050](https://x.com/iamemily2050)
-- Instagram: [@iamemily2050](https://instagram.com/iamemily2050)
+- **Package Name**: `webgl2-systems-architect-skill`
+- **Version**: `2.0.0`
+- **License**: [MIT](./LICENSE)
+- **Author**: **Iamemily2050** (`Emily2040`)
+- **Git Commit Identity**: `191656017+Emily2040@users.noreply.github.com`
+- **Links**: [GitHub Repository](https://github.com/Emily2040/webgl2-systems-architect-skill) · [Website](https://Iamemily2050.com) · [X (@iamemily2050)](https://x.com/iamemily2050) · [Instagram (@iamemily2050)](https://instagram.com/iamemily2050)

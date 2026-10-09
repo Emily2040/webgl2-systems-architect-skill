@@ -1,121 +1,85 @@
-# Module 05 - Shader Rules
+# 05 - GLSL ES 3.00 and Shader Math Rules
 
 ## Purpose
 
-Control GLSL complexity, numerical stability, and edit safety. Shader bugs are slippery little gremlins because a tiny mistake multiplies across millions of invocations.
+Keep WebGL 2.0 shaders portable, self-contained, numerically stable, and free of magic constants. Every shader starts with `#version 300 es`.
 
-## Non-negotiables
+## When to load
 
-- declare precision intentionally; default to `highp float` in fragment shaders unless a measured reason exists to lower it
-- every function is self-contained
-- no free variables inside helper functions
-- every domain-specific numeric literal gets a derivation comment or a named constant
-- every loop is bounded
-- branchy logic should be justified; otherwise prefer algebraic selection with `mix`, `step`, `smoothstep`, or masks
-- all compile changes follow a dependency audit and quick recompile cycle
+Load whenever writing, reviewing, debugging, optimizing, or migrating GLSL ES 3.00 vertex or fragment shaders.
 
-## Self-containment rule
+## Inputs
 
-Bad:
+- Shader source or target shading algorithm
+- Project class (`raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`)
+- Target GPU precision profile (mobile `mediump` FP16 vs desktop `highp` FP32)
+
+## Rules
+
+### 1. Enforce strict GLSL ES 3.00 (`#version 300 es`) stage contracts
+
+Never mix legacy WebGL 1.0 (`attribute`, `varying`, `texture2D`, `gl_FragColor`) into WebGL 2.0 shaders:
+
+- Start every shader file at byte 0 with `#version 300 es` followed by explicit precision declarations (`precision highp float; precision highp int;`).
+- Use `layout(location = N) in` for vertex attributes, `in` / `out` for stage interface variables, and `layout(location = 0) out vec4 outColor;` (or `N` for MRT) for fragment outputs.
+- Group shared per-frame and per-pass uniforms into `layout(std140) uniform FrameBlock { ... };` to share bindings across programs and map cleanly to WebGPU `GPUBindGroup` uniform buffers.
+- Use `flat in` / `flat out` for integer IDs or instance indices (`gl_InstanceID`, `gl_VertexID`).
+
+### 2. Ban free variables and unexplained magic literals
+
+Every helper function must declare all inputs through parameters, `std140` uniform blocks, stage `in` variables, or named `#define` / `const` declarations. Explain every numeric constant with its geometric, physical, or numerical origin:
+
 ```glsl
-float animate(vec3 p) {
-  return sin(p.x + u_time);
-}
+// 0.5 mm surface hit threshold in head-radius units (1.0 unit = 0.12 m):
+const float SURF_HIT_EPS = 0.0042;
+// Tetrahedral finite-difference offset scaled to 2x hit epsilon to avoid mediump cancellation:
+const float NORMAL_GRAD_EPS = 0.0084;
+// Dielectric F0 for skin / non-metals (IOR = 1.38 -> ((1.38 - 1.0) / (1.38 + 1.0))^2 = 0.0255):
+const float SKIN_F0 = 0.0255;
 ```
 
-Good:
-```glsl
-float animate(vec3 p, float time) {
-  return sin(p.x + time);
-}
-```
+### 3. Guard precision, divisions, roots, and transcendentals
 
-All external dependencies must arrive through parameters, uniforms, varyings, UBOs, textures, or preprocessor defines.
+Mobile GPUs execute `mediump` as IEEE 754 FP16 (range `+-65504`, minimum positive normal `6.10e-5`, ~3.3 decimal digits):
 
-## Numeric derivation rule
+- Use `highp` for world/camera positions, ray origins/directions, elapsed time `uTime` (wrap `uTime` modulo period on CPU before upload), depth math, and SDF distance accumulation.
+- Guard denominators, normalizations, and power bases:
+  - `inversesqrt(max(dot(v, v), 1e-12))` or `normalize(v + vec3(0.0, 0.0, 1e-8))`
+  - `sqrt(max(x, 0.0))`
+  - `pow(max(base, 0.0), expVal)` (`pow` with negative or zero base is undefined in GLSL ES 3.00)
+  - `clamp(dot(N, V), 0.0, 1.0)` before Fresnel or ACES/AgX tone mapping
 
-Allowed without comment:
-- mathematical identities such as `0.0`, `1.0`, `2.0`
-- canonical vector constructors or normalization helpers when their meaning is obvious
+### 4. Protect derivatives and mipmap selection across control flow
 
-Not allowed without explanation:
-- thresholds
-- falloff distances
-- roughness clamps
-- AO reach
-- ray epsilon
-- shadow softness
-- noise octave counts
-- blend radii
+In GLSL ES 3.00, `dFdx`, `dFdy`, `fwidth`, and implicit-LOD `texture(sampler, uv)` require uniform control flow across each 2x2 pixel quad:
 
-Example:
-```glsl
-float pixelSize = 2.0 * tan(fovRadians * 0.5) * distanceToSurface / resolution.y;
-float normalEps = max(0.0002, 0.5 * pixelSize); // 0.5x pixel footprint keeps normals stable without washing out detail
-```
+- Compute `vec2 dPdx = dFdx(uv); vec2 dPdy = dFdy(uv);` **before** entering a non-uniform `if`, `for`, or raymarch `break` loop, then sample inside the branch with `textureGrad(uTex, uv, dPdx, dPdy)` or `textureLod(uTex, uv, lod)`.
+- For direct integer texel lookups without filtering, use `texelFetch(uTex, ivec2(coord), 0)`.
 
-## Precision and branching
+### 5. Bound loops and SDF raymarching
 
-- use `highp` for position, distance, lighting, and depth-sensitive math
-- lower precision only for proven-safe values such as some color intermediates or low-range UV operations
-- avoid divergence in hot fragment paths
-- if a branch is rare and skips expensive work, keep it and document why it wins
+- All `for` loops must use compile-time or uniform-bounded step counts (`MAX_PRIMARY_STEPS`, `MAX_SHADOW_STEPS`) with an early exit when `abs(d) < SURF_HIT_EPS` or `t > MAX_TRACE_DIST`.
+- When using non-Lipschitz SDF deformations (twist, bend, displacement noise), multiply the step increment by an explicit Lipschitz safety factor (`stepScale = 0.65` to `0.85`) to prevent surface overshoot.
+- Use 4-tap tetrahedral normals instead of 6-tap central differences:
+  ```glsl
+  vec3 calcNormal(vec3 p, float eps) {
+    const vec2 k = vec2(1.0, -1.0);
+    return normalize(
+      k.xyy * mapScene(p + k.xyy * eps) +
+      k.yyx * mapScene(p + k.yyx * eps) +
+      k.yxy * mapScene(p + k.yxy * eps) +
+      k.xxx * mapScene(p + k.xxx * eps)
+    );
+  }
+  ```
 
-## Raymarch-specific rules
+## Failure modes
 
-Use these only for SDF or signed-distance pipelines:
+- Using `varying` or `gl_FragColor` in a `#version 300 es` shader (compile error)
+- Calling `texture(uTex, uv)` or `fwidth()` inside a dynamic raymarch or early-exit branch (quad-edge seams on mobile/ANGLE)
+- Passing unwrapped `performance.now()` seconds into `mediump` trig/noise functions (jitter after a few minutes)
+- Packing `vec3` arrays inside `std140` uniform blocks without accounting for 16-byte (`vec4`) base alignment
 
-- derive normal epsilon from projected pixel footprint
-- cap ray steps from scene scale and minimum feature size
-- reduce step factor only near the surface or in pathological fields
-- ensure `smin` blend radius does not exceed the smallest blended feature scale
-- compute AO and shadow sample counts from the cavity or penumbra scale, not from mood
+## Output contribution
 
-## Raster-specific rules
-
-Use these for mesh pipelines:
-
-- prefer UBOs for shared camera/light data
-- respect varying and uniform budgets
-- document vertex attribute layouts and alignment
-- move non-fragment work upstream when interpolation error is acceptable
-- use derivatives and mip choice intentionally for texture detail stability
-
-## Revision safety protocol
-
-For every shader edit:
-
-1. dependency audit  
-   list every external symbol touched by the function
-
-2. copy-compile  
-   duplicate the function under a temporary name if the edit is risky
-
-3. edit-compile  
-   make the change and compile immediately
-
-4. rename-compile  
-   if symbols changed, update all references and compile again
-
-5. remove backup  
-   delete the temporary copy only after success
-
-This sounds fussy because it is fussy. Fussy beats losing 40 minutes to one missing identifier.
-
-## Output fields
-
-Return:
-
-- `shader_risks`
-- `numeric_derivations`
-- `compile_hazards`
-- `branching_hotspots`
-- `precision_recommendations`
-- `patch_rules`
-
-## Common failure modes
-
-- hiding important assumptions in globals
-- stacking unexplained magic numbers until the shader becomes folklore
-- chasing ALU micro-optimizations while overdraw or pass count dominates
-- treating every branch as evil instead of measuring the actual hotspot
+Populate `derivations` (constants, precision choices, loop bounds), shader `decisions`, and numerical `risks`.

@@ -1,4 +1,10 @@
 {
+  "supported_locales": [
+    "en",
+    "zh-CN",
+    "ja",
+    "ko"
+  ],
   "banned_phrases": [
     "masterpiece",
     "cutting-edge",
@@ -17,7 +23,9 @@
     "future-proof",
     "AI-powered",
     "industry-leading",
-    "best-in-class"
+    "best-in-class",
+    "realistic",
+    "scalable"
   ],
   "replacement_rules": [
     {
@@ -42,5 +50,155 @@
     "Replace praise with evidence.",
     "State assumptions when evidence is missing.",
     "Do not inflate confidence beyond the available data."
-  ]
+  ],
+  "banned_phrases_by_locale": {
+    "en": [
+      "masterpiece",
+      "cutting-edge",
+      "state-of-the-art",
+      "robust and scalable",
+      "delve into",
+      "seamless experience",
+      "just optimize it",
+      "simply use",
+      "it should be fine",
+      "next-level visuals",
+      "high quality",
+      "beautifully rendered",
+      "magic number",
+      "cinematic feel",
+      "future-proof",
+      "AI-powered",
+      "industry-leading",
+      "best-in-class",
+      "realistic",
+      "scalable"
+    ],
+    "zh-CN": [
+      "大师级",
+      "前沿技术",
+      "业界领先",
+      "极致性能",
+      "无缝体验",
+      "只需优化",
+      "简单使用",
+      "电影级画质",
+      "次世代视觉",
+      "完美渲染",
+      "赋能",
+      "开箱即用且无限扩展"
+    ],
+    "ja": [
+      "最高峰の品質",
+      "最先端の",
+      "業界をリードする",
+      "圧倒的なパフォーマンス",
+      "シームレスな体験",
+      "単に最適化する",
+      "映画のような質感",
+      "次世代のビジュアル",
+      "魔法の数値",
+      "完璧にレンダリング"
+    ],
+    "ko": [
+      "압도적인 퀄리티",
+      "최첨단 기술",
+      "업계 최고 수준",
+      "극한의 성능",
+      "원활한 경험",
+      "단순히 최적화",
+      "시네마틱한 느낌",
+      "차세대 비주얼",
+      "마법의 수치",
+      "완벽하게 렌더링"
+    ]
+  },
+  "replacement_rules_by_locale": {
+    "en": [
+      {
+        "ban": "optimize it",
+        "use": "name the bottleneck, the pass, and the expected measured gain"
+      },
+      {
+        "ban": "realistic",
+        "use": "name the concrete cues that make the subject credible"
+      },
+      {
+        "ban": "high quality",
+        "use": "state the quality tier, cost, and visible benefit"
+      },
+      {
+        "ban": "scalable",
+        "use": "state the capability tiers and what changes between them"
+      }
+    ],
+    "zh-CN": [
+      {
+        "ban": "只需优化",
+        "use": "指明具体的瓶颈（填充率、带宽、着色器分支或状态切换）、所在渲染通道以及预期帧耗时收益"
+      },
+      {
+        "ban": "电影级画质",
+        "use": "列出建立主体的 P0/P1 视觉线索、分辨率预算与采样成本"
+      },
+      {
+        "ban": "极致性能",
+        "use": "给出目标帧率、帧预算毫秒数（如 16.67 ms）与 DPR 上限策略"
+      }
+    ],
+    "ja": [
+      {
+        "ban": "単に最適化する",
+        "use": "ボトルネック（フィルレート、帯域、シェーダー分岐、状態変更）、対象パス、期待されるフレーム時間短縮量を明記する"
+      },
+      {
+        "ban": "映画のような質感",
+        "use": "被写体の説得力を支える P0/P1 の視覚的特徴とサンプルコストを具体化する"
+      },
+      {
+        "ban": "圧倒的なパフォーマンス",
+        "use": "目標 FPS、フレームバジェット（例: 16.67 ms）、DPR クランプ条件を明示する"
+      }
+    ],
+    "ko": [
+      {
+        "ban": "단순히 최적화",
+        "use": "병목 지점(필레이트, 대역폭, 셰이더 분기, 상태 전환), 대상 렌더 패스, 예상 프레임 시간 단축치를 명시할 것"
+      },
+      {
+        "ban": "시네마틱한 느낌",
+        "use": "피사체의 설득력을 결정하는 P0/P1 시각 단서와 샘플링 비용을 구체적으로 기술할 것"
+      },
+      {
+        "ban": "극한의 성능",
+        "use": "목표 FPS, 프레임 예산(예: 16.67 ms), DPR 클램프 기준을 수치로 제시할 것"
+      }
+    ]
+  },
+  "style_contract_by_locale": {
+    "en": [
+      "Prefer numbers, named features, pass names, and failure modes.",
+      "Replace praise with evidence.",
+      "State assumptions when evidence is missing.",
+      "Do not inflate confidence beyond the available data."
+    ],
+    "zh-CN": [
+      "优先使用精确数值、明确的 API 特性、通道名称与故障模式。",
+      "用实测或推导证据替代空洞形容词。",
+      "缺少实测数据时必须显式声明假设条件与置信度。",
+      "结论置信度不得超出已有测量数据的支撑范围。"
+    ],
+    "ja": [
+      "具体的な数値、API 機能名、パス名、障害モードを優先する。",
+      "曖昧な賛辞ではなく測定値または導出根拠を示す。",
+      "実測データがない場合は前提条件と信頼度を明記する。",
+      "利用可能なデータが裏付ける以上の確信度を主張しない。"
+    ],
+    "ko": [
+      "구체적인 수치, 명시된 API 기능, 패스 이름, 실패 모드를 우선한다.",
+      "모호한 수식어 대신 측정값이나 수식 유도 근거를 제시한다.",
+      "실측 데이터가 없을 때는 가정과 신뢰도를 명시한다.",
+      "확보된 데이터가 뒷받침하는 수준 이상으로 확신도를 부풀리지 않는다."
+    ]
+  }
 }

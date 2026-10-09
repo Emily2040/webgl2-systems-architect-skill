@@ -1,6 +1,8 @@
 {
   "intent": "optimize",
   "project_class": "raster-mesh",
+  "subject": "mid-range Android terrain flyover with three postprocess passes",
+  "locale": "en",
   "modules": [
     "skills/core/01-triage.md",
     "skills/core/02-hardware-budget.md",
@@ -9,25 +11,37 @@
     "skills/core/06-runtime-ops.md",
     "skills/core/07-validation-and-ci.md"
   ],
+  "assumptions": [
+    "Target frame rate is 60 FPS (16.67 ms total frame budget, ~12.5 ms GPU budget on mid-range mobile).",
+    "Three full-resolution postprocess passes likely dominate memory bandwidth and fragment fill-rate during low-altitude camera sweeps."
+  ],
+  "derivations": [
+    "frameBudgetMs = 1000 / 60 = 16.67 ms",
+    "bandwidthBps (1080p @ DPR 2.0, 4 passes, RGBA8 read+write) = 2160 * 3840 * 8 * 4 * 60 = 15.92 GB/s; clamping DPR to 1.35 reduces pixel traffic by 54%"
+  ],
   "key_decisions": [
-    "Measure low-altitude camera passes separately from high-altitude passes because overdraw and fill-rate likely change dramatically.",
-    "Review fullscreen postprocess passes before chasing mesh draw-count reductions.",
-    "Keep texture fetch/decode async, but treat the actual render pass chain as serial."
+    "Measure low-altitude camera passes separately from high-altitude passes using EXT_disjoint_timer_query_webgl2 or single-pass toggles because overdraw and fill-rate shift sharply near ground level.",
+    "Halve resolution (0.5x per axis) on bloom/fog postprocess passes and call gl.invalidateFramebuffer on transient depth attachments before reducing terrain mesh triangle counts.",
+    "Keep KTX2 texture fetch/transcode and terrain chunk generation in Web Workers, while sorting single-context GL draws front-to-back for opaque terrain chunks."
   ],
   "parallel_tasks": [
-    "analyze capability limits while reviewing the pass graph",
-    "parse performance logs while drafting a feature-cut order",
-    "prepare regression checks in parallel with bottleneck review"
+    "query capability limits and EXT_disjoint_timer_query_webgl2 support while auditing the FBO pass graph",
+    "measure frame-time deltas across individual postprocess toggles while drafting the DPR clamp curve",
+    "prepare PBO + gl.fenceSync smoke and context-loss regression checks in parallel with shader branch cleanup"
   ],
   "risks": [
-    "Low-altitude flight may shift the bottleneck from vertex work to fill-rate and overdraw.",
-    "Three fullscreen passes may dominate cost on mid-range Android.",
-    "Without capture data, recommendations remain partly assumption-based until differential measurements are gathered."
+    "Low-altitude flight shifts the bottleneck from vertex transform to fragment overdraw and tile-memory bandwidth.",
+    "Three full-resolution postprocess passes can saturate mobile tile memory if transient depth/stencil buffers are flushed back to RAM.",
+    "Sampling terrain detail textures inside non-uniform branches without textureGrad can cause mipmap seam artifacts along 2x2 quad boundaries."
   ],
   "next_steps": [
-    "toggle postprocess passes one at a time and measure frame-time deltas",
-    "cap DPR before cutting terrain mesh fidelity",
-    "sort by framebuffer and reduce unnecessary target switches",
-    "collect timer-query or controlled differential timing data"
+    "toggle the three postprocess passes one at a time and record frame-time deltas",
+    "clamp targetDPR to 1.35-1.5 on mid-range Android and drop bloom/AO FBOs to 0.5x resolution",
+    "call gl.invalidateFramebuffer(gl.FRAMEBUFFER, [gl.DEPTH_ATTACHMENT]) after the scene color resolve pass",
+    "sort opaque terrain chunks front-to-back and bind chunk transforms via an aligned std140 UBO"
+  ],
+  "validation_gates": [
+    "Verify gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE on all half-res postprocess FBOs",
+    "Confirm GPU_DISJOINT_EXT is false before accepting EXT_disjoint_timer_query_webgl2 pass timings"
   ]
 }

@@ -1,0 +1,166 @@
+{
+  "skill": {
+    "name": "webgl2-systems-architect-skill",
+    "version": "2.0.0"
+  },
+  "task": {
+    "intent": "migration",
+    "project_class": "hybrid",
+    "subject": "WebGL 2.0 forward-mesh plus volumetric raymarch renderer migrating to WebGPU with dual-backend fallback",
+    "locale": "en",
+    "target_platforms": [
+      "desktop Chrome / Edge",
+      "macOS / iOS Safari",
+      "Android Chrome"
+    ],
+    "fps_target": 60
+  },
+  "inputs": {
+    "artifacts": [
+      {
+        "kind": "codebase-summary",
+        "label": "WebGL2 hybrid renderer with loose uniforms and mutable FBO state",
+        "used": true
+      }
+    ],
+    "hardware_data_quality": "estimated",
+    "constraints": [
+      "preserve WebGL 2.0 fallback while rolling out WebGPU",
+      "share uniform buffer layouts across GLSL ES 3.00 and WGSL",
+      "eliminate clip-space depth and Y-flip discrepancies between backends"
+    ]
+  },
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "assumptions": [
+    {
+      "statement": "The renderer must maintain a single CPU-side Float32Array packing path for both WebGL2 std140 UBOs and WebGPU uniform buffers.",
+      "confidence": "high"
+    },
+    {
+      "statement": "Devices without navigator.gpu will continue executing the WebGL 2.0 backend.",
+      "confidence": "high"
+    }
+  ],
+  "decisions": [
+    {
+      "area": "uniform-layout",
+      "decision": "Consolidate all loose gl.uniform* calls into three 16-byte-aligned std140 UBOs (FrameBlock at binding 0, PassBlock at binding 1, MaterialBlock at binding 2) padded solely with mat4, vec4, andvec2 pairs.",
+      "rationale": "Matches both GLSL ES 3.00 layout(std140) and WGSL uniform address-space alignment rules without per-backend repacking.",
+      "confidence": "high"
+    },
+    {
+      "area": "pipeline-state",
+      "decision": "Replace ad-hoc gl.enable/gl.blendFunc mutations with immutable RenderPipelineDescriptor records keyed by shader, vertex layout, blend mode, depth compare, and target attachment format.",
+      "rationale": "Maps 1:1 to GPURenderPipeline creation in WebGPU while allowing state-sorted caching in WebGL 2.0.",
+      "confidence": "high"
+    },
+    {
+      "area": "coordinate-conventions",
+      "decision": "Standardize camera projection matrices on [0, 1] clip-space depth and remap Z in the WebGL 2.0 vertex epilogue (gl_Position.z = gl_Position.z * 2.0 - gl_Position.w).",
+      "rationale": "Prevents near/far clip plane truncation and reversed-Z bugs across WebGL 2.0 ([-1, 1]) and WebGPU ([0, 1]).",
+      "confidence": "high"
+    }
+  ],
+  "derivations": [
+    {
+      "name": "uboDynamicOffsetAlignment",
+      "formula": "max(gl.getParameter(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT), 256)",
+      "values": {
+        "webgpuMinUniformBufferOffsetAlignment": 256
+      },
+      "result": 256,
+      "units": "bytes",
+      "notes": "Align dynamic uniform ring-buffer slices to at least 256 bytes so both WebGPU minUniformBufferOffsetAlignment and WebGL 2.0 bindBufferRange succeed."
+    },
+    {
+      "name": "clipSpaceDepthRemap",
+      "formula": "z_webgl = z_zero_to_one * 2.0 - w_clip",
+      "values": {
+        "zNearWebGPU": 0.0,
+        "zNearWebGL2": -1.0
+      },
+      "result": "gl_Position.z = gl_Position.z * 2.0 - gl_Position.w",
+      "units": "clip-space homogeneous coordinates",
+      "notes": "Maps a [0, 1] projection matrix into WebGL 2.0 [-w, +w] clip space."
+    }
+  ],
+  "parallel_plan": {
+    "execution_mode": "parallel",
+    "lanes": [
+      {
+        "lane": "C",
+        "purpose": "pass descriptor and async pipeline compilation architecture",
+        "independent_of": [
+          "D"
+        ],
+        "outputs": [
+          "explicit loadOp/storeOp pass graph",
+          "KHR_parallel_shader_compile + createRenderPipelineAsync boot flow"
+        ]
+      },
+      {
+        "lane": "D",
+        "purpose": "GLSL ES 3.00 to WGSL shader and bind-group mapping",
+        "independent_of": [
+          "C"
+        ],
+        "outputs": [
+          "256-byte aligned UBO struct definitions",
+          "derivative textureGrad audit before non-uniform raymarch loops",
+          "clip-space Z and UV Y-origin normalization"
+        ]
+      },
+      {
+        "lane": "E",
+        "purpose": "cross-backend parity and context-loss verification",
+        "independent_of": [],
+        "outputs": [
+          "WebGL2 vs WebGPU pixel-diff tolerance gate",
+          "PBO + fenceSync vs mapAsync readback harness"
+        ]
+      }
+    ]
+  },
+  "deliverables": [
+    {
+      "type": "migration-blueprint",
+      "summary": "Dual-backend WebGL 2.0 / WebGPU abstraction table covering VAOs, UBOs, samplers, pass descriptors, and clip-space math."
+    },
+    {
+      "type": "shader-porting-guide",
+      "summary": "GLSL ES 3.00 (#version 300 es) to WGSL rules for std140 structs, textureGrad in raymarch loops, and explicit bind groups."
+    },
+    {
+      "type": "validation-plan",
+      "summary": "Cross-backend pixel parity and context/device-loss recovery test matrix."
+    }
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "issue": "WGSL rejects implicit-LOD textureSample inside non-uniform control flow where GLSL ES 3.00 only produced silent quad artifacts.",
+      "mitigation": "Refactor all branched texture lookups in GLSL ES 3.00 to compute dFdx/dFdy before branching and call textureGrad (mapping to WGSL textureSampleGrad)."
+    },
+    {
+      "severity": "medium",
+      "issue": "vec3 fields inside std140 UBOs frequently cause 12-byte vs 16-byte stride bugs between JS Float32Array views and GPU shaders.",
+      "mitigation": "Pack all vec3 quantities as vec4 (packing scalar roughness, time, or flags into the .w channel)."
+    },
+    {
+      "severity": "medium",
+      "issue": "Framebuffer UV origin is bottom-left in WebGL 2.0 and top-left in WebGPU.",
+      "mitigation": "Centralize fullscreen triangle UV generation in a single vertex helper that flips vUv.y by backend."
+    }
+  ],
+  "validation_gates": [
+    "All UBO struct sizes are multiples of 16 bytes and dynamic offsets are multiples of 256 bytes",
+    "Zero texture() calls occur inside non-uniform control flow; all branched lookups use textureGrad or textureLod",
+    "WebGL 2.0 and WebGPU backends render matching center/corner test pixels within +-1/255 RGBA tolerance"
+  ]
+}

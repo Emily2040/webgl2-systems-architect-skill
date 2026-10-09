@@ -1,12 +1,13 @@
 {
   "skill": {
     "name": "webgl2-systems-architect-skill",
-    "version": "1.0.1"
+    "version": "2.0.0"
   },
   "task": {
     "intent": "architecture",
     "project_class": "sdf-raymarch",
     "subject": "human face bust",
+    "locale": "en",
     "target_platforms": [
       "mobile Safari",
       "desktop Chrome"
@@ -40,69 +41,71 @@
   ],
   "assumptions": [
     {
-      "statement": "Target DPR should be capped near 2.0 unless measurements prove extra headroom.",
+      "statement": "Target DPR should be capped near 2.0 unless differential measurements prove extra GPU fragment headroom.",
       "confidence": "medium"
     },
     {
-      "statement": "The renderer uses a single fullscreen pass for primary raymarch plus selective auxiliary passes.",
+      "statement": "The renderer uses a primary fullscreen SDF raymarch pass plus optional half-resolution auxiliary passes.",
       "confidence": "medium"
     },
     {
-      "statement": "No mesh assets are required for the first milestone.",
-      "confidence": "low"
+      "statement": "Actual GPU capability limits and extension availability must be queried at runtime via gl.getParameter and gl.getExtension.",
+      "confidence": "high"
     }
   ],
   "decisions": [
     {
-      "area": "pipeline",
-      "decision": "Use a fullscreen SDF raymarch core with tier-gated AO and shadows.",
-      "rationale": "The subject brief emphasizes procedural face construction and medium-close credibility more than large scene complexity.",
+      "area": "context",
+      "decision": "Create WebGL2 context with alpha: false, depth: false, stencil: false, antialias: false, and powerPreference: 'high-performance'.",
+      "rationale": "A fullscreen SDF pass computes analytic intersections directly and avoids default-framebuffer depth/MSAA allocations.",
       "confidence": "high"
     },
     {
-      "area": "async",
-      "decision": "Parallelize shader-source preparation, capability detection, and subject audit; keep draw submission serial.",
-      "rationale": "One WebGL context remains ordered, but CPU-side planning and compile polling can overlap.",
+      "area": "subject-hierarchy",
+      "decision": "Prioritize cranial-to-jaw proportions, orbital socket depth, eyelid wrap, and nose-to-lip transitions as P0 before adding P2 skin pore noise.",
+      "rationale": "Macro anatomical proportions dominate viewer recognition at medium-close framing.",
       "confidence": "high"
     },
     {
-      "area": "quality tiering",
-      "decision": "Make AO, soft-shadow step count, and micro skin detail tier-controlled.",
-      "rationale": "These features are visually helpful but fragment-cost heavy on phone-sized devices.",
+      "area": "pipeline-concurrency",
+      "decision": "Poll KHR_parallel_shader_compile asynchronously across frames and bind a dedicated VAO + std140 FrameBlock UBO for the fullscreen triangle pass.",
+      "rationale": "Avoids main-thread LINK_STATUS stalls during boot and satisfies strict WebGL 2.0 VAO/UBO contracts.",
       "confidence": "high"
     }
   ],
   "derivations": [
     {
-      "name": "frame_budget_ms",
-      "formula": "1000 / targetFPS",
+      "name": "frameBudgetMs",
+      "formula": "1000 / fps_target",
       "values": {
-        "targetFPS": 60
+        "fps_target": 60
       },
       "result": 16.67,
       "units": "ms",
-      "notes": "Total frame budget for a 60 FPS target."
+      "notes": "Total frame time budget at 60 FPS."
     },
     {
-      "name": "planning_gpu_budget_ms",
-      "formula": "frameBudgetMs * 0.70",
+      "name": "gpuBudgetMs",
+      "formula": "frameBudgetMs - cpuReserveMs - compositorReserveMs",
       "values": {
-        "frameBudgetMs": 16.67
+        "frameBudgetMs": 16.67,
+        "cpuReserveMs": 2.2,
+        "compositorReserveMs": 1.8
       },
-      "result": 11.67,
+      "result": 12.67,
       "units": "ms",
-      "notes": "Conservative planning split reserving room for browser and JS overhead."
+      "notes": "Available GPU execution window on mobile."
     },
     {
-      "name": "normal_epsilon_rule",
-      "formula": "max(0.0002, 0.5 * pixelFootprint)",
+      "name": "SURF_HIT_EPS",
+      "formula": "0.0005 / headRadiusMeters",
       "values": {
-        "minimumFloor": 0.0002,
-        "pixelFootprintFactor": 0.5
+        "surfaceToleranceMeters": 0.0005,
+        "headRadiusMeters": 0.12
       },
-      "result": "depends on projected pixel size",
-      "units": "world units",
-      "notes": "Keeps normal estimation tied to screen resolution."
+      "result": 0.0042,
+      "units": "head-radius units",
+      "notes": "0.5 mm surface intersection threshold normalized to a 0.12 m head radius."
     }
   ],
   "parallel_plan": {
@@ -110,45 +113,65 @@
     "lanes": [
       {
         "lane": "A",
-        "purpose": "capability and budget profile",
+        "purpose": "hardware budget and capability tiering",
         "independent_of": [
-          "B"
+          "B",
+          "C"
         ],
         "outputs": [
-          "capability tier",
-          "DPR cap",
-          "feature gates"
+          "frame budget math",
+          "DPR clamp policy",
+          "tier table"
         ]
       },
       {
         "lane": "B",
-        "purpose": "subject audit for face anatomy and materials",
+        "purpose": "subject audit and P0/P1/P2 visual hierarchy",
         "independent_of": [
-          "A"
+          "A",
+          "C"
         ],
         "outputs": [
-          "P0/P1/P2 facial features",
-          "definition of done"
+          "anatomical feature ranking",
+          "budget cut order",
+          "visual definition of done"
         ]
       },
       {
         "lane": "C",
         "purpose": "pipeline and startup flow",
-        "independent_of": [],
+        "independent_of": [
+          "A",
+          "B"
+        ],
         "outputs": [
           "pass graph",
           "async boot sequence",
-          "compile strategy"
+          "KHR_parallel_shader_compile polling strategy"
         ]
       },
       {
         "lane": "D",
         "purpose": "shader and runtime risk review",
-        "independent_of": [],
+        "independent_of": [
+          "B"
+        ],
         "outputs": [
-          "numeric rules",
-          "state policy",
-          "context-loss plan"
+          "GLSL ES 3.00 numeric rules",
+          "VAO/UBO state policy",
+          "context-loss recovery plan"
+        ]
+      },
+      {
+        "lane": "E",
+        "purpose": "validation and CI gates",
+        "independent_of": [
+          "B"
+        ],
+        "outputs": [
+          "FBO completeness check",
+          "PBO + fenceSync smoke readback",
+          "context-loss restore drill"
         ]
       }
     ]
@@ -156,32 +179,38 @@
   "deliverables": [
     {
       "type": "architecture-plan",
-      "summary": "Tiered SDF face renderer with explicit async/serial split."
+      "summary": "Tiered SDF face renderer with explicit VAO/std140 UBO state and async/serial split."
     },
     {
       "type": "feature-checklist",
-      "summary": "P0/P1/P2 subject audit for facial anatomy and materials."
+      "summary": "P0/P1/P2 subject audit for facial anatomy and roughness zones."
     },
     {
       "type": "validation-plan",
-      "summary": "Compile, profile, visual, and portability checks before ship."
+      "summary": "Compile, FBO completeness, PBO readback, and context-loss checks before ship."
     }
   ],
   "risks": [
     {
       "severity": "high",
-      "issue": "Soft shadows plus AO may exceed phone fragment budget at high DPR.",
-      "mitigation": "Gate both by tier, reduce resolution first, then lower step counts."
+      "issue": "Soft shadows plus multi-tap AO may exceed phone fragment budget at DPR >= 2.0.",
+      "mitigation": "Gate both by tier, clamp DPR first, then reduce shadow/AO step counts."
     },
     {
       "severity": "medium",
-      "issue": "Anatomical credibility may fail if eyelids, nostrils, or lip transitions are under-specified.",
-      "mitigation": "Use a subject audit before polishing micro skin detail."
+      "issue": "Anatomical credibility fails if eyelids, nostrils, or lip transitions are under-specified.",
+      "mitigation": "Complete the P0 anatomical proportion audit before adding P2 skin micro-detail."
     },
     {
       "severity": "medium",
-      "issue": "Startup hitching may occur if program compile and texture upload are serialized behind the first frame.",
-      "mitigation": "Show an early placeholder image and overlap preparation tasks."
+      "issue": "Startup hitching occurs if full SDF shader compilation blocks the first frame.",
+      "mitigation": "Render a lightweight Frame 1 placeholder and poll COMPLETION_STATUS_KHR across frames."
     }
+  ],
+  "validation_gates": [
+    "canvas.getContext('webgl2') succeeds and binds a dedicated VAO before gl.drawArrays(gl.TRIANGLES, 0, 3)",
+    "All #version 300 es shaders compile and link with zero infoLog errors",
+    "Async PBO + gl.fenceSync readback confirms non-clear RGBA pixels at viewport center",
+    "WEBGL_lose_context drill restores VAO, std140 UBO, and shader program without gl.getError() failures"
   ]
 }

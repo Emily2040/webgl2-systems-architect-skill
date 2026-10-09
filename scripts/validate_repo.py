@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
@@ -17,12 +18,18 @@ X_URL = "https://x.com/iamemily2050"
 INSTAGRAM_URL = "https://instagram.com/iamemily2050"
 NOREPLY_EMAIL = "191656017+Emily2040@users.noreply.github.com"
 
+SUPPORTED_LOCALES = ("en", "zh-CN", "ja", "ko")
+CJK_LOCALES = ("zh-CN", "ja", "ko")
+
 REQUIRED_FILES = [
     "SKILL.md",
     "AGENTS.md",
     "CLAUDE.md",
     "GEMINI.md",
     "README.md",
+    "README.zh-CN.md",
+    "README.ja.md",
+    "README.ko.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
@@ -52,6 +59,10 @@ REQUIRED_FILES = [
     "examples/face-raymarch.output.json",
     "examples/terrain-midrange.input.md",
     "examples/terrain-midrange.output.json",
+    "examples/postprocess-context-loss.input.md",
+    "examples/postprocess-context-loss.output.json",
+    "examples/webgpu-migration-hybrid.input.md",
+    "examples/webgpu-migration-hybrid.output.json",
     "fixtures/webgl2-smoke/index.html",
     "scripts/validate_repo.py",
     ".github/ISSUE_TEMPLATE/bug_report.md",
@@ -59,6 +70,21 @@ REQUIRED_FILES = [
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/workflows/validate.yml",
 ]
+
+for _loc in CJK_LOCALES:
+    REQUIRED_FILES.extend(
+        [
+            f"locales/{_loc}/SKILL.md",
+            f"locales/{_loc}/references/00-orchestrator.md",
+            f"locales/{_loc}/skills/core/01-triage.md",
+            f"locales/{_loc}/skills/core/02-hardware-budget.md",
+            f"locales/{_loc}/skills/core/03-pipeline-and-concurrency.md",
+            f"locales/{_loc}/skills/core/04-subject-audit.md",
+            f"locales/{_loc}/skills/core/05-shader-rules.md",
+            f"locales/{_loc}/skills/core/06-runtime-ops.md",
+            f"locales/{_loc}/skills/core/07-validation-and-ci.md",
+        ]
+    )
 
 CORE_MODULES = {
     "skills/core/01-triage.md",
@@ -165,7 +191,7 @@ def check_required_files() -> None:
     missing = [p for p in REQUIRED_FILES if not (ROOT / p).exists()]
     if missing:
         fail("Missing required files: " + ", ".join(missing))
-    ok("Required files exist")
+    ok("Required files exist (including 4-locale READMEs, CJK skill trees, and expanded examples)")
 
 
 def check_no_shim_files() -> None:
@@ -248,11 +274,38 @@ def check_openai_yaml() -> None:
 def check_wrappers() -> None:
     for wrapper in ("AGENTS.md", "CLAUDE.md", "GEMINI.md"):
         text = read(wrapper)
+        if len(text) >= 650:
+            fail(f"{wrapper} must stay concise (< 650 chars), got {len(text)}")
         if "SKILL.md" not in text:
             fail(f"{wrapper} must point to SKILL.md")
         if "references/00-orchestrator.md" not in text:
             fail(f"{wrapper} must point to references/00-orchestrator.md")
-    ok("Wrapper files point to the canonical source")
+        if "registry/module-map.json" not in text:
+            fail(f"{wrapper} must reference registry/module-map.json")
+    ok("Wrapper files point to the canonical source and stay concise")
+
+
+def check_core_modules() -> None:
+    required_headings = (
+        "## Purpose",
+        "## When to load",
+        "## Inputs",
+        "## Rules",
+        "## Failure modes",
+        "## Output contribution",
+    )
+    all_module_paths = sorted(CORE_MODULES) + [
+        f"locales/{loc}/{mod}" for loc in CJK_LOCALES for mod in sorted(CORE_MODULES)
+    ]
+    for rel in all_module_paths:
+        text = read(rel)
+        lines = text.splitlines()
+        if len(lines) > 140:
+            fail(f"{rel} should stay concise (<= 140 lines), got {len(lines)}")
+        for heading in required_headings:
+            if heading not in text:
+                fail(f"{rel} missing required section heading: {heading}")
+    ok("All English and localized CJK core modules have required sections and concise line counts")
 
 
 def check_no_extraneous_readmes() -> None:
@@ -294,17 +347,25 @@ def check_internal_links() -> None:
     markdown_files = sorted(ROOT.rglob("*.md"))
     broken: list[str] = []
     link_pattern = re.compile(r"\]\(([^)]+)\)")
+    backtick_path_pattern = re.compile(
+        r"`((?:skills/core|references|registry|schemas|examples|fixtures|docs|scripts)/[A-Za-z0-9_./-]+\.[A-Za-z0-9]+)`"
+    )
     for path in markdown_files:
         text = path.read_text(encoding="utf-8")
         for link in link_pattern.findall(text):
-            target = link.split("#", 1)[0].strip()
+            target = link.split("#", 1)[0].split("?", 1)[0].strip()
             if not target or target.startswith(("http://", "https://", "mailto:")):
                 continue
             if not (path.parent / target).exists():
                 broken.append(f"{rel_posix(path)}: {target}")
+        for code_ref in backtick_path_pattern.findall(text):
+            if "*" in code_ref or "{" in code_ref:
+                continue
+            if not (ROOT / code_ref).exists():
+                broken.append(f"{rel_posix(path)} (inline path): {code_ref}")
     if broken:
-        fail("Broken internal markdown links: " + ", ".join(broken))
-    ok("Internal markdown links resolve")
+        fail("Broken internal markdown links or inline paths: " + ", ".join(broken))
+    ok("Internal markdown links and inline backtick file paths resolve")
 
 
 def check_identity() -> None:
@@ -327,6 +388,7 @@ def check_identity() -> None:
         INSTAGRAM_URL,
         REPO_URL,
         SKILL_NAME,
+        NOREPLY_EMAIL,
     ]
     for bit in required_readme_bits:
         if bit not in readme_text:
@@ -408,16 +470,31 @@ def validate_instance(instance: Any, schema: dict[str, Any], path: str = "$") ->
     return errors
 
 
+def check_module_set_equality(actual_modules: list[str], expected_modules: list[str]) -> list[str]:
+    actual_set = set(actual_modules)
+    expected_set = set(expected_modules)
+    errors: list[str] = []
+    missing = sorted(expected_set - actual_set)
+    extra = sorted(actual_set - expected_set)
+    if missing:
+        errors.append("missing canonical modules: " + ", ".join(missing))
+    if extra:
+        errors.append("unmapped extra modules: " + ", ".join(extra))
+    return errors
+
+
 def check_json() -> None:
-    json_files = [
+    base_json_files = [
         "registry/forbidden-slop.json",
         "registry/module-map.json",
         "schemas/authoring-base.json",
         "schemas/runtime-compact.json",
-        "examples/face-raymarch.output.json",
-        "examples/terrain-midrange.output.json",
     ]
-    parsed = {rel: load_json(rel) for rel in json_files}
+    example_files = sorted(rel_posix(p) for p in (ROOT / "examples").glob("*.output.json"))
+    if len(example_files) < 4:
+        fail(f"Expected at least 4 example output JSON files in examples/, found {len(example_files)}")
+
+    parsed = {rel: load_json(rel) for rel in base_json_files + example_files}
 
     for schema_rel in ("schemas/authoring-base.json", "schemas/runtime-compact.json"):
         schema = parsed[schema_rel]
@@ -425,35 +502,35 @@ def check_json() -> None:
             if key not in schema:
                 fail(f"{schema_rel} missing schema key: {key}")
 
-    example_pairs = [
-        ("examples/face-raymarch.output.json", "schemas/authoring-base.json"),
-        ("examples/terrain-midrange.output.json", "schemas/runtime-compact.json"),
-    ]
-    validation_errors: list[str] = []
-    for example_rel, schema_rel in example_pairs:
-        for error in validate_instance(parsed[example_rel], parsed[schema_rel]):
-            validation_errors.append(f"{example_rel} against {schema_rel}: {error}")
-    if validation_errors:
-        fail("Schema validation failed: " + "; ".join(validation_errors))
-
     skill = parse_frontmatter(read("SKILL.md"))
     metadata = skill["metadata"]
     assert isinstance(metadata, dict)
-    authoring_skill = parsed["examples/face-raymarch.output.json"]["skill"]
-    if authoring_skill["name"] != skill["name"] or authoring_skill["version"] != metadata["version"]:
-        fail("Authoring example skill name/version must match SKILL.md")
-
     module_map = parsed["registry/module-map.json"]
-    for example_rel in ("examples/face-raymarch.output.json", "examples/terrain-midrange.output.json"):
-        example = parsed[example_rel]
-        intent = example.get("task", example).get("intent")
-        expected_modules = set(module_map[intent])
-        actual_modules = set(example["modules"])
-        missing = sorted(expected_modules - actual_modules)
-        if missing:
-            fail(f"{example_rel} is missing canonical modules for {intent}: " + ", ".join(missing))
 
-    ok("JSON files parse and examples validate against schemas")
+    validation_errors: list[str] = []
+    for example_rel in example_files:
+        example = parsed[example_rel]
+        is_authoring = isinstance(example, dict) and "skill" in example and "task" in example
+        schema_rel = "schemas/authoring-base.json" if is_authoring else "schemas/runtime-compact.json"
+        for error in validate_instance(example, parsed[schema_rel]):
+            validation_errors.append(f"{example_rel} against {schema_rel}: {error}")
+
+        if is_authoring:
+            authoring_skill = example["skill"]
+            if authoring_skill["name"] != skill["name"] or authoring_skill["version"] != metadata["version"]:
+                fail(f"{example_rel}: skill name/version must match SKILL.md ({metadata['version']})")
+
+        intent = example.get("task", example).get("intent")
+        if intent not in module_map:
+            fail(f"{example_rel}: unknown intent {intent!r}")
+        set_errors = check_module_set_equality(example["modules"], module_map[intent])
+        if set_errors:
+            fail(f"{example_rel} module set mismatch for intent {intent!r}: " + "; ".join(set_errors))
+
+    if validation_errors:
+        fail("Schema validation failed: " + "; ".join(validation_errors))
+
+    ok(f"All {len(example_files)} example JSON outputs validate against schemas and exact module-map sets")
 
 
 def check_module_map() -> None:
@@ -462,6 +539,7 @@ def check_module_map() -> None:
         fail("registry/module-map.json intents do not match expected intents")
 
     orchestrator = read("references/00-orchestrator.md")
+    triage = read("skills/core/01-triage.md")
     bad: list[str] = []
     for intent, modules in module_map.items():
         if not isinstance(modules, list) or not modules:
@@ -474,11 +552,151 @@ def check_module_map() -> None:
                 bad.append(f"{intent}: unexpected module path {module}")
             if not (ROOT / module).exists():
                 bad.append(f"{intent}: missing module file {module}")
-            if module not in orchestrator and Path(module).name not in orchestrator:
-                bad.append(f"{intent}: module path not mentioned by orchestrator {module}")
+            if module not in orchestrator:
+                bad.append(f"{intent}: full module path {module} not mentioned in references/00-orchestrator.md")
+            if module not in triage:
+                bad.append(f"{intent}: full module path {module} not mentioned in skills/core/01-triage.md")
     if bad:
         fail("Module map validation failed: " + "; ".join(bad))
-    ok("Module map paths and intent routing are valid")
+    ok("Module map full paths and intent routing are strictly synchronized")
+
+
+def validate_svg_xml_and_fit(svg_text: str, label: str) -> list[str]:
+    errors: list[str] = []
+    try:
+        root = ET.fromstring(svg_text)
+    except Exception as exc:
+        return [f"{label}: invalid XML: {exc}"]
+
+    class_sizes: dict[str, tuple[float, bool]] = {}
+    for style_el in root.iter("{http://www.w3.org/2000/svg}style"):
+        if style_el.text:
+            for line in style_el.text.splitlines():
+                m_cls = re.search(r"\.([a-zA-Z0-9_-]+)\s*\{([^}]+)\}", line)
+                if m_cls:
+                    cls_name, body = m_cls.group(1), m_cls.group(2)
+                    m_sz = re.search(r"(\d+(?:\.\d+)?)px", body)
+                    size = float(m_sz.group(1)) if m_sz else 13.0
+                    is_mono = "mono" in body.lower() or "consolas" in body.lower()
+                    class_sizes[cls_name] = (size, is_mono)
+
+    rects: list[tuple[float, float, float, float, str]] = []
+    for r in root.iter("{http://www.w3.org/2000/svg}rect"):
+        x = float(r.attrib.get("x", "0"))
+        y = float(r.attrib.get("y", "0"))
+        w = float(r.attrib.get("width", "0"))
+        h = float(r.attrib.get("height", "0"))
+        cls = r.attrib.get("class", "")
+        if cls != "bg" and w > 0 and h > 0:
+            rects.append((x, y, w, h, cls))
+
+    for t in root.iter("{http://www.w3.org/2000/svg}text"):
+        txt = "".join(t.itertext()).strip()
+        if not txt:
+            continue
+        tx = float(t.attrib.get("x", "0"))
+        ty = float(t.attrib.get("y", "0"))
+        tcls = t.attrib.get("class", "")
+        size, is_mono = class_sizes.get(tcls, (13.0, False))
+        # Conservative character width estimator (standard library only, handles CJK wide chars):
+        est_width = 0.0
+        for ch in txt:
+            if ord(ch) > 0x2E80:
+                est_width += size * 1.0
+            elif is_mono:
+                est_width += size * 0.61
+            elif ch.isupper():
+                est_width += size * 0.64
+            else:
+                est_width += size * 0.53
+
+        containing = [
+            (rx, ry, rw, rh, rcls)
+            for (rx, ry, rw, rh, rcls) in rects
+            if rx <= tx <= rx + rw and ry <= ty <= ry + rh
+        ]
+        if containing:
+            containing.sort(key=lambda item: item[2] * item[3])
+            rx, ry, rw, rh, rcls = containing[0]
+            right_margin = (rx + rw) - (tx + est_width)
+            if right_margin < 4.0:
+                errors.append(
+                    f"{label}: text {txt!r} at x={tx} est_width={est_width:.1f}px overflows or crowds rect (x={rx}, w={rw}, margin={right_margin:.1f}px)"
+                )
+    return errors
+
+
+def check_svg_assets() -> None:
+    svg_files = sorted((ROOT / "docs" / "assets").glob("*.svg"))
+    if not svg_files:
+        fail("No SVG files found in docs/assets/")
+    errors: list[str] = []
+    for svg_path in svg_files:
+        errors.extend(validate_svg_xml_and_fit(svg_path.read_text(encoding="utf-8"), rel_posix(svg_path)))
+    if errors:
+        fail("SVG validation failed: " + "; ".join(errors))
+    ok("All SVG diagrams are well-formed XML and pass container text-fit bounds")
+
+
+def check_multilingual_parity() -> None:
+    expected_readme_bars = {
+        "README.md": "**English** · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md) · [한국어](./README.ko.md)",
+        "README.zh-CN.md": "[English](./README.md) · **简体中文** · [日本語](./README.ja.md) · [한국어](./README.ko.md)",
+        "README.ja.md": "[English](./README.md) · [简体中文](./README.zh-CN.md) · **日本語** · [한국어](./README.ko.md)",
+        "README.ko.md": "[English](./README.md) · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md) · **한국어**",
+    }
+    for rel, bar in expected_readme_bars.items():
+        text = read(rel)
+        if bar not in text:
+            fail(f"{rel} is missing the standard 4-language selector bar: {bar}")
+
+    root_version = parse_frontmatter(read("SKILL.md"))["metadata"]["version"]
+    for loc in CJK_LOCALES:
+        loc_skill = parse_frontmatter(read(f"locales/{loc}/SKILL.md"))
+        loc_meta = loc_skill.get("metadata", {})
+        if loc_meta.get("version") != root_version:
+            fail(f"locales/{loc}/SKILL.md version {loc_meta.get('version')} does not match root {root_version}")
+        if loc_meta.get("locale") != loc:
+            fail(f"locales/{loc}/SKILL.md metadata.locale must be {loc!r}")
+
+    slop = load_json("registry/forbidden-slop.json")
+    if tuple(slop.get("supported_locales", ())) != SUPPORTED_LOCALES:
+        fail("registry/forbidden-slop.json supported_locales must be ['en', 'zh-CN', 'ja', 'ko']")
+    for key in ("banned_phrases_by_locale", "replacement_rules_by_locale", "style_contract_by_locale"):
+        mapping = slop.get(key, {})
+        for loc in SUPPORTED_LOCALES:
+            if not mapping.get(loc):
+                fail(f"registry/forbidden-slop.json {key} missing non-empty entries for {loc}")
+
+    docs_html = read("docs/index.html")
+    for loc in SUPPORTED_LOCALES:
+        if f'data-lang="{loc}"' not in docs_html or f'"{loc}":' not in docs_html:
+            fail(f"docs/index.html is missing interactive locale support for {loc}")
+
+    ok("4-language support (en, zh-CN, ja, ko) verified across READMEs, locales/, forbidden-slop.json, and docs/index.html")
+
+
+def check_forbidden_slop() -> None:
+    slop = load_json("registry/forbidden-slop.json")
+    banned_en = [phrase.lower() for phrase in slop.get("banned_phrases", [])]
+    # Check that every replacement_rules 'ban' is covered by banned_phrases:
+    for rule in slop.get("replacement_rules", []):
+        ban_term = rule["ban"].lower()
+        if not any(ban_term in phrase or phrase in ban_term for phrase in banned_en):
+            fail(f"registry/forbidden-slop.json replacement_rules ban {ban_term!r} is missing from banned_phrases")
+
+    # Scan SKILL.md, references/*.md, and examples/*.output.json for English banned phrases:
+    targets = ["SKILL.md", "references/00-orchestrator.md", "references/01-redesign-rationale.md", "references/02-webgl2-source-table.md"]
+    targets.extend(rel_posix(p) for p in (ROOT / "examples").glob("*.output.json"))
+    hits: list[str] = []
+    for rel in targets:
+        text_lower = read(rel).lower()
+        for phrase in banned_en:
+            if phrase in text_lower:
+                hits.append(f"{rel}: {phrase!r}")
+    if hits:
+        fail("Forbidden slop phrases detected in active skill/example files: " + ", ".join(hits))
+    ok("No forbidden slop phrases detected in active skill references or examples")
 
 
 def check_versions() -> None:
@@ -486,13 +704,14 @@ def check_versions() -> None:
     metadata = skill["metadata"]
     assert isinstance(metadata, dict)
     version = metadata["version"]
-    readme = read("README.md")
+    for rm in ("README.md", "README.zh-CN.md", "README.ja.md", "README.ko.md"):
+        readme = read(rm)
+        if f"version-{version}-" not in readme:
+            fail(f"{rm} version badge must match SKILL.md metadata.version ({version})")
     changelog = read("CHANGELOG.md")
-    if f"version-{version}-" not in readme:
-        fail("README version badge must match SKILL.md metadata.version")
     if f"## {version} -" not in changelog:
         fail("CHANGELOG.md must contain the current SKILL.md version")
-    ok("Version references are synchronized")
+    ok("Version references are synchronized across all 4 READMEs, SKILL.md, and CHANGELOG.md")
 
 
 def check_yaml_surrogates() -> None:
@@ -547,13 +766,63 @@ def check_webgl_fixture() -> None:
         "window.__webgl2Smoke",
         "status.dataset.smoke",
         "#version 300 es",
+        "gl.createVertexArray",
+        "gl.bindVertexArray",
+        "layout(std140)",
+        "gl.UNIFORM_BUFFER",
+        "gl.PIXEL_PACK_BUFFER",
+        "gl.fenceSync",
+        "gl.clientWaitSync",
         "gl.drawArrays",
         "gl.readPixels",
+        "webglcontextlost",
+        "webglcontextrestored",
     ]
     for bit in required:
         if bit not in text:
             fail(f"WebGL2 smoke fixture missing expected code: {bit}")
-    ok("WebGL2 smoke fixture is present")
+
+    nonzero_wait = re.compile(r"clientWaitSync\([^,]+,\s*[^,]+,\s*[1-9]\d*\)")
+    if nonzero_wait.search(text):
+        fail("WebGL2 smoke fixture calls clientWaitSync with timeout > 0 (violates MAX_CLIENT_WAIT_TIMEOUT_WEBGL)")
+
+    workbench = read("docs/index.html")
+    for bit in ('getContext("webgl2"', "#version 300 es", "gl.createVertexArray", "layout(std140)", "gl.PIXEL_PACK_BUFFER", "gl.fenceSync", "webglcontextlost"):
+        if bit not in workbench:
+            fail(f"docs/index.html workbench missing live WebGL2 proof code: {bit}")
+    if nonzero_wait.search(workbench):
+        fail("docs/index.html calls clientWaitSync with timeout > 0 (violates MAX_CLIENT_WAIT_TIMEOUT_WEBGL)")
+    ok("WebGL2 smoke fixture and docs/index.html workbench include VAO, std140 UBO, PBO+fenceSync (timeout=0), and context recovery")
+
+
+def check_validator_self_tests() -> None:
+    # 1. Malformed XML SVG must fail validate_svg_xml_and_fit
+    bad_xml = '<svg xmlns="http://www.w3.org/2000/svg"><text x="10" y="20">pass & fail</text></svg>'
+    if not validate_svg_xml_and_fit(bad_xml, "synthetic-bad-xml.svg"):
+        fail("Self-test failed: validate_svg_xml_and_fit accepted malformed XML with unescaped ampersand")
+
+    # 2. Overflowing text inside narrow rect must fail validate_svg_xml_and_fit
+    overflow_svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        '<style>.t { font: 600 16px sans-serif; }</style>'
+        '<rect class="card" x="10" y="10" width="80" height="40" />'
+        '<text class="t" x="18" y="30">This text is way too wide for an 80px box</text>'
+        "</svg>"
+    )
+    if not validate_svg_xml_and_fit(overflow_svg, "synthetic-overflow.svg"):
+        fail("Self-test failed: validate_svg_xml_and_fit accepted overflowing text inside a narrow rect")
+
+    # 3. Invalid schema instance must fail validate_instance
+    compact_schema = load_json("schemas/runtime-compact.json")
+    bad_instance = {"intent": "invalid-intent", "unexpected_prop": 123}
+    if not validate_instance(bad_instance, compact_schema):
+        fail("Self-test failed: validate_instance accepted an invalid runtime-compact object")
+
+    # 4. Module set inequality must fail check_module_set_equality
+    if not check_module_set_equality(["skills/core/01-triage.md", "skills/core/99-fake.md"], ["skills/core/01-triage.md"]):
+        fail("Self-test failed: check_module_set_equality accepted unmapped extra module")
+
+    ok("Validator negative self-tests passed (malformed XML, text overflow, bad schema, and extra modules rejected)")
 
 
 def main() -> None:
@@ -562,6 +831,7 @@ def main() -> None:
     check_skill()
     check_openai_yaml()
     check_wrappers()
+    check_core_modules()
     check_no_extraneous_readmes()
     check_cache_files()
     check_placeholders()
@@ -570,11 +840,15 @@ def main() -> None:
     check_gitignore()
     check_json()
     check_module_map()
+    check_svg_assets()
+    check_multilingual_parity()
+    check_forbidden_slop()
     check_versions()
     check_yaml_surrogates()
     check_no_bidi_controls()
     check_mirror_sync()
     check_webgl_fixture()
+    check_validator_self_tests()
     ok("Repository validation succeeded")
     print()
     print("Suggested commit attribution:")

@@ -1,123 +1,69 @@
-# Module 04 - Subject Audit
+# 04 - Subject Audit and Visual Hierarchy
 
 ## Purpose
 
-Before geometry, shading, or optimization, define what the scene must visibly contain. This prevents the coder's ancient curse: polishing the wrong thing while the obvious missing feature sits in the middle of the frame wearing a fake mustache.
+Translate a visual subject into an ordered engineering checklist so shader instructions and pass budgets go to the cues viewers notice first. Build the silhouette before micro-detail.
 
-## Audit output
+## When to load
 
-Build a checklist grouped into:
+Load for `architecture` and `review` tasks whenever visual credibility, material fidelity, or feature-cut order matters.
 
-- `geometry`
-- `materials`
-- `lighting`
-- `animation`
-- `interaction` when relevant
-- `presentation` for UI or data visualization
-- `polish`
-- `out-of-scope`
+## Inputs
 
-Each item gets:
-- `priority`: `P0 | P1 | P2`
-- `feature`
-- `why_it_matters`
-- `how_it_will_be_represented`
-- `failure_if_missing`
+- Subject description or reference capture
+- Camera framing (close-up, medium shot, wide environment, orthographic UI)
+- Project class and available GPU fragment/vertex budget
 
-## Evidence discipline
+## Rules
 
-Only include details that are:
-- explicitly requested by the user
-- implied by the subject's anatomy, physics, or semantics
-- supported by provided references or code
+### 1. Decompose the subject into five observable layers
 
-Do not fabricate decorative details just to make the answer sound rich.
+Audit the target subject across five concrete layers before writing shader math:
 
-## Subject templates
+1. **Primary silhouette & proportions** (macro bounding volumes, aspect ratios, horizon or contour read)
+2. **Secondary structure** (major anatomical planes, architectural joints, terrain ridge hierarchy, widget bounds)
+3. **Material response** (roughness contrast, Fresnel rim, subsurface scatter approximation, anisotropic glint)
+4. **Lighting & depth separation** (key-to-fill ratio, contact shadows, sky/ground hemisphere split, atmospheric fog)
+5. **Motion & temporal stability** (sub-pixel antialiasing, specular aliasing suppression, camera easing)
 
-### Anatomical subjects
+### 2. Rank every visual feature as P0, P1, or P2
 
-For faces, hands, bodies, creatures, and character busts, audit:
-- landmark forms
-- asymmetry
-- soft-tissue transitions
-- cavity lighting
-- material zoning
-- wet vs dry specular behavior
-- motion cues such as blink, lip tension, or jaw motion
+Assign each feature a strict priority tier with an estimated GPU cost:
 
-Avoid generic phrases like "realistic skin." Replace them with concrete requirements such as:
-- per-zone albedo drift
-- roughness variation
-- pore or wrinkle scale
-- subsurface thickness hints
-- eyelid-corneal overlap
-- nostril or ear cavity occlusion
+- **P0 - Identity-defining (must ship on all tiers)**
+  - If missing, the subject fails to read at target framing.
+  - Examples: cranial/jaw proportions and eye socket depth on a portrait bust; primary ridge/valley elevation and horizon fog on terrain; crisp glyph SDF edge and contrast in UI.
+- **P1 - Material and depth reinforcement (enabled on `mid` and `high` tiers)**
+  - Adds physical believability once P0 proportions hold.
+  - Examples: multi-tap ambient occlusion, soft shadow penumbra, dual-lobe specular, detail normal maps.
+- **P2 - Luxury polish (enabled only on `high` tier with verified frame-time headroom)**
+  - High fragment cost per visible gain.
+  - Examples: skin pore micro-displacement, volumetric god-rays, chromatic dispersion, full-res screen-space reflections.
 
-### Environments and terrain
+### 3. Enforce the budget-pressure cut order
 
-Audit:
-- macro silhouette
-- meso-scale erosion or structural breakup
-- micro-detail
-- slope-dependent materials
-- atmosphere, haze, or fog
-- water or reflective surfaces
-- shadow storytelling
-- horizon treatment
+Cut luxury polish first. When frame time exceeds `gpuBudgetMs`, shed load in this exact sequence:
 
-### Vehicles, props, hard-surface scenes
+1. Disable P2 micro-detail passes and extra raymarch/filter taps.
+2. Drop auxiliary passes (AO, bloom, volumetric fog) to `0.5x` resolution per axis (`0.25x` pixel count).
+3. Clamp `targetDPR` toward `1.25-1.5` on high-DPI mobile screens.
+4. Simplify P1 shadow/AO sample counts (for example `16 -> 6` taps).
+5. Never distort P0 silhouette proportions or primary lighting read to save ALU cycles.
 
-Audit:
-- major silhouette breaks
-- panel seams
-- wear patterns
-- material contrast between painted, raw, rubber, glass, or emissive parts
-- motion-critical pieces such as wheels, suspension, or instrument states
+### 4. Define an explicit visual definition of done
 
-### UI and data visualization
+Every subject audit must output 4-8 verifiable checks:
 
-Audit:
-- information hierarchy
-- legibility at target scale
-- state changes
-- latency sensitivity
-- color semantics
-- interaction affordances
-- accessibility or color-blind safety when relevant
+- **Portrait / organic SDF**: cranial-to-jaw ratio holds from 3 camera angles; eyelids wrap the corneal bulge; nose bridge and alar crease separate cleanly; roughness varies between forehead, nose tip, and cheeks.
+- **Terrain / environment**: macro ridge silhouette reads without textures; slope/altitude material transitions avoid hard UV tiling seams; aerial perspective separates foreground, mid-ground, and distant peaks.
+- **Data-vis / UI**: glyph edges stay anti-aliased across DPR `1.0-2.0`; hover/selection states read within 1 frame; zero z-fighting on overlapping layers.
 
-## Definition of done
+## Failure modes
 
-Translate the audit into a visible acceptance test:
+- Spending 40 fragment ALU ops on procedural pore noise while the skull or jaw silhouette is deformed
+- Keeping P2 full-resolution postprocessing active while mobile FPS drops below 30
+- Using vague words ("photorealistic", "cinematic") instead of naming the P0/P1 cues and pass costs
 
-- what must be readable at thumbnail scale
-- what must hold up at close inspection
-- which details can fall away on low tier hardware
-- which omissions will make viewers immediately distrust the result
+## Output contribution
 
-## Performance link
-
-The audit must also feed performance priorities:
-
-- P0 features survive on low tier paths
-- P1 features may be reduced or approximated
-- P2 features are quality toggles or high-tier only
-
-This is how the visual spec talks to the hardware budget instead of living on a separate planet.
-
-## Output fields
-
-Return:
-
-- `subject_checklist`
-- `definition_of_done`
-- `tiered_feature_gates`
-- `missing_obvious_features`
-- `reference_dependencies`
-
-## Common failure modes
-
-- confusing detail density with subject fidelity
-- optimizing micro-detail before the silhouette reads correctly
-- adding expensive polish to features the viewer will never notice
-- forgetting medium-distance cues that sell the subject before close-up detail does
+Populate `deliverables` (P0/P1/P2 feature table and cut order), `decisions`, and visual-credibility `risks`.

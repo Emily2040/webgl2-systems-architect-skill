@@ -1,53 +1,98 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-label="WebGL skill capability and delivery infographic">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-labelledby="info-title info-desc">
+  <title id="info-title">WebGL 2.0 Systems Architect — 6-Pillar Engineering Overview</title>
+  <desc id="info-desc">Overview of the WebGL 2.0 Systems Architect skill covering triage routing, GPU frame-budget math, GLSL ES 3.00 shader discipline, state and context-loss lifecycle, PBO/fenceSync verification, and native four-language support.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#08152f"/>
-      <stop offset="100%" stop-color="#112752"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#6dc7ff"/>
-      <stop offset="100%" stop-color="#9a8eff"/>
-    </linearGradient>
     <style>
-      .title{fill:#edf4ff;font:700 38px Inter,Arial,sans-serif}
-      .sub{fill:#c9dbff;font:500 20px Inter,Arial,sans-serif}
-      .k{fill:#8fe3c7;font:700 33px Inter,Arial,sans-serif}
-      .h{fill:#ebf3ff;font:700 24px Inter,Arial,sans-serif}
-      .t{fill:#c8dbff;font:500 18px Inter,Arial,sans-serif}
-      .panel{fill:#152d5d;stroke:#84bcff;stroke-width:2;rx:18}
-      .bar{fill:url(#accent)}
+      .bg { fill: #090d14; }
+      .panel { fill: #0f1622; stroke: #1e293b; stroke-width: 1.5; rx: 12; }
+      .card { fill: #131c2e; stroke: #26354d; stroke-width: 1.25; rx: 10; }
+      .badge-box { fill: #0d1f33; stroke: #0284c7; stroke-width: 1.5; rx: 8; }
+      .h1 { fill: #f8fafc; font: 700 26px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .sub { fill: #94a3b8; font: 400 13.5px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .kicker { fill: #38bdf8; font: 700 11.5px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; letter-spacing: 0.08em; }
+      .kicker-teal { fill: #2dd4bf; font: 700 11.5px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; letter-spacing: 0.08em; }
+      .kicker-amber { fill: #f59e0b; font: 700 11.5px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; letter-spacing: 0.08em; }
+      .title { fill: #f1f5f9; font: 600 17px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .body { fill: #cbd5e1; font: 400 13px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .mono { fill: #7dd3fc; font: 500 12px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; }
     </style>
   </defs>
 
-  <rect width="1400" height="760" fill="url(#bg)"/>
-  <text class="title" x="60" y="76">Skill KPI + Delivery Infographic</text>
-  <text class="sub" x="60" y="106">Why teams use this skill: clarity, measurable constraints, and deterministic output shape.</text>
+  <rect class="bg" x="0" y="0" width="1280" height="720" />
 
-  <rect class="panel" x="60" y="150" width="380" height="220" rx="18"/>
-  <text class="k" x="92" y="218">7 Core Modules</text>
-  <text class="t" x="92" y="250">Selected by triage intent and evidence quality.</text>
-  <text class="t" x="92" y="284">No monolithic dumping of unrelated doctrine.</text>
+  <!-- Top Header -->
+  <rect class="panel" x="40" y="28" width="1200" height="96" rx="12" />
+  <text class="h1" x="68" y="68">WebGL 2.0 Systems Architect Skill</text>
+  <text class="sub" x="68" y="96">Modular GPU architecture, GLSL ES 3.00 rules, async PBO/worker pipelines &amp; WebGPU migration</text>
+  <rect class="badge-box" x="920" y="48" width="292" height="56" rx="8" />
+  <text class="mono" x="944" y="72">EN · 简体中文 · 日本語 · 한국어</text>
+  <text class="sub" x="944" y="92">4-Locale Parity · Schema Validated</text>
 
-  <rect class="panel" x="470" y="150" width="380" height="220" rx="18"/>
-  <text class="k" x="502" y="218">5 Parallel Lanes</text>
-  <text class="t" x="502" y="250">Hardware · Subject · Pipeline · Code · Validation.</text>
-  <text class="t" x="502" y="284">Executed in parallel only when work is independent.</text>
+  <!-- Grid Row 1 (Cards 1, 2, 3) -->
+  <!-- Card 1 -->
+  <rect class="card" x="40" y="148" width="384" height="248" rx="10" />
+  <text class="kicker" x="64" y="180">01 // PROGRESSIVE ROUTER</text>
+  <text class="title" x="64" y="208">Triage-Driven Module Selection</text>
+  <text class="body" x="64" y="236">· Tiny SKILL.md (&lt;800 chars) + 00-orchestrator</text>
+  <text class="body" x="64" y="260">· 6 intents: architecture, implementation, debug,</text>
+  <text class="body" x="64" y="282">  optimize, review, migration</text>
+  <text class="body" x="64" y="306">· 6 classes: raster-mesh, sdf-raymarch, hybrid,</text>
+  <text class="body" x="64" y="328">  postprocess, data-vis, ui</text>
+  <text class="mono" x="64" y="364">registry/module-map.json</text>
 
-  <rect class="panel" x="880" y="150" width="460" height="220" rx="18"/>
-  <text class="k" x="912" y="218">2 JSON Schemas</text>
-  <text class="t" x="912" y="250">authoring-base.json for detailed handoff.</text>
-  <text class="t" x="912" y="284">runtime-compact.json for compact runtime payloads.</text>
+  <!-- Card 2 -->
+  <rect class="card" x="448" y="148" width="384" height="248" rx="10" />
+  <text class="kicker-teal" x="472" y="180">02 // HARDWARE &amp; FRAME BUDGET</text>
+  <text class="title" x="472" y="208">Measured Timings Over Guesses</text>
+  <text class="body" x="472" y="236">· Query gl.getParameter &amp; gl.getExtension</text>
+  <text class="body" x="472" y="260">· EXT_disjoint_timer_query_webgl2 ring buffer</text>
+  <text class="body" x="472" y="284">· 60 FPS = 16.67 ms (12.0-13.5 ms GPU window)</text>
+  <text class="body" x="472" y="308">· Dynamic targetDPR clamp &amp; bandwidth math</text>
+  <text class="body" x="472" y="332">· Explicit Low / Mid / High fallback tiers</text>
+  <text class="mono" x="472" y="364">skills/core/02-hardware-budget.md</text>
 
-  <text class="h" x="60" y="444">Decision Confidence Bands</text>
-  <text class="t" x="60" y="474">The skill explicitly separates measured evidence from assumptions and unknowns.</text>
+  <!-- Card 3 -->
+  <rect class="card" x="856" y="148" width="384" height="248" rx="10" />
+  <text class="kicker-amber" x="880" y="180">03 // CONCURRENCY &amp; BOOT FLOW</text>
+  <text class="title" x="880" y="208">Parallel Workers vs Serial GL</text>
+  <text class="body" x="880" y="236">· Workers: glTF/Draco decode, KTX2, BVH cull</text>
+  <text class="body" x="880" y="260">· Poll COMPLETION_STATUS_KHR before link check</text>
+  <text class="body" x="880" y="284">· Async readback via PIXEL_PACK_BUFFER + fence</text>
+  <text class="body" x="880" y="308">· Sort: FBO -&gt; Program -&gt; UBO -&gt; VAO -&gt; Draw</text>
+  <text class="body" x="880" y="332">· Immediate Frame-1 placeholder boot sequence</text>
+  <text class="mono" x="880" y="364">skills/core/03-pipeline-and-concurrency.md</text>
 
-  <rect x="60" y="512" width="1240" height="22" rx="11" fill="#274476"/>
-  <rect class="bar" x="60" y="512" width="960" height="22" rx="11"/>
-  <text class="t" x="60" y="566">Measured data present</text>
-  <text class="t" x="520" y="566">Capability-derived</text>
-  <text class="t" x="980" y="566">Assumption-heavy</text>
+  <!-- Grid Row 2 (Cards 4, 5, 6) -->
+  <!-- Card 4 -->
+  <rect class="card" x="40" y="420" width="384" height="264" rx="10" />
+  <text class="kicker" x="64" y="452">04 // GLSL ES 3.00 &amp; SUBJECT AUDIT</text>
+  <text class="title" x="64" y="480">Self-Contained Shaders &amp; P0/P1/P2</text>
+  <text class="body" x="64" y="508">· Strict #version 300 es, in/out, std140 UBOs</text>
+  <text class="body" x="64" y="532">· Zero magic literals; derived constants only</text>
+  <text class="body" x="64" y="556">· Pre-branch dFdx/dFdy + textureGrad quad safety</text>
+  <text class="body" x="64" y="580">· 4-tap tetrahedral SDF normals &amp; Lipschitz step</text>
+  <text class="body" x="64" y="604">· Cut P2 micro-detail before P0 silhouette</text>
+  <text class="mono" x="64" y="648">04-subject-audit.md · 05-shader-rules.md</text>
 
-  <rect class="panel" x="60" y="610" width="1240" height="108" rx="16"/>
-  <text class="h" x="92" y="655">Delivery contract</text>
-  <text class="t" x="92" y="685">task summary → assumptions → loaded modules → decisions/budgets → async plan → risks → concrete next steps.</text>
+  <!-- Card 5 -->
+  <rect class="card" x="448" y="420" width="384" height="264" rx="10" />
+  <text class="kicker-teal" x="472" y="452">05 // RUNTIME &amp; WEBGPU MIGRATION</text>
+  <text class="title" x="472" y="480">VAOs, Immutable Storage &amp; Recovery</text>
+  <text class="body" x="472" y="508">· Mandatory VAO + aligned std140 UBO bindings</text>
+  <text class="body" x="472" y="532">· Immutable texStorage2D + Sampler objects</text>
+  <text class="body" x="472" y="556">· Mobile tile savings via invalidateFramebuffer</text>
+  <text class="body" x="472" y="580">· webglcontextlost / restored rebuild order</text>
+  <text class="body" x="472" y="604">· 1:1 WebGPU bind-group &amp; Z [0, 1] mapping</text>
+  <text class="mono" x="472" y="648">skills/core/06-runtime-ops.md</text>
+
+  <!-- Card 6 -->
+  <rect class="card" x="856" y="420" width="384" height="264" rx="10" />
+  <text class="kicker-amber" x="880" y="452">06 // VERIFICATION, CI &amp; WORKBENCH</text>
+  <text class="title" x="880" y="480">Executable Proof &amp; Self-Testing Gates</text>
+  <text class="body" x="880" y="508">· 5-stage ladder: compile, FBO, PBO, loss, perf</text>
+  <text class="body" x="880" y="532">· Interactive 4-locale WebGL2 workbench in docs/</text>
+  <text class="body" x="880" y="556">· Reference smoke fixture with PBO + fenceSync</text>
+  <text class="body" x="880" y="580">· Strict XML/SVG text-fit &amp; schema validation</text>
+  <text class="body" x="880" y="604">· Negative self-tests reject broken inputs</text>
+  <text class="mono" x="880" y="648">07-validation-and-ci.md · validate_repo.py</text>
 </svg>

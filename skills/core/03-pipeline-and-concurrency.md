@@ -1,121 +1,91 @@
-# Module 03 - Pipeline and Concurrency
+# 03 - Pipeline Topology and Concurrency
 
 ## Purpose
 
-Design the render graph, startup flow, and async strategy. The key first-principles fact is simple: one WebGL context submits GPU work in order. If the design ignores that, the word "parallel" becomes decorative confetti.
+Design render pass graphs, startup flows, and asynchronous pipelines that match how WebGL 2.0 actually executes on CPU threads and a single GPU queue. Single contexts serialize draw calls.
 
-## Choose a pipeline archetype
+## When to load
 
-Select the dominant archetype:
+Load for `architecture`, `implementation`, `optimize`, and `migration` tasks involving pass graphs, FBO chains, worker pipelines, shader compilation, or readback.
 
-- `forward raster`
-  - best when draw count is moderate and transparency or material simplicity dominates
-- `deferred or clustered raster`
-  - only when the lighting count or material complexity justifies the G-buffer cost
-- `fullscreen SDF raymarch`
-  - best for procedural scenes where geometry upload is secondary to fragment cost
-- `hybrid`
-  - mesh world plus procedural overlays, decals, SDF effects, or postprocess
-- `postprocess stack`
-  - when visual style depends on screen-space passes
+## Inputs
 
-Document why the chosen archetype beats the alternatives.
+- Project class (`raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`)
+- Target pass chain, asset sizes, and startup latency budget
+- Browser support for `OffscreenCanvas`, Web Workers, and `KHR_parallel_shader_compile`
 
-## Serial vs parallel reality
+## Rules
 
-### Usually serial on one context
+### 1. Choose context attributes by requirement, not habit
 
-- draw submission
-- state changes
-- pass execution through dependent FBOs
-- texture upload commands once they hit the context
-- framebuffer completeness checks
-- readback that lacks a fence/PBO strategy
+Declare `canvas.getContext("webgl2", attrs)` options explicitly:
 
-### Good async or parallel candidates
+- `alpha`: `false` for opaque canvases to skip browser page-compositor blending; `true` only when transparent DOM compositing is required
+- `depth` / `stencil`: enable only when the default framebuffer uses depth or stencil testing (offscreen FBOs manage their own renderbuffers)
+- `antialias`: `false` when rendering into offscreen postprocess FBOs or SDF raymarchers; use `gl.renderbufferStorageMultisample` + `gl.blitFramebuffer` for explicit MSAA resolve
+- `powerPreference`: `"high-performance"` for sustained 3D/raymarch workloads; `"default"` or `"low-power"` for battery-sensitive UI/data-vis
+- `preserveDrawingBuffer`: `false` unless persistent frame accumulation or synchronous external capture requires it
+- `desynchronized`: enable only after verifying tear-free behavior across target browsers
 
-- network fetches for textures, meshes, and config
-- CPU-side parse, decode, decompression, transcode
-- image decode to `ImageBitmap`
-- worker-side terrain generation, culling, animation baking, or data prep
-- shader-source generation or static validation
-- compile-status polling with `KHR_parallel_shader_compile`
-- placeholder-resource boot flow while final assets arrive
+### 2. Separate true parallel work from serial single-context GL submission
 
-## Async recommendation rules
+Be explicit about which lane each task belongs to:
 
-Recommend async only when it removes real waiting or main-thread contention.
+- **Parallel on CPU / Web Workers**
+  - `fetch`, JSON/glTF parsing, Draco/Meshopt decompression, KTX2/Basis Universal transcoding
+  - BVH/octree construction, frustum culling, terrain chunk generation, and typed-array vertex packing (`Transferable` `ArrayBuffer`s)
+  - `createImageBitmap` decoding off the main thread before `texSubImage2D`
+- **Pipelined across frames (non-blocking GPU/CPU overlap)**
+  - Shader compile/link polling with `KHR_parallel_shader_compile`:
+    ```js
+    const ext = gl.getExtension("KHR_parallel_shader_compile");
+    // Poll each frame before querying LINK_STATUS to avoid blocking the main thread:
+    if (!ext || gl.getProgramParameter(prog, ext.COMPLETION_STATUS_KHR)) {
+      const ok = gl.getProgramParameter(prog, gl.LINK_STATUS);
+    }
+    ```
+  - Asynchronous GPU readback using `gl.PIXEL_PACK_BUFFER` (PBO) and `gl.fenceSync`:
+    ```js
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo);
+    gl.readPixels(x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, 0); // byte offset 0 into PBO
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+    const fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+    gl.flush();
+    // Poll on a later frame:
+    const state = gl.clientWaitSync(fence, 0, 0);
+    if (state === gl.ALREADY_SIGNALED || state === gl.CONDITION_SATISFIED) {
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo);
+      gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, dstUint8Array);
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+      gl.deleteSync(fence);
+    }
+    ```
+- **Strictly serial on one `WebGL2RenderingContext`**
+  - State changes (`bindFramebuffer`, `useProgram`, `bindVertexArray`), resource uploads (`bufferSubData`, `texSubImage2D`), and draw calls (`drawElementsInstanced`, `drawArrays`).
 
-Use this decision table:
+### 3. Stage the first-frame startup sequence
 
-| Work item | Async / parallel? | Notes |
-|---|---|---|
-| texture fetch + decode | yes | overlap I/O and CPU with current frame |
-| mesh parse + quantization decode | yes | worker-friendly |
-| shader compile polling | partial | compile may continue asynchronously in driver; poll completion rather than blocking |
-| draw calls on one context | no | ordering remains serialized |
-| FBO pass chain | no | hard dependency graph |
-| `readPixels` + PBO + fence | yes, pipelined | asynchronous readback pattern |
-| `readPixels` direct | no | CPU stall magnet |
-| main-thread DOM reads in frame | no | remove rather than parallelize |
+Never block Frame 1 behind full-scene shader compilation and high-res texture uploads:
 
-## OffscreenCanvas and workers
+1. Create context, query limits/extensions, and allocate immutable 1x1 fallback textures (`texStorage2D`).
+2. Compile only the bootstrap/primary pass shader and render an immediate Frame 1.
+3. Stream meshes/textures in workers and poll auxiliary shader programs via `COMPLETION_STATUS_KHR` across subsequent frames.
 
-Use worker-based rendering only when the app benefits from isolating the render loop from main-thread jank and the browser targets support the path acceptably for the product.
+### 4. Bound the pass graph and sort state transitions
 
-Worker architecture:
+For every pass in the graph, document:
 
-1. main thread owns UI and input marshaling
-2. worker owns `OffscreenCanvas` and WebGL context
-3. asset fetch/decode can happen in worker or in dedicated workers
-4. communication uses structured messages, not shared mutable chaos
+- input textures/UBOs, output FBO target (`drawBuffers`), resolution scale (`1.0x`, `0.5x`, `0.25x`), and attachment formats
+- sort order inside raster passes: **Render Target (FBO) -> Program -> UBO/Texture Bindings -> VAO -> Draw Call**
+- never sample a texture while it is bound as an active `COLOR_ATTACHMENTi` or `DEPTH_ATTACHMENT` on the current FBO (feedback loop undefined behavior)
 
-Do not force worker rendering into a project whose primary issue is shader cost rather than main-thread contention.
+## Failure modes
 
-## Startup graph
+- Wrapping sequential `gl.*` calls in `async`/`await` and claiming parallel GPU execution
+- Querying `gl.getProgramParameter(prog, gl.LINK_STATUS)` immediately after `gl.linkProgram(prog)` while `COMPLETION_STATUS_KHR` is still `false`
+- Calling `gl.readPixels` into a CPU `Uint8Array` every frame without a PBO and `gl.fenceSync`
+- Allocating new FBOs, textures, or buffers inside `requestAnimationFrame`
 
-Build a boot sequence with explicit dependencies.
+## Output contribution
 
-Recommended pattern:
-
-1. create context and capability profile
-2. create placeholder resources
-3. start independent async tasks in parallel:
-   - fetch textures
-   - fetch meshes
-   - generate or load shader source
-   - decode images or transcode compressed textures
-4. compile programs as early as possible
-5. upload ready resources in bounded batches
-6. swap placeholders for final resources
-7. mark features ready incrementally instead of blocking the first frame
-
-The user should get a first image early, even if it is incomplete.
-
-## Pass graph rules
-
-- sort by render target first; FBO switches are expensive on tiled GPUs
-- keep pass count honest; every fullscreen pass taxes fill-rate
-- collapse passes when the saved bandwidth exceeds the extra shader cost
-- split passes when divergence or overdraw becomes the real bottleneck
-- for raymarch pipelines, count steps and map-cost before adding "cinematic" fog, AO, and shadow sugar
-
-## Output fields
-
-Return:
-
-- `pipeline_archetype`
-- `pass_graph`
-- `serial_tasks`
-- `parallel_tasks`
-- `async_boot_plan`
-- `worker_recommendation`
-- `compile_strategy`
-- `readback_strategy`
-
-## Common failure modes
-
-- claiming a renderer is "parallel" because resource fetch uses `await`
-- pushing all startup work behind one giant promise and showing a blank canvas
-- using workers for prestige while the real bottleneck is fragment cost
-- treating `KHR_parallel_shader_compile` as a universal guarantee instead of an extension-gated optimization
+Populate `decisions` (context attributes, pass graph, startup sequence), `parallel_plan`, and concurrency `risks`.

@@ -1,78 +1,173 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-label="WebGL 2 Systems Architect routing and lane architecture">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 860" width="1280" height="860" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">WebGL 2.0 Systems Architect — Routed Lane &amp; GPU Execution Architecture</title>
+  <desc id="arch-desc">Technical blueprint showing the router entrypoint, four-language locale dispatch, triage across six intents and six project classes, five parallel analysis lanes, single-context WebGL2 serialization versus worker/PBO concurrency, and validated JSON output contracts.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#071126"/>
-      <stop offset="100%" stop-color="#0f1f45"/>
-    </linearGradient>
-    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1a2f62"/>
-      <stop offset="100%" stop-color="#14264f"/>
-    </linearGradient>
     <style>
-      .title{fill:#eef4ff;font:700 42px Inter,Arial,sans-serif}
-      .sub{fill:#bcd1ff;font:500 21px Inter,Arial,sans-serif}
-      .h{fill:#e9f2ff;font:700 24px Inter,Arial,sans-serif}
-      .t{fill:#c6d9ff;font:500 18px Inter,Arial,sans-serif}
-      .box{fill:url(#panel);stroke:#7bb7ff;stroke-width:2.2;rx:20}
-      .lane{fill:#162c59;stroke:#88beff;stroke-width:2;rx:18}
-      .arr{stroke:#8dc4ff;stroke-width:3.5;fill:none;marker-end:url(#arrow)}
+      .bg { fill: #090d14; }
+      .grid-line { stroke: #111a29; stroke-width: 1; }
+      .panel { fill: #0f1622; stroke: #1e293b; stroke-width: 1.5; rx: 10; }
+      .card { fill: #131c2e; stroke: #26354d; stroke-width: 1.25; rx: 8; }
+      .card-cyan { fill: #0d1f33; stroke: #0284c7; stroke-width: 1.5; rx: 8; }
+      .card-teal { fill: #0b2228; stroke: #0d9488; stroke-width: 1.5; rx: 8; }
+      .card-amber { fill: #231b10; stroke: #d97706; stroke-width: 1.5; rx: 8; }
+      .h1 { fill: #f8fafc; font: 700 24px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .sub { fill: #94a3b8; font: 400 13px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .sec { fill: #38bdf8; font: 700 12px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; letter-spacing: 0.08em; }
+      .title { fill: #f1f5f9; font: 600 15px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .body { fill: #cbd5e1; font: 400 12.5px 'Inter', 'Segoe UI', system-ui, sans-serif; }
+      .mono { fill: #7dd3fc; font: 500 12px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; }
+      .mono-teal { fill: #5eead4; font: 500 12px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; }
+      .mono-amber { fill: #fcd34d; font: 500 12px 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; }
+      .wire { stroke: #38bdf8; stroke-width: 1.75; fill: none; marker-end: url(#arrow-cyan); }
+      .wire-teal { stroke: #2dd4bf; stroke-width: 1.75; fill: none; marker-end: url(#arrow-teal); }
+      .wire-dashed { stroke: #64748b; stroke-width: 1.5; stroke-dasharray: 5 4; fill: none; marker-end: url(#arrow-slate); }
     </style>
-    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M0,0 L12,6 L0,12 z" fill="#8dc4ff"/>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#2dd4bf" />
+    </marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b" />
     </marker>
   </defs>
 
-  <rect width="1400" height="900" fill="url(#bg)"/>
+  <rect class="bg" x="0" y="0" width="1280" height="860" />
 
-  <text class="title" x="70" y="74">WebGL 2 Systems Architect · Execution Blueprint</text>
-  <text class="sub" x="70" y="108">Triage-first routing, capability-aware decisions, and lane-joined outputs.</text>
+  <!-- Subtle engineering grid -->
+  <g>
+    <line class="grid-line" x1="0" y1="88" x2="1280" y2="88" />
+    <line class="grid-line" x1="0" y1="244" x2="1280" y2="244" />
+    <line class="grid-line" x1="0" y1="536" x2="1280" y2="536" />
+    <line class="grid-line" x1="0" y1="716" x2="1280" y2="716" />
+  </g>
 
-  <rect class="box" x="500" y="150" width="400" height="120" rx="20"/>
-  <text class="h" x="650" y="198">SKILL.md</text>
-  <text class="t" x="598" y="226">Tiny router · canonical entrypoint</text>
+  <!-- Header Banner -->
+  <text class="h1" x="40" y="44">WebGL 2.0 Systems Architect — Routed Lane &amp; Execution Blueprint</text>
+  <text class="sub" x="40" y="68">Progressive module routing · 5 independent analysis lanes · honest CPU/worker vs single-context GL concurrency · EN / 简体中文 / 日本語 / 한국어</text>
+  <rect class="card-cyan" x="1036" y="24" width="204" height="44" rx="8" />
+  <text class="mono" x="1056" y="51">v2.0.0 · GLSL ES 3.00</text>
 
-  <rect class="box" x="430" y="330" width="540" height="140" rx="20"/>
-  <text class="h" x="503" y="383">references/00-orchestrator.md</text>
-  <text class="t" x="486" y="414">Build task record · choose modules · join lanes</text>
-  <text class="t" x="496" y="440">Measured evidence &gt; capability limits &gt; constraints</text>
+  <!-- ROW 1: Entrypoint, Orchestrator, Triage, Locale Pack -->
+  <rect class="panel" x="40" y="104" width="1200" height="124" rx="10" />
+  <text class="sec" x="60" y="128">STAGE 01 // ROUTER ENTRYPOINT, LOCALE DISPATCH &amp; TRIAGE CLASSIFICATION</text>
 
-  <path class="arr" d="M700 270 L700 330"/>
+  <rect class="card-cyan" x="60" y="142" width="240" height="68" rx="8" />
+  <text class="title" x="78" y="166">Root Router &amp; Wrappers</text>
+  <text class="mono" x="78" y="186">SKILL.md (&lt;800 chars)</text>
+  <text class="body" x="78" y="202">AGENTS / CLAUDE / GEMINI</text>
 
-  <rect class="lane" x="60" y="560" width="250" height="190" rx="18"/>
-  <text class="h" x="111" y="610">Hardware lane</text>
-  <text class="t" x="86" y="645">02-hardware-budget</text>
-  <text class="t" x="86" y="673">caps, tiers, frame budget</text>
-  <text class="t" x="86" y="701">DPR guardrails</text>
+  <rect class="card" x="340" y="142" width="260" height="68" rx="8" />
+  <text class="title" x="358" y="166">Orchestrator &amp; Locale Tree</text>
+  <text class="mono" x="358" y="186">00-orchestrator.md</text>
+  <text class="body" x="358" y="202">locales/{zh-CN, ja, ko}/</text>
 
-  <rect class="lane" x="330" y="560" width="250" height="190" rx="18"/>
-  <text class="h" x="382" y="610">Subject lane</text>
-  <text class="t" x="358" y="645">04-subject-audit</text>
-  <text class="t" x="358" y="673">P0/P1/P2 definition</text>
-  <text class="t" x="358" y="701">missing-obvious checks</text>
+  <rect class="card-teal" x="640" y="142" width="280" height="68" rx="8" />
+  <text class="title" x="658" y="166">Triage Gate (Always First)</text>
+  <text class="mono-teal" x="658" y="186">skills/core/01-triage.md</text>
+  <text class="body" x="658" y="202">6 intents × 6 project classes</text>
 
-  <rect class="lane" x="600" y="560" width="250" height="190" rx="18"/>
-  <text class="h" x="646" y="610">Pipeline lane</text>
-  <text class="t" x="628" y="645">03-pipeline-and-concurrency</text>
-  <text class="t" x="628" y="673">serial vs async truth</text>
-  <text class="t" x="628" y="701">pass graph & startup flow</text>
+  <rect class="card" x="960" y="142" width="260" height="68" rx="8" />
+  <text class="title" x="978" y="166">Canonical Route Table</text>
+  <text class="mono" x="978" y="186">registry/module-map.json</text>
+  <text class="body" x="978" y="202">Exact module set per intent</text>
 
-  <rect class="lane" x="870" y="560" width="250" height="190" rx="18"/>
-  <text class="h" x="932" y="610">Code lane</text>
-  <text class="t" x="899" y="645">05-shader-rules</text>
-  <text class="t" x="899" y="673">06-runtime-ops</text>
-  <text class="t" x="899" y="701">stalls, leaks, correctness</text>
+  <line class="wire" x1="300" y1="176" x2="338" y2="176" />
+  <line class="wire" x1="600" y1="176" x2="638" y2="176" />
+  <line class="wire-teal" x1="920" y1="176" x2="958" y2="176" />
 
-  <rect class="lane" x="1140" y="560" width="200" height="190" rx="18"/>
-  <text class="h" x="1167" y="610">Validation lane</text>
-  <text class="t" x="1167" y="645">07-validation-and-ci</text>
-  <text class="t" x="1167" y="673">regression + confidence</text>
+  <!-- ROW 2: Five Parallel Analysis Lanes (A through E) -->
+  <rect class="panel" x="40" y="256" width="1200" height="264" rx="10" />
+  <text class="sec" x="60" y="282">STAGE 02 // FIVE INDEPENDENT ANALYSIS LANES (LOADED SELECTIVELY BY INTENT)</text>
 
-  <path class="arr" d="M700 470 L185 560"/>
-  <path class="arr" d="M700 470 L455 560"/>
-  <path class="arr" d="M700 470 L725 560"/>
-  <path class="arr" d="M700 470 L995 560"/>
-  <path class="arr" d="M700 470 L1240 560"/>
+  <!-- Lane A -->
+  <rect class="card" x="60" y="298" width="216" height="202" rx="8" />
+  <text class="mono" x="76" y="322">LANE A · HARDWARE</text>
+  <text class="title" x="76" y="344">Budget &amp; Limits</text>
+  <text class="mono-teal" x="76" y="364">02-hardware-budget.md</text>
+  <text class="body" x="76" y="388">· gl.getParameter limits</text>
+  <text class="body" x="76" y="408">· Disjoint timer queries</text>
+  <text class="body" x="76" y="428">· 16.67ms frame math</text>
+  <text class="body" x="76" y="448">· Dynamic targetDPR</text>
+  <text class="body" x="76" y="468">· Low / Mid / High tiers</text>
 
-  <rect class="box" x="370" y="790" width="660" height="72" rx="18"/>
-  <text class="h" x="454" y="834">Output contracts: prose sections or schema JSON (authoring-base/runtime-compact)</text>
+  <!-- Lane B -->
+  <rect class="card" x="296" y="298" width="216" height="202" rx="8" />
+  <text class="mono" x="312" y="322">LANE B · SUBJECT</text>
+  <text class="title" x="312" y="344">Visual Hierarchy</text>
+  <text class="mono-teal" x="312" y="364">04-subject-audit.md</text>
+  <text class="body" x="312" y="388">· 5 observable layers</text>
+  <text class="body" x="312" y="408">· P0 identity silhouette</text>
+  <text class="body" x="312" y="428">· P1 material &amp; depth</text>
+  <text class="body" x="312" y="448">· P2 luxury micro-polish</text>
+  <text class="body" x="312" y="468">· Deterministic cut order</text>
+
+  <!-- Lane C -->
+  <rect class="card" x="532" y="298" width="216" height="202" rx="8" />
+  <text class="mono" x="548" y="322">LANE C · PIPELINE</text>
+  <text class="title" x="548" y="344">Pass Graph &amp; Boot</text>
+  <text class="mono-teal" x="548" y="364">03-pipeline-concurrency</text>
+  <text class="body" x="548" y="388">· Context attr selection</text>
+  <text class="body" x="548" y="408">· Worker decode &amp; cull</text>
+  <text class="body" x="548" y="428">· COMPLETION_STATUS_KHR</text>
+  <text class="body" x="548" y="448">· PBO + fenceSync pipe</text>
+  <text class="body" x="548" y="468">· Frame-1 bootstrap flow</text>
+
+  <!-- Lane D -->
+  <rect class="card" x="768" y="298" width="216" height="202" rx="8" />
+  <text class="mono" x="784" y="322">LANE D · SHADER &amp; OPS</text>
+  <text class="title" x="784" y="344">GLSL &amp; Lifecycle</text>
+  <text class="mono-teal" x="784" y="364">05-shader + 06-runtime</text>
+  <text class="body" x="784" y="388">· #version 300 es + std140</text>
+  <text class="body" x="784" y="408">· Pre-branch textureGrad</text>
+  <text class="body" x="784" y="428">· VAO / UBO / texStorage2D</text>
+  <text class="body" x="784" y="448">· invalidateFramebuffer</text>
+  <text class="body" x="784" y="468">· WebGPU bind-group map</text>
+
+  <!-- Lane E -->
+  <rect class="card" x="1004" y="298" width="216" height="202" rx="8" />
+  <text class="mono" x="1020" y="322">LANE E · VERIFICATION</text>
+  <text class="title" x="1020" y="344">Validation &amp; CI</text>
+  <text class="mono-teal" x="1020" y="364">07-validation-and-ci.md</text>
+  <text class="body" x="1020" y="388">· Compile &amp; link logs</text>
+  <text class="body" x="1020" y="408">· checkFramebufferStatus</text>
+  <text class="body" x="1020" y="428">· Center-pixel smoke test</text>
+  <text class="body" x="1020" y="448">· WEBGL_lose_context drill</text>
+  <text class="body" x="1020" y="468">· Negative repo self-tests</text>
+
+  <!-- ROW 3: Runtime Concurrency Model (Parallel CPU/PBO vs Serial GL Queue) -->
+  <rect class="panel" x="40" y="548" width="1200" height="152" rx="10" />
+  <text class="sec" x="60" y="574">STAGE 03 // HONEST WEBGL 2.0 CONCURRENCY MODEL (PARALLEL PREP VS SERIAL CONTEXT SUBMISSION)</text>
+
+  <rect class="card-teal" x="60" y="590" width="560" height="92" rx="8" />
+  <text class="title" x="78" y="614">Parallel &amp; Pipelined Lanes (Workers + Async GPU)</text>
+  <text class="body" x="78" y="636">· Web Workers: fetch, glTF/Draco decode, KTX2, BVH &amp; chunk build</text>
+  <text class="body" x="78" y="656">· Async GPU: KHR_parallel_shader_compile &amp; PBO + gl.fenceSync</text>
+
+  <rect class="card-amber" x="660" y="590" width="560" height="92" rx="8" />
+  <text class="title" x="678" y="614">Strictly Serial on Single WebGL2RenderingContext</text>
+  <text class="body" x="678" y="636">· Sorted state: FBO target -&gt; Program -&gt; UBO/Samplers -&gt; VAO -&gt; Draw</text>
+  <text class="body" x="678" y="656">· Resource uploads (texSubImage2D, bufferSubData) &amp; FBO pass chain</text>
+
+  <line class="wire-teal" x1="620" y1="636" x2="658" y2="636" />
+
+  <!-- ROW 4: Merge Order, Anti-Slop Gate & Validated Output Contracts -->
+  <rect class="panel" x="40" y="724" width="1200" height="108" rx="10" />
+  <text class="sec" x="60" y="748">STAGE 04 // DETERMINISTIC MERGE ORDER, ANTI-SLOP GATE &amp; OUTPUT CONTRACTS</text>
+
+  <rect class="card" x="60" y="762" width="368" height="54" rx="8" />
+  <text class="title" x="78" y="784">1. Merge Order (Constraints -&gt; Patch)</text>
+  <text class="body" x="78" y="804">Ranked by measured GPU evidence tier</text>
+
+  <rect class="card" x="456" y="762" width="368" height="54" rx="8" />
+  <text class="title" x="474" y="784">2. Four-Locale Anti-Slop Gate</text>
+  <text class="mono" x="474" y="804">registry/forbidden-slop.json (en/zh-CN/ja/ko)</text>
+
+  <rect class="card-cyan" x="852" y="762" width="368" height="54" rx="8" />
+  <text class="title" x="870" y="784">3. Schema-Validated Deliverables</text>
+  <text class="mono" x="870" y="804">authoring-base.json · runtime-compact.json</text>
+
+  <line class="wire" x1="428" y1="789" x2="454" y2="789" />
+  <line class="wire" x1="824" y1="789" x2="850" y2="789" />
 </svg>

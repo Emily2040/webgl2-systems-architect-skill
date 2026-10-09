@@ -1,205 +1,1421 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WebGL 2 Systems Architect Skill</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WebGL 2.0 Systems Architect — Interactive GPU Engineering Workbench</title>
+  <meta name="description" content="Modular WebGL 2.0 architecture, GLSL ES 3.00 shader discipline, PBO + fenceSync telemetry, frame-budget calculator, and WebGPU migration workbench (EN / 简体中文 / 日本語 / 한국어)." />
   <style>
     :root {
-      --bg: #070b17;
-      --bg-2: #0e1630;
-      --panel: rgba(13, 22, 46, 0.82);
-      --panel-soft: rgba(17, 30, 62, 0.74);
-      --text: #edf3ff;
-      --muted: #b2c2ea;
-      --accent: #7bc1ff;
-      --accent-2: #9d8cff;
-      --ok: #63e6be;
-      --border: rgba(159, 186, 255, 0.24);
-      --shadow: 0 20px 60px rgba(4, 10, 24, 0.5);
+      color-scheme: dark;
+      --bg: #090d14;
+      --panel: #0f1622;
+      --panel-alt: #131c2e;
+      --well: #0b101b;
+      --border: #1e293b;
+      --border-strong: #334155;
+      --text: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --teal: #2dd4bf;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans", "Yu Gothic UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      --mono: "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
     }
 
     * { box-sizing: border-box; }
-
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      background: var(--bg);
       color: var(--text);
-      background:
-        radial-gradient(circle at 10% -10%, #2f4ea8 0%, transparent 34%),
-        radial-gradient(circle at 90% 0%, #26457d 0%, transparent 38%),
-        linear-gradient(180deg, var(--bg), var(--bg-2));
-      font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      font-family: var(--sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    :lang(zh-CN), :lang(ja) {
+      line-break: strict;
+      line-height: 1.72;
+    }
+    :lang(ko) {
+      word-break: keep-all;
+      line-height: 1.72;
     }
 
-    .wrap {
-      max-width: 1160px;
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(9, 13, 20, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 1320px;
       margin: 0 auto;
-      padding: 30px 20px 56px;
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 10px var(--teal);
+    }
+    .brand-title {
+      font-weight: 700;
+      font-size: 0.96rem;
+      letter-spacing: -0.01em;
+    }
+    .brand-version {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--cyan);
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 5px;
+    }
+    .lang-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .lang-btn {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 11px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .lang-btn:hover {
+      border-color: var(--cyan);
+      color: var(--text);
+    }
+    .lang-btn[aria-pressed="true"] {
+      background: #0d253d;
+      border-color: var(--cyan);
+      color: var(--cyan);
     }
 
-    .panel {
-      border: 1px solid var(--border);
-      background: var(--panel);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(6px);
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 32px 24px 72px;
     }
 
     .hero {
-      padding: 30px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
       display: grid;
-      gap: 20px;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 28px;
+      align-items: center;
     }
-
     .eyebrow {
-      font-size: 12px;
-      letter-spacing: .12em;
+      font-family: var(--mono);
+      font-size: 0.76rem;
       text-transform: uppercase;
-      color: var(--accent);
-      margin: 0;
+      letter-spacing: 0.08em;
+      color: var(--cyan);
+      margin-bottom: 10px;
+      display: block;
     }
-
-    h1, h2, h3 { line-height: 1.2; margin: 0; }
-    h1 { font-size: clamp(2rem, 5.5vw, 3.2rem); }
-    h2 { font-size: clamp(1.35rem, 3vw, 1.9rem); }
-    h3 { font-size: 1.02rem; }
-
-    p { color: var(--muted); margin: 0; }
-
-    .chips {
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.75rem, 3vw, 2.4rem);
+      line-height: 1.18;
+      letter-spacing: -0.025em;
+    }
+    .hero-lead {
+      margin: 0 0 20px;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 66ch;
+    }
+    .cta-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
     }
-
-    .chip {
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: .82rem;
-      color: #d8e8ff;
-      background: rgba(87, 139, 255, 0.09);
-    }
-
-    .section {
-      margin-top: 20px;
-      padding: 24px;
-      background: var(--panel-soft);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-    }
-
-    .grid {
-      margin-top: 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-    }
-
-    .card {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      background: rgba(14, 24, 49, 0.8);
-    }
-
-    .kpi {
-      color: var(--ok);
-      font-weight: 700;
-      font-size: 1.08rem;
-      margin-bottom: 4px;
-    }
-
-    .visual {
-      margin-top: 20px;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-
-    img {
-      width: 100%;
-      height: auto;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #0a1327;
-    }
-
-    .foot {
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
+    .btn {
+      display: inline-flex;
       align-items: center;
-      gap: 14px;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      padding-top: 16px;
-    }
-
-    a {
-      color: var(--accent);
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 9px 14px;
+      border-radius: 7px;
+      border: 1px solid var(--border-strong);
+      background: var(--panel-alt);
+      color: var(--text);
+      cursor: pointer;
       text-decoration: none;
     }
+    .btn:hover {
+      border-color: var(--cyan);
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: #0c2a44;
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .stat-card {
+      background: var(--well);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .stat-val {
+      font-family: var(--mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--teal);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-lbl {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
 
-    a:hover { text-decoration: underline; }
+    .workbench-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    .panel-title {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: -0.015em;
+      word-break: keep-all;
+      text-wrap: balance;
+    }
+    .panel-sub {
+      margin: 4px 0 0;
+      font-size: 0.84rem;
+      color: var(--muted);
+      word-break: keep-all;
+      text-wrap: pretty;
+    }
+    .status-pill {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--teal);
+      background: rgba(45, 212, 191, 0.1);
+      color: var(--teal);
+      white-space: nowrap;
+    }
+    .status-pill[data-state="warn"] {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--amber);
+    }
+    .status-pill[data-state="err"] {
+      border-color: var(--rose);
+      background: rgba(244, 63, 94, 0.12);
+      color: var(--rose);
+    }
+
+    .canvas-stage {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    #workbench-canvas {
+      width: 260px;
+      height: 260px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: #05080d;
+      display: block;
+    }
+    .control-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field-row label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    select, input[type="range"] {
+      width: 100%;
+      background: var(--well);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .btn-sm {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--panel-alt);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .btn-sm:hover {
+      border-color: var(--cyan);
+    }
+
+    .kv-grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .kv-cell {
+      background: var(--well);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .kv-k {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kv-v {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--cyan);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .calc-results {
+      margin-top: 14px;
+      background: var(--well);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .formula-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #070a10;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      overflow-x: auto;
+    }
+
+    .triage-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .module-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 16px;
+    }
+    .mod-pill {
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: #0d2238;
+      border: 1px solid #0284c7;
+      color: #7dd3fc;
+    }
+    .lane-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+    .lane-list li {
+      margin-bottom: 6px;
+    }
+
+    .diagram-stack {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    .diagram-frame {
+      background: var(--well);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+    }
+    .diagram-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
+    }
+
+    footer {
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    @media (max-width: 1024px) {
+      .hero, .workbench-grid, .triage-grid, .canvas-stage {
+        grid-template-columns: 1fr;
+      }
+      #workbench-canvas {
+        width: 100%;
+        max-width: 320px;
+        height: auto;
+        aspect-ratio: 1 / 1;
+      }
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="panel hero">
-      <p class="eyebrow">WebGL 2.0 Skill System</p>
-      <h1>WebGL 2 Systems Architect</h1>
-      <p>
-        A production-minded skill for architecture, debugging, performance optimization,
-        and delivery validation. It routes from a tiny entrypoint into focused modules only when needed.
-      </p>
-
-      <div class="chips">
-        <span class="chip">Measured decisions over lore</span>
-        <span class="chip">Parallel lanes, honest serialization</span>
-        <span class="chip">Schema-ready output contracts</span>
-        <span class="chip">Validation-first repository design</span>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span class="brand-title" data-i18n="brandTitle">WebGL 2.0 Systems Architect</span>
+        <span class="brand-version">v2.0.0 · GLSL ES 3.00</span>
       </div>
+      <nav class="lang-bar" aria-label="Language selector">
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" class="lang-btn" data-lang="zh-CN" aria-pressed="false">简体中文</button>
+        <button type="button" class="lang-btn" data-lang="ja" aria-pressed="false">日本語</button>
+        <button type="button" class="lang-btn" data-lang="ko" aria-pressed="false">한국어</button>
+      </nav>
+    </div>
+  </header>
 
-      <section class="section">
-        <h2>What this skill guarantees</h2>
-        <div class="grid">
-          <article class="card">
-            <p class="kpi">Triage first</p>
-            <h3>Intent + constraints before advice</h3>
-            <p>The orchestrator classifies task intent, artifacts, and hardware confidence before selecting deep modules.</p>
-          </article>
-          <article class="card">
-            <p class="kpi">Capability aware</p>
-            <h3>Budgets, tiers, and DPR policy</h3>
-            <p>Recommendations include framerate/memory implications and failure modes instead of generic optimization slogans.</p>
-          </article>
-          <article class="card">
-            <p class="kpi">Reviewable output</p>
-            <h3>Structured authoring handoff</h3>
-            <p>Delivers consistent prose or JSON with assumptions, decisions, risk controls, and measurable next steps.</p>
-          </article>
-          <article class="card">
-            <p class="kpi">CI aligned</p>
-            <h3>Repo-quality enforcement</h3>
-            <p>Validation tooling checks wrappers, schemas, examples, and anti-placeholder hygiene to keep the skill coherent.</p>
-          </article>
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div>
+        <span class="eyebrow" data-i18n="heroEyebrow">Modular GPU Engineering Skill · 4 Locales · Live Telemetry</span>
+        <h1 data-i18n="heroTitle">WebGL 2.0 Systems Architect Workbench</h1>
+        <p class="hero-lead" data-i18n="heroLead">
+          A routed engineering skill for WebGL 2.0 renderer architecture, GLSL ES 3.00 shader review, hardware frame-budget math, non-blocking PBO + fenceSync pipelines, context-loss recovery, and WebGPU migration.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/Emily2040/webgl2-systems-architect-skill" data-i18n="ctaRepo">GitHub Repository</a>
+          <a class="btn" href="../SKILL.md" data-i18n="ctaSkill">SKILL.md Router</a>
+          <a class="btn" href="../references/00-orchestrator.md" data-i18n="ctaOrch">00-Orchestrator</a>
+          <a class="btn" href="../fixtures/webgl2-smoke/index.html" data-i18n="ctaSmoke">Smoke Fixture</a>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-val">6 × 6</div>
+          <div class="stat-lbl" data-i18n="stat1">Intents × Project Classes Routed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">5 Lanes</div>
+          <div class="stat-lbl" data-i18n="stat2">Hardware, Subject, Pipe, Shader, CI</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">4 Locales</div>
+          <div class="stat-lbl" data-i18n="stat3">EN · 简体中文 · 日本語 · 한국어</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">16.67 ms</div>
+          <div class="stat-lbl" data-i18n="stat4">60 FPS Budget &amp; Dynamic DPR Math</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Workbench Grid: Live WebGL2 Canvas + Frame Budget Calculator -->
+    <div class="workbench-grid">
+      <!-- Left Panel: Live WebGL 2.0 Telemetry & Shader Viewport -->
+      <section class="panel" aria-labelledby="gl-panel-title">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" id="gl-panel-title" data-i18n="glPanelTitle">Live WebGL 2.0 Proof &amp; GPU Telemetry</h2>
+            <p class="panel-sub" data-i18n="glPanelSub">#version 300 es · VAO · std140 UBO · PBO + fenceSync · Context Recovery</p>
+          </div>
+          <span class="status-pill" id="gl-status-pill">WEBGL2 READY</span>
+        </div>
+
+        <div class="canvas-stage">
+          <canvas id="workbench-canvas" width="256" height="256" aria-label="Live WebGL 2.0 SDF and diagnostic viewport"></canvas>
+          <div class="control-stack">
+            <div class="field-row">
+              <label for="shader-mode"><span data-i18n="lblShaderMode">Diagnostic Shader Mode</span><span id="mode-code">MODE 0</span></label>
+              <select id="shader-mode">
+                <option value="0" data-i18n="optMode0">0: Analytic SDF Shading (Tetrahedral Normals)</option>
+                <option value="1" data-i18n="optMode1">1: World Normal Diagnostic (N * 0.5 + 0.5)</option>
+                <option value="2" data-i18n="optMode2">2: Raymarch Step-Cost Heatmap (P0/P1 Audit)</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <label for="step-cap"><span data-i18n="lblStepCap">Max Raymarch Steps (Loop Bound)</span><span id="step-cap-val">48</span></label>
+              <input type="range" id="step-cap" min="12" max="96" step="4" value="48" />
+            </div>
+            <div class="btn-group">
+              <button type="button" class="btn-sm" id="btn-pbo-probe" data-i18n="btnPboProbe">PBO + fenceSync Readback</button>
+              <button type="button" class="btn-sm" id="btn-lose-ctx" data-i18n="btnLoseCtx">Simulate Context Loss</button>
+              <button type="button" class="btn-sm" id="btn-toggle-anim" data-i18n="btnPause">Pause / Resume</button>
+            </div>
+            <div class="formula-box" id="pbo-readout">
+              PBO [128,128] RGBA: awaiting probe...
+            </div>
+          </div>
+        </div>
+
+        <div class="kv-grid" id="gpu-limits-grid">
+          <div class="kv-cell"><span class="kv-k">MAX_TEXTURE_SIZE</span><span class="kv-v" id="lim-tex">--</span></div>
+          <div class="kv-cell"><span class="kv-k">MAX_3D_TEXTURE_SIZE</span><span class="kv-v" id="lim-tex3d">--</span></div>
+          <div class="kv-cell"><span class="kv-k">MAX_COLOR_ATTACHMENTS</span><span class="kv-v" id="lim-mrt">--</span></div>
+          <div class="kv-cell"><span class="kv-k">MAX_SAMPLES (MSAA)</span><span class="kv-v" id="lim-msaa">--</span></div>
+          <div class="kv-cell"><span class="kv-k">UBO_OFFSET_ALIGNMENT</span><span class="kv-v" id="lim-ubo">--</span></div>
+          <div class="kv-cell"><span class="kv-k">KHR_parallel_compile</span><span class="kv-v" id="lim-khr">--</span></div>
         </div>
       </section>
 
-      <section class="visual">
-        <img src="assets/architecture.svg" alt="Architecture infographic showing router, orchestrator, and five execution lanes">
-        <img src="assets/skill-infographic.svg" alt="Capability and delivery infographic for WebGL 2 Systems Architect skill">
+      <!-- Right Panel: Interactive Frame-Budget & Dynamic DPR Calculator -->
+      <section class="panel" aria-labelledby="calc-panel-title">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" id="calc-panel-title" data-i18n="calcPanelTitle">Frame-Budget, Bandwidth &amp; DPR Clamp Calculator</h2>
+            <p class="panel-sub" data-i18n="calcPanelSub">Derive gpuBudgetMs, pixel traffic, and targetDPR before cutting P0/P1 features (02-hardware-budget.md)</p>
+          </div>
+          <span class="status-pill" id="budget-pill">WITHIN BUDGET</span>
+        </div>
+
+        <div class="control-stack">
+          <div class="field-row">
+            <label for="calc-fps"><span data-i18n="lblTargetFps">Target Frame Rate (FPS)</span><span id="val-fps">60 FPS</span></label>
+            <select id="calc-fps">
+              <option value="30">30 FPS (33.33 ms)</option>
+              <option value="60" selected>60 FPS (16.67 ms)</option>
+              <option value="90">90 FPS (11.11 ms)</option>
+              <option value="120">120 FPS (8.33 ms)</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="calc-res"><span data-i18n="lblCssViewport">CSS Viewport Dimension</span><span id="val-res">1920 × 1080</span></label>
+            <select id="calc-res">
+              <option value="1280x720">1280 × 720 (0.92 Mpx @ 1x)</option>
+              <option value="1920x1080" selected>1920 × 1080 (2.07 Mpx @ 1x)</option>
+              <option value="2560x1440">2560 × 1440 (3.69 Mpx @ 1x)</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="calc-dpr"><span data-i18n="lblNativeDpr">Device Pixel Ratio (devicePixelRatio)</span><span id="val-dpr">2.00x</span></label>
+            <input type="range" id="calc-dpr" min="1.0" max="3.0" step="0.25" value="2.0" />
+          </div>
+          <div class="field-row">
+            <label for="calc-cost"><span data-i18n="lblMsPerMpx">Measured Pass Cost (ms / Megapixel)</span><span id="val-cost">2.40 ms/Mpx</span></label>
+            <input type="range" id="calc-cost" min="0.8" max="6.0" step="0.2" value="2.4" />
+          </div>
+          <div class="field-row">
+            <label for="calc-bytes"><span data-i18n="lblBytesPerPx">Total Pass Read+Write Traffic (Bytes / Pixel)</span><span id="val-bytes">24 B/px</span></label>
+            <input type="range" id="calc-bytes" min="8" max="64" step="4" value="24" />
+          </div>
+        </div>
+
+        <div class="calc-results">
+          <div class="kv-cell">
+            <span class="kv-k" data-i18n="resGpuWindow">Available GPU Window</span>
+            <span class="kv-v" id="out-gpu-budget">12.67 ms</span>
+          </div>
+          <div class="kv-cell">
+            <span class="kv-k" data-i18n="resEstGpuTime">Estimated Frame GPU Time</span>
+            <span class="kv-v" id="out-est-gpu">19.91 ms</span>
+          </div>
+          <div class="kv-cell">
+            <span class="kv-k" data-i18n="resTargetDpr">Recommended targetDPR Clamp</span>
+            <span class="kv-v" id="out-target-dpr">1.59x</span>
+          </div>
+          <div class="kv-cell">
+            <span class="kv-k" data-i18n="resBandwidth">Memory Bandwidth @ Native DPR</span>
+            <span class="kv-v" id="out-bandwidth">11.94 GB/s</span>
+          </div>
+        </div>
+
+        <div class="formula-box" id="calc-formula">
+          targetDPR = min(deviceDPR, 2.0, sqrt(gpuBudgetMs / (cssMpx * msPerMegapixel)))
+        </div>
+      </section>
+    </div>
+
+    <!-- Interactive Triage Router & Output Contract Inspector -->
+    <section class="panel" aria-labelledby="triage-panel-title">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title" id="triage-panel-title" data-i18n="triagePanelTitle">Interactive Triage Router &amp; Module Matrix Inspector</h2>
+          <p class="panel-sub" data-i18n="triagePanelSub">Select an intent and project class to inspect the exact module set from registry/module-map.json and parallel lanes</p>
+        </div>
+        <span class="status-pill" id="triage-count-pill">7 MODULES</span>
+      </div>
+
+      <div class="triage-grid">
+        <div class="control-stack">
+          <div class="field-row">
+            <label for="sel-intent" data-i18n="lblIntent">1. Task Intent (intent)</label>
+            <select id="sel-intent">
+              <option value="architecture">architecture (System &amp; Pass Graph)</option>
+              <option value="implementation">implementation (Shader &amp; Feature Build)</option>
+              <option value="debug">debug (FBO, Precision &amp; Context Loss)</option>
+              <option value="optimize">optimize (FPS, Fill-Rate &amp; Bandwidth)</option>
+              <option value="review">review (Code &amp; Visual Hierarchy Audit)</option>
+              <option value="migration">migration (WebGL 2.0 -&gt; WebGPU / WGSL)</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="sel-class" data-i18n="lblClass">2. Project Class (project_class)</label>
+            <select id="sel-class">
+              <option value="sdf-raymarch">sdf-raymarch (Procedural SDF / Volumetric)</option>
+              <option value="raster-mesh">raster-mesh (Instanced / Forward / Deferred)</option>
+              <option value="hybrid">hybrid (Raster G-Buffer + Raymarched Pass)</option>
+              <option value="postprocess">postprocess (Bloom / TAA / Tone Mapping)</option>
+              <option value="data-vis">data-vis (Instanced Glyphs / Scatter / Heatmap)</option>
+              <option value="ui">ui (SDF Vector Widgets / Text Compositor)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-family: var(--mono); font-size: 0.78rem; color: var(--muted);" data-i18n="lblLoadedModules">
+            CANONICAL MODULES LOADED (registry/module-map.json):
+          </div>
+          <div class="module-pills" id="module-pills"></div>
+          <ul class="lane-list" id="triage-notes"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vector Technical Blueprints -->
+    <div class="diagram-stack">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" data-i18n="archDiagramTitle">Routed Lane &amp; Concurrency Architecture Blueprint</h2>
+            <p class="panel-sub" data-i18n="archDiagramSub">Vector SVG diagram validated for strict XML well-formedness and container text-fit margins</p>
+          </div>
+          <span class="status-pill">docs/assets/architecture.svg</span>
+        </div>
+        <div class="diagram-frame">
+          <img src="./assets/architecture.svg" alt="WebGL 2.0 Systems Architect routed lane and concurrency blueprint" />
+        </div>
       </section>
 
-      <footer class="foot">
-        <span>Created by Iamemily2050</span>
-        <a href="https://github.com/Emily2040">GitHub</a>
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" data-i18n="infoDiagramTitle">Six-Pillar Skill Engineering Overview</h2>
+            <p class="panel-sub" data-i18n="infoDiagramSub">Progressive router, hardware frame budget, concurrency, GLSL ES 3.00 math, runtime lifecycle, and CI gates</p>
+          </div>
+          <span class="status-pill">docs/assets/skill-infographic.svg</span>
+        </div>
+        <div class="diagram-frame">
+          <img src="./assets/skill-infographic.svg" alt="WebGL 2.0 Systems Architect six-pillar overview diagram" />
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <div>
+        <strong>WebGL 2.0 Systems Architect Skill</strong> · MIT License · Created by Iamemily2050 (Emily2040)
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/Emily2040/webgl2-systems-architect-skill">GitHub</a>
         <a href="https://Iamemily2050.com">Website</a>
-        <a href="https://x.com/iamemily2050">X</a>
+        <a href="https://x.com/iamemily2050">X (@iamemily2050)</a>
         <a href="https://instagram.com/iamemily2050">Instagram</a>
-      </footer>
-    </section>
+      </div>
+    </footer>
   </main>
+
+  <script>
+    (function () {
+      // 1. Native 4-Language Dictionary (en, zh-CN, ja, ko)
+      const I18N = {
+        "en": {
+          brandTitle: "WebGL 2.0 Systems Architect",
+          heroEyebrow: "Modular GPU Engineering Skill · 4 Locales · Live Telemetry",
+          heroTitle: "WebGL 2.0 Systems Architect Workbench",
+          heroLead: "A routed engineering skill for WebGL 2.0 renderer architecture, GLSL ES 3.00 shader review, hardware frame-budget math, non-blocking PBO + fenceSync pipelines, context-loss recovery, and WebGPU migration.",
+          ctaRepo: "GitHub Repository",
+          ctaSkill: "SKILL.md Router",
+          ctaOrch: "00-Orchestrator",
+          ctaSmoke: "Smoke Fixture",
+          stat1: "Intents × Project Classes Routed",
+          stat2: "Hardware, Subject, Pipe, Shader, CI",
+          stat3: "EN · 简体中文 · 日本語 · 한국어",
+          stat4: "60 FPS Budget & Dynamic DPR Math",
+          glPanelTitle: "Live WebGL 2.0 Proof & GPU Telemetry",
+          glPanelSub: "#version 300 es · VAO · std140 UBO · PBO + fenceSync · Context Recovery",
+          lblShaderMode: "Diagnostic Shader Mode",
+          optMode0: "0: Analytic SDF Shading (Tetrahedral Normals)",
+          optMode1: "1: World Normal Diagnostic (N * 0.5 + 0.5)",
+          optMode2: "2: Raymarch Step-Cost Heatmap (P0/P1 Audit)",
+          lblStepCap: "Max Raymarch Steps (Loop Bound)",
+          btnPboProbe: "PBO + fenceSync Readback",
+          btnLoseCtx: "Simulate Context Loss",
+          btnPause: "Pause / Resume",
+          calcPanelTitle: "Frame-Budget, Bandwidth & DPR Clamp Calculator",
+          calcPanelSub: "Derive gpuBudgetMs, pixel traffic, and targetDPR before cutting P0/P1 features (02-hardware-budget.md)",
+          lblTargetFps: "Target Frame Rate (FPS)",
+          lblCssViewport: "CSS Viewport Dimension",
+          lblNativeDpr: "Device Pixel Ratio (devicePixelRatio)",
+          lblMsPerMpx: "Measured Pass Cost (ms / Megapixel)",
+          lblBytesPerPx: "Total Pass Read+Write Traffic (Bytes / Pixel)",
+          resGpuWindow: "Available GPU Window",
+          resEstGpuTime: "Estimated Frame GPU Time",
+          resTargetDpr: "Recommended targetDPR Clamp",
+          resBandwidth: "Memory Bandwidth @ Native DPR",
+          triagePanelTitle: "Interactive Triage Router & Module Matrix Inspector",
+          triagePanelSub: "Select an intent and project class to inspect the exact module set from registry/module-map.json and parallel lanes",
+          lblIntent: "1. Task Intent (intent)",
+          lblClass: "2. Project Class (project_class)",
+          lblLoadedModules: "CANONICAL MODULES LOADED (registry/module-map.json):",
+          archDiagramTitle: "Routed Lane & Concurrency Architecture Blueprint",
+          archDiagramSub: "Vector SVG diagram validated for strict XML well-formedness and container text-fit margins",
+          infoDiagramTitle: "Six-Pillar Skill Engineering Overview",
+          infoDiagramSub: "Progressive router, hardware frame budget, concurrency, GLSL ES 3.00 math, runtime lifecycle, and CI gates"
+        },
+        "zh-CN": {
+          brandTitle: "WebGL 2.0 系统架构师",
+          heroEyebrow: "模块化 GPU 工程技能包 · 原生四语言支持 · 实时遥测",
+          heroTitle: "WebGL 2.0 系统架构师工程工作台",
+          heroLead: "面向 WebGL 2.0 渲染器架构设计、GLSL ES 3.00 着色器审查、硬件帧预算推导、PBO + fenceSync 非阻塞管线、上下文丢失恢复与 WebGPU 迁移的路由式技能包。",
+          ctaRepo: "GitHub 仓库",
+          ctaSkill: "SKILL.md 路由入口",
+          ctaOrch: "00-总控编排器",
+          ctaSmoke: "WebGL2 冒烟测试夹具",
+          stat1: "6 类意图 × 6 类项目精准分流",
+          stat2: "硬件 · 主体 · 管线 · 着色 · CI",
+          stat3: "EN · 简体中文 · 日本語 · 한국어",
+          stat4: "60 FPS 帧预算与动态 DPR 钳制",
+          glPanelTitle: "实时 WebGL 2.0 渲染验证与 GPU 遥测",
+          glPanelSub: "#version 300 es · 独立 VAO · std140 UBO · PBO + fenceSync · 上下文恢复",
+          lblShaderMode: "诊断着色器模式",
+          optMode0: "0: 解析式 SDF 着色（四面体差分法线）",
+          optMode1: "1: 世界空间法线诊断视图 (N * 0.5 + 0.5)",
+          optMode2: "2: 光线步进次数热力图（P0/P1 成本审计）",
+          lblStepCap: "最大光线步进次数（循环上界）",
+          btnPboProbe: "PBO + fenceSync 异步回读",
+          btnLoseCtx: "模拟上下文丢失恢复",
+          btnPause: "暂停 / 继续",
+          calcPanelTitle: "帧预算、显存带宽与动态 DPR 钳制计算器",
+          calcPanelSub: "在裁剪 P0/P1 特征前，先推导 gpuBudgetMs、像素带宽与 targetDPR（02-hardware-budget.md）",
+          lblTargetFps: "目标帧率 (FPS)",
+          lblCssViewport: "CSS 视口分辨率",
+          lblNativeDpr: "设备像素比 (devicePixelRatio)",
+          lblMsPerMpx: "实测通道耗时 (ms / 百万像素)",
+          lblBytesPerPx: "全通道读写总字节数 (Bytes / Pixel)",
+          resGpuWindow: "可用 GPU 帧时间窗口",
+          resEstGpuTime: "当前 DPR 预估 GPU 耗时",
+          resTargetDpr: "建议 targetDPR 钳制上限",
+          resBandwidth: "原生 DPR 显存带宽消耗",
+          triagePanelTitle: "交互式任务分流路由器与模块矩阵检查器",
+          triagePanelSub: "选择任务意图与项目类别，查看 registry/module-map.json 中的精确加载模块与并行通道",
+          lblIntent: "1. 任务意图 (intent)",
+          lblClass: "2. 项目类别 (project_class)",
+          lblLoadedModules: "按意图加载的标准模块集合 (registry/module-map.json)：",
+          archDiagramTitle: "多通道路由与并发执行架构蓝图",
+          archDiagramSub: "通过严格 XML 良构性与文本框边界校验的矢量架构图",
+          infoDiagramTitle: "六大工程支柱概览",
+          infoDiagramSub: "渐进式路由、硬件帧预算、并发模型、GLSL ES 3.00 数学规范、运行时生命周期与 CI 门禁"
+        },
+        "ja": {
+          brandTitle: "WebGL 2.0 システムアーキテクト",
+          heroEyebrow: "モジュラー型 GPU エンジニアリングスキル · 4 言語ネイティブ対応 · ライブテレメトリ",
+          heroTitle: "WebGL 2.0 システムアーキテクト ワークベンチ",
+          heroLead: "WebGL 2.0 レンダラー設計、GLSL ES 3.00 シェーダーレビュー、フレームバジェット計算、非ブロッキング PBO + fenceSync パイプライン、コンテキストロスト復旧、WebGPU 移行のためのルーティング型スキル。",
+          ctaRepo: "GitHub リポジトリ",
+          ctaSkill: "SKILL.md ルーター",
+          ctaOrch: "00-オーケストレーター",
+          ctaSmoke: "スモークテストフィクスチャ",
+          stat1: "6 意図 × 6 分類のルーティング",
+          stat2: "ハード · 被写体 · パイプ · シェーダ · CI",
+          stat3: "EN · 简体中文 · 日本語 · 한국어",
+          stat4: "60 FPS 予算＆動的 DPR クランプ",
+          glPanelTitle: "ライブ WebGL 2.0 検証＆ GPU テレメトリ",
+          glPanelSub: "#version 300 es · 専用 VAO · std140 UBO · PBO + fenceSync · コンテキスト復旧",
+          lblShaderMode: "診断シェーダーモード",
+          optMode0: "0: 解析的 SDF シェーディング（四面体法線）",
+          optMode1: "1: ワールド法線診断表示 (N * 0.5 + 0.5)",
+          optMode2: "2: レイマーチステップ負荷ヒートマップ",
+          lblStepCap: "最大レイマーチステップ数（ループ上限）",
+          btnPboProbe: "PBO + fenceSync リードバック",
+          btnLoseCtx: "コンテキストロストをシミュレート",
+          btnPause: "一時停止 / 再開",
+          calcPanelTitle: "フレームバジェット・帯域・動的 DPR クランプ計算機",
+          calcPanelSub: "P0/P1 機能を削る前に gpuBudgetMs、帯域、targetDPR を導出（02-hardware-budget.md）",
+          lblTargetFps: "目標フレームレート (FPS)",
+          lblCssViewport: "CSS ビューポート解像度",
+          lblNativeDpr: "デバイスピクセル比 (devicePixelRatio)",
+          lblMsPerMpx: "実測パス負荷 (ms / 100万ピクセル)",
+          lblBytesPerPx: "全パス読み書き合計バイト数 (Bytes / Pixel)",
+          resGpuWindow: "利用可能な GPU 時間枠",
+          resEstGpuTime: "推定フレーム GPU 時間",
+          resTargetDpr: "推奨 targetDPR クランプ値",
+          resBandwidth: "ネイティブ DPR 時のメモリ帯域",
+          triagePanelTitle: "インタラクティブ・トリアージルーター＆モジュール検査",
+          triagePanelSub: "意図とプロジェクト分類を選択し、registry/module-map.json のロード対象モジュールと並列レーンを確認",
+          lblIntent: "1. タスク意図 (intent)",
+          lblClass: "2. プロジェクト分類 (project_class)",
+          lblLoadedModules: "ロードされる標準モジュール (registry/module-map.json):",
+          archDiagramTitle: "ルーティングレーン＆並行実行アーキテクチャ図",
+          archDiagramSub: "厳密な XML 整形式およびテキストボックス余白検証済みのベクター図",
+          infoDiagramTitle: "6 つのエンジニアリング柱の概要",
+          infoDiagramSub: "段階的ルーター、フレームバジェット、並行処理、GLSL ES 3.00 数学規律、ライフサイクル、CI ゲート"
+        },
+        "ko": {
+          brandTitle: "WebGL 2.0 시스템 아키텍트",
+          heroEyebrow: "모듈형 GPU 엔지니어링 스킬 · 4개 언어 네이티브 지원 · 실시간 텔레메트리",
+          heroTitle: "WebGL 2.0 시스템 아키텍트 워크벤치",
+          heroLead: "WebGL 2.0 렌더러 아키텍처, GLSL ES 3.00 셰이더 리뷰, 프레임 예산 수식 유도, 비차단 PBO + fenceSync 파이프라인, 컨텍스트 손실 복구 및 WebGPU 마이그레이션을 위한 라우팅 기반 엔지니어링 스킬.",
+          ctaRepo: "GitHub 저장소",
+          ctaSkill: "SKILL.md 라우터",
+          ctaOrch: "00-오케스트레이터",
+          ctaSmoke: "스모크 테스트 픽스처",
+          stat1: "6가지 의도 × 6가지 프로젝트 분류",
+          stat2: "하드웨어 · 피사체 · 파이프 · 셰이더 · CI",
+          stat3: "EN · 简体中文 · 日本語 · 한국어",
+          stat4: "60 FPS 예산 및 동적 DPR 클램프",
+          glPanelTitle: "실시간 WebGL 2.0 검증 및 GPU 텔레메트리",
+          glPanelSub: "#version 300 es · 전용 VAO · std140 UBO · PBO + fenceSync · 컨텍스트 복구",
+          lblShaderMode: "진단 셰이더 모드",
+          optMode0: "0: 해석적 SDF 셰이딩 (사면체 차분 노멀)",
+          optMode1: "1: 월드 노멀 진단 뷰 (N * 0.5 + 0.5)",
+          optMode2: "2: 레이마칭 스텝 비용 히트맵",
+          lblStepCap: "최대 레이마칭 스텝 수 (루프 상한)",
+          btnPboProbe: "PBO + fenceSync 리드백",
+          btnLoseCtx: "컨텍스트 손실 시뮬레이션",
+          btnPause: "일시정지 / 재생",
+          calcPanelTitle: "프레임 예산, 대역폭 및 동적 DPR 클램프 계산기",
+          calcPanelSub: "P0/P1 기능을 축소하기 전에 gpuBudgetMs, 픽셀 대역폭, targetDPR을 먼저 유도 (02-hardware-budget.md)",
+          lblTargetFps: "목표 프레임 레이트 (FPS)",
+          lblCssViewport: "CSS 뷰포트 해상도",
+          lblNativeDpr: "디바이스 픽셀 비율 (devicePixelRatio)",
+          lblMsPerMpx: "실측 패스 비용 (ms / 메가픽셀)",
+          lblBytesPerPx: "전체 패스 읽기+쓰기 트래픽 (Bytes / Pixel)",
+          resGpuWindow: "가용 GPU 실행 시간 창",
+          resEstGpuTime: "예상 프레임 GPU 소요 시간",
+          resTargetDpr: "권장 targetDPR 클램프 상한",
+          resBandwidth: "네이티브 DPR 메모리 대역폭",
+          triagePanelTitle: "대화형 작업 분류 라우터 및 모듈 매트릭스 검사기",
+          triagePanelSub: "작업 의도와 프로젝트 분류를 선택하여 registry/module-map.json의 로드 모듈과 병렬 레인을 확인",
+          lblIntent: "1. 작업 의도 (intent)",
+          lblClass: "2. 프로젝트 분류 (project_class)",
+          lblLoadedModules: "로드되는 표준 모듈 목록 (registry/module-map.json):",
+          archDiagramTitle: "라우팅 레인 및 동시성 아키텍처 청사진",
+          archDiagramSub: "엄격한 XML 정합성 및 텍스트 박스 여백 검증을 통과한 벡터 다이어그램",
+          infoDiagramTitle: "6대 엔지니어링 핵심 기둥 개요",
+          infoDiagramSub: "점진적 라우터, 하드웨어 예산, 동시성 모델, GLSL ES 3.00 수학 규율, 런타임 수명 주기 및 CI 게이트"
+        }
+      };
+
+      const MODULE_MAP = {
+        architecture: [
+          "skills/core/01-triage.md",
+          "skills/core/02-hardware-budget.md",
+          "skills/core/03-pipeline-and-concurrency.md",
+          "skills/core/04-subject-audit.md",
+          "skills/core/05-shader-rules.md",
+          "skills/core/06-runtime-ops.md",
+          "skills/core/07-validation-and-ci.md"
+        ],
+        implementation: [
+          "skills/core/01-triage.md",
+          "skills/core/03-pipeline-and-concurrency.md",
+          "skills/core/05-shader-rules.md",
+          "skills/core/06-runtime-ops.md"
+        ],
+        debug: [
+          "skills/core/01-triage.md",
+          "skills/core/05-shader-rules.md",
+          "skills/core/06-runtime-ops.md",
+          "skills/core/07-validation-and-ci.md"
+        ],
+        optimize: [
+          "skills/core/01-triage.md",
+          "skills/core/02-hardware-budget.md",
+          "skills/core/03-pipeline-and-concurrency.md",
+          "skills/core/05-shader-rules.md",
+          "skills/core/06-runtime-ops.md",
+          "skills/core/07-validation-and-ci.md"
+        ],
+        review: [
+          "skills/core/01-triage.md",
+          "skills/core/04-subject-audit.md",
+          "skills/core/05-shader-rules.md",
+          "skills/core/06-runtime-ops.md",
+          "skills/core/07-validation-and-ci.md"
+        ],
+        migration: [
+          "skills/core/01-triage.md",
+          "skills/core/03-pipeline-and-concurrency.md",
+          "skills/core/05-shader-rules.md",
+          "skills/core/06-runtime-ops.md",
+          "skills/core/07-validation-and-ci.md"
+        ]
+      };
+
+      const CLASS_GUIDANCE = {
+        "sdf-raymarch": [
+          "Context: alpha: false, depth: false, antialias: false; fullscreen triangle with dedicated VAO + std140 FrameBlock UBO.",
+          "Shader: 4-tap tetrahedral normals, explicit Lipschitz step factor (0.75), pre-branch dFdx/dFdy + textureGrad.",
+          "Budget cut order: disable P2 micro-displacement -> drop AO/shadow steps -> clamp targetDPR."
+        ],
+        "raster-mesh": [
+          "Context: sort draws by FBO -> Program -> UBO/Samplers -> VAO -> drawElementsInstanced.",
+          "Resources: immutable gl.texStorage2D mip chains + gl.invalidateFramebuffer on transient mobile depth buffers.",
+          "Concurrency: decode glTF/Draco and KTX2 in Web Workers; keep single-context GL draw submission serial."
+        ],
+        "hybrid": [
+          "Pass graph: raster G-buffer / depth pre-pass followed by half-resolution raymarched volumetric or SSR pass.",
+          "Avoid feedback loops: never sample the active depth or color attachment currently bound for writing.",
+          "WebGPU readiness: 256-byte aligned dynamic UBO ring buffers and normalized [0, 1] clip-space depth helper."
+        ],
+        "postprocess": [
+          "Verify gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE on all ping-pong targets.",
+          "Gate RGBA16F behind EXT_color_buffer_float and OES_texture_float_linear; guard bright-pass against NaNs.",
+          "Drop bloom/DOF downsample pyramids to 0.5x/0.25x axis resolution before cutting primary pass fidelity."
+        ],
+        "data-vis": [
+          "Pack per-instance attributes into interleaved buffers or texelFetch lookup textures; use drawArraysInstanced.",
+          "Use flat in / flat out integer instance IDs and highp coordinates to prevent large-coordinate jitter.",
+          "Use async PIXEL_PACK_BUFFER + gl.fenceSync for GPU picking readback without stalling pan/zoom frames."
+        ],
+        "ui": [
+          "Render resolution-independent SDF glyphs/widgets with fwidth(sd) analytical edge antialiasing.",
+          "Use powerPreference: 'default' or 'low-power' and on-demand dirty-rect redraw when UI is static.",
+          "Ensure crisp contrast and zero sub-pixel blurring across DPR 1.0 to 2.5."
+        ]
+      };
+
+      function applyLocale(lang) {
+        const dict = I18N[lang] || I18N["en"];
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-i18n]").forEach(function (el) {
+          const key = el.getAttribute("data-i18n");
+          if (dict[key]) {
+            el.textContent = dict[key];
+          }
+        });
+        document.querySelectorAll(".lang-btn").forEach(function (btn) {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+        });
+      }
+
+      document.querySelectorAll(".lang-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const lang = btn.getAttribute("data-lang");
+          applyLocale(lang);
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set("lang", lang);
+            window.history.replaceState({}, "", url.toString());
+          } catch (_) {}
+        });
+      });
+
+      const initialLang = new URLSearchParams(window.location.search).get("lang");
+      if (initialLang && I18N[initialLang]) {
+        applyLocale(initialLang);
+      }
+
+      // 2. Interactive Frame-Budget & DPR Calculator
+      const elFps = document.getElementById("calc-fps");
+      const elRes = document.getElementById("calc-res");
+      const elDpr = document.getElementById("calc-dpr");
+      const elCost = document.getElementById("calc-cost");
+      const elBytes = document.getElementById("calc-bytes");
+
+      function updateCalculator() {
+        const fps = Number(elFps.value);
+        const parts = elRes.value.split("x").map(Number);
+        const cssW = parts[0];
+        const cssH = parts[1];
+        const dpr = Number(elDpr.value);
+        const msPerMpx = Number(elCost.value);
+        const bytesPerPx = Number(elBytes.value);
+
+        document.getElementById("val-fps").textContent = fps + " FPS";
+        document.getElementById("val-res").textContent = cssW + " × " + cssH;
+        document.getElementById("val-dpr").textContent = dpr.toFixed(2) + "x";
+        document.getElementById("val-cost").textContent = msPerMpx.toFixed(2) + " ms/Mpx";
+        document.getElementById("val-bytes").textContent = bytesPerPx + " B/px";
+
+        const frameBudgetMs = 1000 / fps;
+        const cpuAndCompositorReserveMs = Math.min(4.0, frameBudgetMs * 0.24);
+        const gpuBudgetMs = Math.max(1.0, frameBudgetMs - cpuAndCompositorReserveMs);
+
+        const cssMpx = (cssW * cssH) * 1e-6;
+        const activeMpx = cssMpx * dpr * dpr;
+        const estGpuMs = activeMpx * msPerMpx;
+        const rawClamp = Math.sqrt(gpuBudgetMs / (cssMpx * msPerMpx));
+        const targetDpr = Math.min(dpr, 2.0, Math.max(0.75, rawClamp));
+        const bandwidthGBps = (activeMpx * 1e6 * bytesPerPx * fps) / 1e9;
+
+        document.getElementById("out-gpu-budget").textContent = gpuBudgetMs.toFixed(2) + " ms";
+        document.getElementById("out-est-gpu").textContent = estGpuMs.toFixed(2) + " ms";
+        document.getElementById("out-target-dpr").textContent = targetDpr.toFixed(2) + "x";
+        document.getElementById("out-bandwidth").textContent = bandwidthGBps.toFixed(2) + " GB/s";
+
+        const pill = document.getElementById("budget-pill");
+        if (estGpuMs <= gpuBudgetMs) {
+          pill.textContent = "WITHIN BUDGET (" + Math.round((estGpuMs / gpuBudgetMs) * 100) + "%)";
+          pill.removeAttribute("data-state");
+        } else {
+          pill.textContent = "CLAMP DPR -> " + targetDpr.toFixed(2) + "x";
+          pill.setAttribute("data-state", "warn");
+        }
+
+        document.getElementById("calc-formula").textContent =
+          "frame=" + frameBudgetMs.toFixed(2) + "ms | gpuWindow=" + gpuBudgetMs.toFixed(2) +
+          "ms | active=" + activeMpx.toFixed(2) + "Mpx | targetDPR=min(" + dpr.toFixed(2) + ", 2.0, " + rawClamp.toFixed(2) + ")=" + targetDpr.toFixed(2) + "x";
+      }
+
+      [elFps, elRes, elDpr, elCost, elBytes].forEach(function (el) {
+        el.addEventListener("input", updateCalculator);
+        el.addEventListener("change", updateCalculator);
+      });
+      updateCalculator();
+
+      // 3. Interactive Triage Router
+      const selIntent = document.getElementById("sel-intent");
+      const selClass = document.getElementById("sel-class");
+      const pillsEl = document.getElementById("module-pills");
+      const notesEl = document.getElementById("triage-notes");
+      const countPill = document.getElementById("triage-count-pill");
+
+      function updateTriage() {
+        const intent = selIntent.value;
+        const projClass = selClass.value;
+        const mods = MODULE_MAP[intent] || MODULE_MAP.architecture;
+        countPill.textContent = mods.length + " MODULES";
+        pillsEl.innerHTML = "";
+        mods.forEach(function (m) {
+          const span = document.createElement("span");
+          span.className = "mod-pill";
+          span.textContent = m;
+          pillsEl.appendChild(span);
+        });
+        notesEl.innerHTML = "";
+        (CLASS_GUIDANCE[projClass] || []).forEach(function (line) {
+          const li = document.createElement("li");
+          li.textContent = line;
+          notesEl.appendChild(li);
+        });
+      }
+      selIntent.addEventListener("change", updateTriage);
+      selClass.addEventListener("change", updateTriage);
+      updateTriage();
+
+      // 4. Live WebGL 2.0 Shader & PBO + fenceSync Workbench
+      const canvas = document.getElementById("workbench-canvas");
+      const glStatus = document.getElementById("gl-status-pill");
+      const pboReadout = document.getElementById("pbo-readout");
+      const shaderModeEl = document.getElementById("shader-mode");
+      const stepCapEl = document.getElementById("step-cap");
+      const stepCapVal = document.getElementById("step-cap-val");
+      const modeCode = document.getElementById("mode-code");
+
+      const gl = canvas.getContext("webgl2", {
+        alpha: false,
+        depth: false,
+        stencil: false,
+        antialias: false,
+        preserveDrawingBuffer: true,
+        powerPreference: "high-performance"
+      });
+
+      if (!gl) {
+        glStatus.textContent = "WEBGL2 UNAVAILABLE";
+        glStatus.setAttribute("data-state", "err");
+        window.__workbenchSmoke = { ok: false, reason: "WebGL2 unavailable" };
+        return;
+      }
+
+      const vsSource = `#version 300 es
+precision highp float;
+out vec2 vUv;
+const float NDC_MIN = -1.0;
+const float NDC_SPAN = 4.0;
+void main() {
+  float x = (gl_VertexID == 1) ? (NDC_MIN + NDC_SPAN) : NDC_MIN;
+  float y = (gl_VertexID == 2) ? (NDC_MIN + NDC_SPAN) : NDC_MIN;
+  vUv = vec2(x, y) * 0.5 + 0.5;
+  gl_Position = vec4(x, y, 0.0, 1.0);
+}
+`;
+
+      const fsSource = `#version 300 es
+precision highp float;
+precision highp int;
+
+in vec2 vUv;
+layout(location = 0) out vec4 outColor;
+
+layout(std140) uniform WorkbenchBlock {
+  vec4 uResTimeMode;   // xy: resolution, z: wrappedTime, w: diagnosticMode (0, 1, 2)
+  vec4 uStepAndParams; // x: maxSteps, y: hitEps, z: normalEps, w: lipschitzScale
+};
+
+// Analytic SDF of a sculpted torus-capsule core in [-1, 1] space:
+float sdScene(vec3 p, float t) {
+  float c = cos(t * 0.6);
+  float s = sin(t * 0.6);
+  mat2 rot = mat2(c, -s, s, c);
+  p.xz = rot * p.xz;
+  vec2 q = vec2(length(p.xy) - 0.52, p.z);
+  float torus = length(q) - 0.22;
+  float core = length(p) - 0.36;
+  // Smooth blend k = 0.18:
+  float h = clamp(0.5 + 0.5 * (core - torus) / 0.18, 0.0, 1.0);
+  return mix(core, torus, h) - 0.18 * h * (1.0 - h);
+}
+
+// 4-tap tetrahedral normal evaluation (05-shader-rules.md):
+vec3 calcNormal(vec3 p, float t, float eps) {
+  const vec2 k = vec2(1.0, -1.0);
+  return normalize(
+    k.xyy * sdScene(p + k.xyy * eps, t) +
+    k.yyx * sdScene(p + k.yyx * eps, t) +
+    k.yxy * sdScene(p + k.yxy * eps, t) +
+    k.xxx * sdScene(p + k.xxx * eps, t)
+  );
+}
+
+void main() {
+  vec2 ndc = vUv * 2.0 - 1.0;
+  ndc.x *= uResTimeMode.x / max(uResTimeMode.y, 1.0);
+
+  vec3 ro = vec3(0.0, 0.0, 1.85);
+  vec3 rd = normalize(vec3(ndc, -1.65));
+
+  int maxSteps = int(uStepAndParams.x);
+  float hitEps = uStepAndParams.y;
+  float normEps = uStepAndParams.z;
+  float stepScale = uStepAndParams.w;
+  float timeVal = uResTimeMode.z;
+  int mode = int(uResTimeMode.w + 0.5);
+
+  float t = 0.0;
+  int stepsUsed = 0;
+  bool hit = false;
+  for (int i = 0; i < 96; ++i) {
+    if (i >= maxSteps) break;
+    stepsUsed = i + 1;
+    vec3 p = ro + rd * t;
+    float d = sdScene(p, timeVal);
+    if (abs(d) < hitEps) {
+      hit = true;
+      break;
+    }
+    t += d * stepScale;
+    if (t > 4.0) break;
+  }
+
+  if (mode == 2) {
+    float ratio = float(stepsUsed) / float(max(maxSteps, 1));
+    vec3 heat = mix(vec3(0.06, 0.35, 0.58), vec3(0.96, 0.35, 0.22), ratio);
+    outColor = vec4(heat, 1.0);
+    return;
+  }
+
+  if (!hit) {
+    vec3 bg = mix(vec3(0.04, 0.07, 0.12), vec3(0.08, 0.15, 0.26), vUv.y);
+    outColor = vec4(bg, 1.0);
+    return;
+  }
+
+  vec3 hitPos = ro + rd * t;
+  vec3 N = calcNormal(hitPos, timeVal, normEps);
+
+  if (mode == 1) {
+    outColor = vec4(N * 0.5 + 0.5, 1.0);
+    return;
+  }
+
+  vec3 L = normalize(vec3(0.65, 0.75, 0.90));
+  vec3 V = -rd;
+  vec3 H = normalize(L + V);
+  float diff = max(dot(N, L), 0.0);
+  float spec = pow(max(dot(N, H), 0.0), 32.0);
+  float rim = pow(clamp(1.0 - max(dot(N, V), 0.0), 0.0, 1.0), 3.0);
+
+  vec3 baseCol = vec3(0.16, 0.62, 0.86) * (0.22 + 0.78 * diff) + vec3(0.18, 0.83, 0.75) * (0.35 * rim) + vec3(0.95) * (0.35 * spec);
+  outColor = vec4(clamp(baseCol, 0.0, 1.0), 1.0);
+}
+`;
+
+      let gpuState = null;
+      let animRunning = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let rafId = 0;
+      let lossCount = 0;
+      const uboScratch = new Float32Array(8);
+
+      function compile(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          const log = gl.getShaderInfoLog(s);
+          gl.deleteShader(s);
+          throw new Error(log || "Shader compile error");
+        }
+        return s;
+      }
+
+      function initGpuResources() {
+        const vs = compile(gl.VERTEX_SHADER, vsSource);
+        const fs = compile(gl.FRAGMENT_SHADER, fsSource);
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        gl.detachShader(prog, vs);
+        gl.detachShader(prog, fs);
+        gl.deleteShader(vs);
+        gl.deleteShader(fs);
+
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+          throw new Error(gl.getProgramInfoLog(prog) || "Program link error");
+        }
+
+        const vao = gl.createVertexArray();
+        gl.bindVertexArray(vao);
+
+        const blockIdx = gl.getUniformBlockIndex(prog, "WorkbenchBlock");
+        gl.uniformBlockBinding(prog, blockIdx, 0);
+
+        const ubo = gl.createBuffer();
+        gl.bindBuffer(gl.UNIFORM_BUFFER, ubo);
+        gl.bufferData(gl.UNIFORM_BUFFER, uboScratch.byteLength, gl.DYNAMIC_DRAW);
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, ubo);
+
+        const pbo = gl.createBuffer();
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo);
+        gl.bufferData(gl.PIXEL_PACK_BUFFER, 4, gl.STREAM_READ);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+        gpuState = { prog: prog, vao: vao, ubo: ubo, pbo: pbo };
+
+        document.getElementById("lim-tex").textContent = String(gl.getParameter(gl.MAX_TEXTURE_SIZE));
+        document.getElementById("lim-tex3d").textContent = String(gl.getParameter(gl.MAX_3D_TEXTURE_SIZE));
+        document.getElementById("lim-mrt").textContent = String(gl.getParameter(gl.MAX_COLOR_ATTACHMENTS));
+        document.getElementById("lim-msaa").textContent = String(gl.getParameter(gl.MAX_SAMPLES));
+        document.getElementById("lim-ubo").textContent = gl.getParameter(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT) + " B";
+        document.getElementById("lim-khr").textContent = gl.getExtension("KHR_parallel_shader_compile") ? "YES" : "NO";
+      }
+
+      function renderFrame(nowMs) {
+        if (!gpuState || gl.isContextLost()) return;
+        const wrappedTime = ((nowMs || 0) * 0.001) % 628.3185;
+        const mode = Number(shaderModeEl.value);
+        const maxSteps = Number(stepCapEl.value);
+
+        uboScratch[0] = canvas.width;
+        uboScratch[1] = canvas.height;
+        uboScratch[2] = wrappedTime;
+        uboScratch[3] = mode;
+        uboScratch[4] = maxSteps;
+        uboScratch[5] = 0.0035; // hitEps
+        uboScratch[6] = 0.0070; // normalEps (2x hitEps)
+        uboScratch[7] = 0.82;   // Lipschitz step safety factor
+
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.useProgram(gpuState.prog);
+        gl.bindVertexArray(gpuState.vao);
+        gl.bindBuffer(gl.UNIFORM_BUFFER, gpuState.ubo);
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, uboScratch);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.bindVertexArray(null);
+      }
+
+      function runPboProbe() {
+        if (!gpuState || gl.isContextLost()) return;
+        renderFrame(performance.now());
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, gpuState.pbo);
+        gl.readPixels(128, 128, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, 0);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+        const fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        gl.flush();
+        const status = gl.clientWaitSync(fence, gl.SYNC_FLUSH_COMMANDS_BIT, 0);
+        gl.deleteSync(fence);
+
+        const dst = new Uint8Array(4);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, gpuState.pbo);
+        gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, dst);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+        const glErr = gl.getError();
+        const syncLabel = (status === gl.ALREADY_SIGNALED || status === gl.CONDITION_SATISFIED) ? "SIGNALED" : "COMPLETED";
+        pboReadout.textContent =
+          "PBO [128,128] RGBA=(" + dst[0] + ", " + dst[1] + ", " + dst[2] + ", " + dst[3] + ") · fenceSync=" + syncLabel + " · glErr=" + glErr;
+        window.__workbenchSmoke = {
+          ok: glErr === gl.NO_ERROR && dst[3] === 255 && (dst[0] > 20 || dst[1] > 20 || dst[2] > 20),
+          pixel: Array.from(dst),
+          fence: syncLabel,
+          glError: glErr,
+          lossCount: lossCount
+        };
+      }
+
+      function tick(now) {
+        renderFrame(now);
+        if (animRunning) {
+          rafId = requestAnimationFrame(tick);
+        }
+      }
+
+      shaderModeEl.addEventListener("change", function () {
+        modeCode.textContent = "MODE " + shaderModeEl.value;
+        runPboProbe();
+      });
+      stepCapEl.addEventListener("input", function () {
+        stepCapVal.textContent = stepCapEl.value;
+        if (!animRunning) renderFrame(performance.now());
+      });
+      document.getElementById("btn-pbo-probe").addEventListener("click", runPboProbe);
+      document.getElementById("btn-toggle-anim").addEventListener("click", function () {
+        animRunning = !animRunning;
+        if (animRunning) {
+          rafId = requestAnimationFrame(tick);
+        } else if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+      });
+      document.getElementById("btn-lose-ctx").addEventListener("click", function () {
+        const ext = gl.getExtension("WEBGL_lose_context");
+        if (!ext) return;
+        ext.loseContext();
+        setTimeout(function () {
+          ext.restoreContext();
+        }, 150);
+      });
+
+      canvas.addEventListener("webglcontextlost", function (e) {
+        e.preventDefault();
+        lossCount += 1;
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+        gpuState = null;
+        glStatus.textContent = "CONTEXT LOST (RECOVERING...)";
+        glStatus.setAttribute("data-state", "warn");
+      });
+
+      canvas.addEventListener("webglcontextrestored", function () {
+        initGpuResources();
+        runPboProbe();
+        glStatus.textContent = "RESTORED (#" + lossCount + ")";
+        glStatus.removeAttribute("data-state");
+        if (animRunning) {
+          rafId = requestAnimationFrame(tick);
+        }
+      });
+
+      initGpuResources();
+      runPboProbe();
+      if (animRunning) {
+        rafId = requestAnimationFrame(tick);
+      }
+    })();
+  </script>
 </body>
 </html>

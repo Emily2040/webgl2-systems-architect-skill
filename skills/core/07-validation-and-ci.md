@@ -1,100 +1,74 @@
-# Module 07 - Validation and CI
+# 07 - Validation, Profiling, and CI Gates
 
 ## Purpose
 
-Convert "this seems fine" into evidence. Validation is where theories either survive contact with pixels or fail in a way you can name.
+Verify that a WebGL 2.0 renderer or skill package compiles, renders non-trivial pixels, recovers from context loss, and fails loudly when an invariant breaks. Never ship on compile-only confidence.
 
-## Validation layers
+## When to load
 
-### 1. Static validation
+Load for `architecture`, `debug`, `optimize`, `review`, and `migration` tasks.
 
-Check before runtime:
+## Inputs
 
-- shader sources compile under offline or editor tooling
-- skill/repo metadata is structurally valid
-- schemas parse
-- examples parse
-- required files exist
-- root `SKILL.md` stays small and router-like
+- Candidate shaders, JS/TS runtime code, or structured architecture plan
+- Available test environment (local browser, headless Chrome/Playwright, or CI runner)
+- Target performance, visual, and portability gates
 
-### 2. Runtime correctness
+## Rules
 
-Check during execution:
+### 1. Run the five-stage WebGL 2.0 verification ladder
 
-- no missing resources
-- no incomplete framebuffers
-- no silent fallback paths
-- no unexpected context loss loops
-- no broken restore path
+Every implementation or debug patch must specify checks across these five stages:
 
-### 3. Visual validation
+1. **Shader compile & program link gate**
+   - Verify `#version 300 es` is at byte 0.
+   - Check `gl.getShaderParameter(s, gl.COMPILE_STATUS)` and `gl.getProgramParameter(p, gl.LINK_STATUS)`; surface `getShaderInfoLog` / `getProgramInfoLog` with line numbers on failure.
+2. **Framebuffer completeness & state gate**
+   - Verify every custom FBO with `const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);` and require `status === gl.FRAMEBUFFER_COMPLETE`.
+   - Explicitly guard against `gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT` (unrenderable float format without `EXT_color_buffer_float`) and `gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE` (mismatched sample counts across attachments).
+   - Poll `gl.getError()` in debug/CI builds after setup and first-frame draw calls, never inside the production hot loop.
+3. **Pixel & PBO readback smoke gate**
+   - Render a deterministic frame and verify non-clear, non-`NaN` pixel values at known coordinates (see `fixtures/webgl2-smoke/index.html`).
+   - Test both immediate smoke readback (`gl.readPixels`) and non-blocking `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` completion.
+4. **Context-loss drill**
+   - Trigger `gl.getExtension("WEBGL_lose_context")?.loseContext()` followed by `restoreContext()`, and assert that `window.__webgl2Smoke.ok` (or application render state) recovers without `INVALID_OPERATION` errors.
+5. **Differential performance & visual regression gate**
+   - Capture screenshots under a pinned OS/browser/DPR configuration and measure per-pass deltas by toggling one pass at a time.
 
-Use:
-- screenshot baselines
-- pixel or perceptual diffs
-- targeted artifact checks for banding, Z-fighting, shadow acne, aliasing, temporal instability, or missing subject features
+### 2. Design diagnostic shader modes for fast root-cause isolation
 
-### 4. Performance validation
+When debugging visual or numerical defects, recommend one-switch diagnostic outputs:
 
-Measure:
-- frame time
-- representative pass times
-- memory growth
-- startup latency
-- context-switch hotspots
-- readback stalls
-- thermal or battery regression signals when available
+- world/view normal visualization (`outColor = vec4(N * 0.5 + 0.5, 1.0)`)
+- normalized raymarch step-count or overdraw heatmap
+- UV / mip-level discontinuity check (`fwidth(uv)`)
+- `isnan(x)` / `isinf(x)` hot-pink (`vec4(1.0, 0.0, 1.0, 1.0)`) detector pass
 
-### 5. Review validation
+### 3. Enforce repository and schema self-tests in CI
 
-Require:
-- explicit assumptions
-- named bottlenecks
-- numeric derivations
-- tier-aware feature gating
-- a visible definition of done
+For changes to this skill repository:
 
-## Acceptance gates
+- Run `python scripts/validate_repo.py` on both Linux and Windows runners.
+- Validate all `examples/*.output.json` files against `schemas/authoring-base.json` or `schemas/runtime-compact.json`.
+- Parse all `.svg` assets as strict XML (`xml.etree.ElementTree.fromstring`) and verify text-fit margins.
+- Enforce `registry/forbidden-slop.json` across all four supported locales (`en`, `zh-CN`, `ja`, `ko`).
+- Run negative self-tests in `validate_repo.py` to confirm that broken XML, unmapped modules, schema violations, and banned slop phrases are actively rejected.
 
-A production-ready answer or patch should clear these gates:
+### 4. Calibrate confidence to the evidence tier
 
-- `correctness`: no known blockers or compile hazards left unexplained
-- `grounding`: all major claims tied to data, code, or stated assumptions
-- `performance`: cost centers identified and prioritized
-- `recovery`: context loss and failure handling are defined
-- `portability`: feature use is conditioned on capability detection
-- `maintainability`: modules, schemas, and repo structure stay coherent
+State the verification confidence explicitly at the end of the response:
 
-## CI for the skill repo
+- **High confidence**: verified by live WebGL 2.0 execution, pixel readback, and GPU/frame timing on target hardware.
+- **Medium confidence**: shader/code inspected and static/smoke checks passed, but target device timings are estimated.
+- **Low confidence**: prompt-only architecture plan without code or device telemetry; assumptions must be validated first.
 
-Validate the repo itself:
+## Failure modes
 
-- canonical `SKILL.md` exists
-- wrappers point to the canonical source
-- frontmatter is valid and uses standard keys
-- JSON schemas parse
-- example JSON parses and matches the expected shape
-- `forbidden-slop.json` parses
-- the validator script exits non-zero on failure
+- Declaring a multi-pass FBO pipeline ready without checking `gl.checkFramebufferStatus(gl.FRAMEBUFFER)`
+- Calling `gl.getError()` inside every production draw call (forces a CPU/GPU synchronization stall)
+- Running screenshot diffs across different GPU vendors without tolerance thresholds or software/pinned baselines
+- Writing validator checks that pass even when an SVG is malformed XML or a module path is missing
 
-## Reporting format
+## Output contribution
 
-Return:
-
-- `validation_checks`
-- `acceptance_gates`
-- `confidence_rating`
-- `remaining_unknowns`
-- `recommended_tests`
-
-Confidence labels:
-- `high` - supported by code, measurements, or direct evidence
-- `medium` - supported by strong inference
-- `low` - assumption-heavy; user should verify before shipping
-
-## Common failure modes
-
-- reporting average FPS while hiding 1% lows or pass spikes
-- validating only the "pretty" scene and not the stress scene
-- claiming portability without capability gates
-- shipping a skill repo whose wrappers or schemas quietly drifted out of sync
+Populate `deliverables` (validation matrix), `risks`, and final verification steps.

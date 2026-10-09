@@ -1,0 +1,44 @@
+{
+  "intent": "debug",
+  "project_class": "postprocess",
+  "subject": "HDR bloom postprocess chain black screen after mobile tab switch and float FBO attachment error",
+  "locale": "en",
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "assumptions": [
+    "The black screen on mobile occurs either because RGBA16F FBO attachments lack EXT_color_buffer_float or because backgrounding the tab triggers an unhandled webglcontextlost event.",
+    "Feedback loops may also occur if the bloom downsample pass samples the same texture level currently attached to COLOR_ATTACHMENT0."
+  ],
+  "derivations": [
+    "RGBA16F renderability requires gl.getExtension('EXT_color_buffer_float') !== null; linear filtering on float textures additionally requires gl.getExtension('OES_texture_float_linear') !== null",
+    "Bloom mip chain size for 1920x1080 across 5 downsample levels = sum_{i=1..5} (1920/2^i)*(1080/2^i)*8 bytes = 5.53 MB using immutable gl.texStorage2D"
+  ],
+  "key_decisions": [
+    "Gate RGBA16F FBO allocation behind gl.getExtension('EXT_color_buffer_float') and fall back to R11F_G11F_B10F or RGBA8 when the extension is absent or checkFramebufferStatus !== FRAMEBUFFER_COMPLETE.",
+    "Attach webglcontextlost (calling event.preventDefault() and cancelAnimationFrame) and webglcontextrestored handlers that recreate shaders, VAOs, UBOs, samplers, and FBOs from scratch without calling delete* on stale handles.",
+    "Guard the bright-pass extraction shader against negative or NaN radiance values using max(color.rgb, vec3(0.0)) and clamp(luminance, 0.0, MAX_BLOOM_LUMA) before downsampling."
+  ],
+  "parallel_tasks": [
+    "inspect FBO attachment formats and checkFramebufferStatus codes while auditing shader bright-pass math for NaN propagation",
+    "add WEBGL_lose_context automated drill in parallel with separating ping-pong bloom FBO attachments"
+  ],
+  "risks": [
+    "A single NaN texel in the bright-pass filter expands across the entire 5-level Gaussian downsample pyramid, turning the composite frame black.",
+    "Calling gl.drawArrays for fullscreen postprocess passes without a bound VAO fails with INVALID_OPERATION in WebGL 2.0.",
+    "Reusing pre-loss WebGLTexture or WebGLFramebuffer references after webglcontextrestored silently fails or raises INVALID_OPERATION."
+  ],
+  "next_steps": [
+    "query EXT_color_buffer_float and OES_texture_float_linear at context init and verify gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE",
+    "sanitize bright-pass shader inputs with max(rgb, vec3(0.0)) and replace any pow(x, y) calls with pow(max(x, 0.0), y)",
+    "register webglcontextlost and webglcontextrestored listeners and test recovery with gl.getExtension('WEBGL_lose_context').loseContext()",
+    "verify non-black output via PBO + gl.fenceSync pixel readback at viewport center"
+  ],
+  "validation_gates": [
+    "gl.checkFramebufferStatus(gl.FRAMEBUFFER) returns gl.FRAMEBUFFER_COMPLETE (0x8CD5) on every ping-pong bloom FBO",
+    "Simulated WEBGL_lose_context loseContext() + restoreContext() recovers rendering within 1 frame with gl.getError() === gl.NO_ERROR"
+  ]
+}

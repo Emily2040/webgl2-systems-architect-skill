@@ -1,70 +1,155 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WebGL2 Smoke Fixture</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WebGL2 Smoke Fixture — VAO, std140 UBO, PBO + FenceSync &amp; Context Recovery</title>
   <style>
-    html, body {
+    :root {
+      color-scheme: dark;
+      --bg: #090d14;
+      --panel: #0f1622;
+      --border: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #2dd4bf;
+      --err: #f43f5e;
+      --mono: "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
       margin: 0;
-      min-height: 100%;
-      background: #10151f;
-      color: #eef4ff;
-      font: 14px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 24px;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
     }
-
-    main {
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .badge {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #131c2e;
+      color: var(--accent);
+    }
+    .grid {
       display: grid;
-      gap: 12px;
-      place-items: center;
-      min-height: 100vh;
-      padding: 20px;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      align-items: start;
     }
-
     canvas {
-      width: min(80vw, 480px);
-      aspect-ratio: 4 / 3;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: #05070b;
+      width: 256px;
+      height: 256px;
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #000;
     }
-
-    output {
-      min-height: 1.5em;
-      color: #a7f3d0;
+    .controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      background: #162032;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    button:hover {
+      border-color: var(--accent);
+    }
+    pre {
+      margin: 0;
+      padding: 16px;
+      background: #090d14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+      overflow-x: auto;
+      color: #cbd5e1;
+    }
+    #status[data-smoke="pass"] { color: var(--ok); font-weight: 600; }
+    #status[data-smoke="fail"] { color: var(--err); font-weight: 600; }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <canvas id="gl" width="480" height="360" aria-label="WebGL2 smoke fixture"></canvas>
-    <output id="status">Running WebGL2 smoke fixture...</output>
-  </main>
-
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1>WebGL 2.0 Reference Smoke Fixture</h1>
+        <p id="status" data-smoke="starting" style="margin: 4px 0 0;">Initializing WebGL 2.0 pipeline...</p>
+      </div>
+      <span class="badge">#version 300 es · VAO · std140 UBO · PBO + fenceSync</span>
+    </div>
+    <div class="grid">
+      <div>
+        <canvas id="glcanvas" width="128" height="128" aria-label="WebGL 2.0 smoke test canvas"></canvas>
+        <div class="controls">
+          <button id="btn-context-loss" type="button">Simulate Context Loss</button>
+        </div>
+      </div>
+      <pre id="telemetry">Waiting for GPU telemetry...</pre>
+    </div>
+  </div>
   <script>
-    (() => {
-      const result = {
-        ok: false,
-        webgl2: false,
-        compiled: false,
-        linked: false,
-        drew: false,
-        errors: []
-      };
-      window.__webgl2Smoke = result;
-
+    (function () {
       const status = document.getElementById("status");
-      const canvas = document.getElementById("gl");
-      const gl = canvas.getContext("webgl2", { alpha: true, antialias: false });
+      const telemetryEl = document.getElementById("telemetry");
+      const canvas = document.getElementById("glcanvas");
+      const btnContextLoss = document.getElementById("btn-context-loss");
 
-      function syncStatus() {
-        status.dataset.smoke = JSON.stringify(result);
-      }
+      const gl = canvas.getContext("webgl2", {
+        alpha: false,
+        depth: false,
+        stencil: false,
+        antialias: false,
+        preserveDrawingBuffer: true,
+        powerPreference: "high-performance"
+      });
 
-      function fail(message) {
-        result.errors.push(message);
-        status.textContent = message;
-        status.style.color = "#fecaca";
-        syncStatus();
+      function fail(reason, details) {
+        status.textContent = "FAIL: " + reason;
+        status.dataset.smoke = "fail";
+        const payload = { ok: false, reason: String(reason), details: details || null };
+        window.__webgl2Smoke = payload;
+        telemetryEl.textContent = JSON.stringify(payload, null, 2);
       }
 
       if (!gl) {
@@ -72,74 +157,276 @@
         return;
       }
 
-      result.webgl2 = true;
+      // Fullscreen triangle covering [-1, 1] NDC clip space using gl_VertexID in [0, 2]:
+      // Vertex 0: (-1, -1), Vertex 1: (3, -1), Vertex 2: (-1, 3)
+      const vsSource = `#version 300 es
+precision highp float;
 
-      const vertexSource = `#version 300 es
-      precision highp float;
-      const vec2 POSITIONS[3] = vec2[3](
-        vec2(-0.75, -0.65),
-        vec2( 0.75, -0.65),
-        vec2( 0.00,  0.70)
-      );
-      out vec2 vUv;
-      void main() {
-        vec2 position = POSITIONS[gl_VertexID];
-        vUv = position * 0.5 + 0.5;
-        gl_Position = vec4(position, 0.0, 1.0);
-      }`;
+out vec2 vUv;
 
-      const fragmentSource = `#version 300 es
-      precision highp float;
-      in vec2 vUv;
-      out vec4 outColor;
-      void main() {
-        vec3 sky = mix(vec3(0.08, 0.15, 0.26), vec3(0.14, 0.42, 0.58), vUv.y);
-        vec3 ridge = vec3(0.38, 0.62, 0.42) * smoothstep(0.18, 0.8, vUv.x);
-        outColor = vec4(mix(sky, ridge, 0.55), 1.0);
-      }`;
+const float NDC_MIN = -1.0;
+const float NDC_SPAN = 4.0;
+const float UV_SCALE = 0.5;
+const float UV_BIAS = 0.5;
 
-      function compile(type, source) {
+void main() {
+  float x = (gl_VertexID == 1) ? (NDC_MIN + NDC_SPAN) : NDC_MIN;
+  float y = (gl_VertexID == 2) ? (NDC_MIN + NDC_SPAN) : NDC_MIN;
+  vUv = vec2(x, y) * UV_SCALE + UV_BIAS;
+  gl_Position = vec4(x, y, 0.0, 1.0);
+}
+`;
+
+      // Analytic SDF disc + normal lighting using a 16-byte-aligned std140 UBO:
+      const fsSource = `#version 300 es
+precision highp float;
+
+in vec2 vUv;
+layout(location = 0) out vec4 outColor;
+
+layout(std140) uniform FrameBlock {
+  vec4 uResolutionAndScale; // xy: resolution (px), z: discRadius, w: ringWidth
+  vec4 uTintAndLuma;        // xyz: base rgb weight, w: ambientFloor
+};
+
+// Center of normalized UV coordinate space:
+const vec2 UV_CENTER = vec2(0.5, 0.5);
+// Anti-aliasing smoothing half-width in normalized UV units (1.5 px / 128 px):
+const float AA_EDGE_WIDTH = 0.01171875;
+
+void main() {
+  vec2 centered = vUv - UV_CENTER;
+  float dist = length(centered);
+  float discMask = 1.0 - smoothstep(
+    uResolutionAndScale.z - AA_EDGE_WIDTH,
+    uResolutionAndScale.z + AA_EDGE_WIDTH,
+    dist
+  );
+  vec3 baseGradient = vec3(
+    vUv.x * uTintAndLuma.x,
+    vUv.y * uTintAndLuma.y,
+    uTintAndLuma.z
+  );
+  vec3 shaded = mix(baseGradient * uTintAndLuma.w, baseGradient, discMask);
+  outColor = vec4(clamp(shaded, 0.0, 1.0), 1.0);
+}
+`;
+
+      let currentHandles = null;
+      let contextLossCount = 0;
+      let contextRestoredCount = 0;
+
+      function compileShader(type, source) {
         const shader = gl.createShader(type);
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          const log = gl.getShaderInfoLog(shader) || "unknown shader compile error";
+          const info = gl.getShaderInfoLog(shader) || "shader compile error";
           gl.deleteShader(shader);
-          throw new Error(log);
+          throw new Error(info);
         }
         return shader;
       }
 
-      try {
-        const vertex = compile(gl.VERTEX_SHADER, vertexSource);
-        const fragment = compile(gl.FRAGMENT_SHADER, fragmentSource);
-        result.compiled = true;
-
-        const program = gl.createProgram();
-        gl.attachShader(program, vertex);
-        gl.attachShader(program, fragment);
-        gl.linkProgram(program);
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-          throw new Error(gl.getProgramInfoLog(program) || "unknown program link error");
+      function disposeHandles(handles) {
+        if (!handles || gl.isContextLost()) {
+          return;
         }
-        result.linked = true;
-
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clearColor(0.02, 0.03, 0.05, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.useProgram(program);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-        const pixel = new Uint8Array(4);
-        gl.readPixels(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-        result.drew = pixel[3] === 255 && (pixel[0] + pixel[1] + pixel[2]) > 0;
-        result.ok = result.webgl2 && result.compiled && result.linked && result.drew;
-        status.textContent = result.ok ? "WebGL2 smoke fixture passed" : "WebGL2 draw produced an unexpected pixel";
-        if (!result.ok) status.style.color = "#fde68a";
-        syncStatus();
-      } catch (error) {
-        fail(error instanceof Error ? error.message : String(error));
+        if (handles.pbo) gl.deleteBuffer(handles.pbo);
+        if (handles.ubo) gl.deleteBuffer(handles.ubo);
+        if (handles.vao) gl.deleteVertexArray(handles.vao);
+        if (handles.program) gl.deleteProgram(handles.program);
       }
+
+      function buildAndRender() {
+        try {
+          disposeHandles(currentHandles);
+
+          const vs = compileShader(gl.VERTEX_SHADER, vsSource);
+          const fs = compileShader(gl.FRAGMENT_SHADER, fsSource);
+          const program = gl.createProgram();
+          gl.attachShader(program, vs);
+          gl.attachShader(program, fs);
+          gl.linkProgram(program);
+
+          // Check optional KHR_parallel_shader_compile completion gate before LINK_STATUS:
+          const parallelExt = gl.getExtension("KHR_parallel_shader_compile");
+          const completionChecked = parallelExt
+            ? Boolean(gl.getProgramParameter(program, parallelExt.COMPLETION_STATUS_KHR))
+            : true;
+
+          // Detach and delete temporary shader objects immediately after link:
+          gl.detachShader(program, vs);
+          gl.detachShader(program, fs);
+          gl.deleteShader(vs);
+          gl.deleteShader(fs);
+
+          if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            const info = gl.getProgramInfoLog(program) || "program link failed";
+            gl.deleteProgram(program);
+            fail(info);
+            return;
+          }
+
+          // Bind dedicated VAO (required in WebGL 2.0 even for gl_VertexID fullscreen draws):
+          const vao = gl.createVertexArray();
+          gl.bindVertexArray(vao);
+
+          // Allocate and bind 16-byte-aligned std140 UBO at binding point 0:
+          const blockIndex = gl.getUniformBlockIndex(program, "FrameBlock");
+          const UBO_BINDING_POINT = 0;
+          gl.uniformBlockBinding(program, blockIndex, UBO_BINDING_POINT);
+
+          const uboData = new Float32Array([
+            canvas.width, canvas.height, 0.36, 0.04, // uResolutionAndScale
+            0.88, 0.72, 0.94, 0.45                   // uTintAndLuma
+          ]);
+          const ubo = gl.createBuffer();
+          gl.bindBuffer(gl.UNIFORM_BUFFER, ubo);
+          gl.bufferData(gl.UNIFORM_BUFFER, uboData, gl.STATIC_DRAW);
+          gl.bindBufferBase(gl.UNIFORM_BUFFER, UBO_BINDING_POINT, ubo);
+
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          gl.disable(gl.DEPTH_TEST);
+          gl.disable(gl.BLEND);
+          gl.clearColor(0.04, 0.06, 0.10, 1.0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+
+          gl.useProgram(program);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+          // 1. Staged PBO + fenceSync readback demonstration:
+          // WebGL 2.0 caps clientWaitSync timeout to MAX_CLIENT_WAIT_TIMEOUT_WEBGL (0 ns on browsers);
+          // passing > 0 throws GL_INVALID_OPERATION (0x0502 / 1282). Always pass timeout = 0.
+          const pbo = gl.createBuffer();
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo);
+          gl.bufferData(gl.PIXEL_PACK_BUFFER, 4, gl.STREAM_READ);
+          gl.readPixels(64, 64, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, 0);
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+          const fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+          gl.flush();
+          let waitStatus = gl.clientWaitSync(fence, gl.SYNC_FLUSH_COMMANDS_BIT, 0);
+
+          const pboPixel = new Uint8Array(4);
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo);
+          gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, pboPixel);
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+          // 2. Direct readPixels verification at center (64, 64):
+          const pixel = new Uint8Array(4);
+          gl.readPixels(64, 64, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+
+          gl.bindVertexArray(null);
+          currentHandles = { program, vao, ubo, pbo };
+
+          const glErr = gl.getError();
+          const ok =
+            glErr === gl.NO_ERROR &&
+            pixel[0] > 80 &&
+            pixel[1] > 60 &&
+            pixel[2] > 180 &&
+            pixel[3] === 255 &&
+            pboPixel[0] === pixel[0] &&
+            pboPixel[1] === pixel[1] &&
+            pboPixel[2] === pixel[2] &&
+            pboPixel[3] === pixel[3];
+
+          const limits = {
+            MAX_TEXTURE_SIZE: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+            MAX_3D_TEXTURE_SIZE: gl.getParameter(gl.MAX_3D_TEXTURE_SIZE),
+            MAX_COLOR_ATTACHMENTS: gl.getParameter(gl.MAX_COLOR_ATTACHMENTS),
+            MAX_DRAW_BUFFERS: gl.getParameter(gl.MAX_DRAW_BUFFERS),
+            MAX_SAMPLES: gl.getParameter(gl.MAX_SAMPLES),
+            MAX_UNIFORM_BUFFER_BINDINGS: gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS),
+            UNIFORM_BUFFER_OFFSET_ALIGNMENT: gl.getParameter(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT),
+            MAX_CLIENT_WAIT_TIMEOUT_WEBGL: gl.getParameter(gl.MAX_CLIENT_WAIT_TIMEOUT_WEBGL)
+          };
+
+          const extensions = {
+            KHR_parallel_shader_compile: Boolean(parallelExt),
+            EXT_color_buffer_float: Boolean(gl.getExtension("EXT_color_buffer_float")),
+            EXT_disjoint_timer_query_webgl2: Boolean(gl.getExtension("EXT_disjoint_timer_query_webgl2")),
+            OES_texture_float_linear: Boolean(gl.getExtension("OES_texture_float_linear")),
+            WEBGL_lose_context: Boolean(gl.getExtension("WEBGL_lose_context"))
+          };
+
+          const report = {
+            ok: ok,
+            pixel: Array.from(pixel),
+            pboPixel: Array.from(pboPixel),
+            pboReadbackOk: pboPixel[0] === pixel[0] && pboPixel[3] === 255,
+            fenceWaitStatus:
+              waitStatus === gl.ALREADY_SIGNALED || waitStatus === gl.CONDITION_SATISFIED
+                ? "SIGNALED"
+                : "POLLING_ASYNC",
+            vaoBound: true,
+            uboBound: true,
+            parallelCompileChecked: completionChecked,
+            contextLossHandled: true,
+            contextLossCount: contextLossCount,
+            contextRestoredCount: contextRestoredCount,
+            glError: glErr,
+            limits: limits,
+            extensions: extensions
+          };
+
+          window.__webgl2Smoke = report;
+          status.textContent = ok
+            ? "PASS: WebGL2 rendered (#version 300 es + VAO + std140 UBO + PBO/fenceSync)"
+            : "FAIL: unexpected pixel or GL error";
+          status.dataset.smoke = ok ? "pass" : "fail";
+          telemetryEl.textContent = JSON.stringify(report, null, 2);
+
+          if (waitStatus === gl.TIMEOUT_EXPIRED) {
+            let polls = 0;
+            function pollFence() {
+              if (gl.isContextLost() || !fence) return;
+              polls += 1;
+              const st = gl.clientWaitSync(fence, 0, 0);
+              if (st === gl.ALREADY_SIGNALED || st === gl.CONDITION_SATISFIED || polls > 30) {
+                gl.deleteSync(fence);
+                report.fenceWaitStatus =
+                  st === gl.ALREADY_SIGNALED || st === gl.CONDITION_SATISFIED ? "SIGNALED" : "TIMEOUT_GUARD";
+                telemetryEl.textContent = JSON.stringify(report, null, 2);
+                return;
+              }
+              requestAnimationFrame(pollFence);
+            }
+            requestAnimationFrame(pollFence);
+          } else {
+            gl.deleteSync(fence);
+          }
+        } catch (err) {
+          fail(err && err.message ? err.message : String(err));
+        }
+      }
+
+      canvas.addEventListener("webglcontextlost", function (event) {
+        event.preventDefault();
+        contextLossCount += 1;
+        currentHandles = null;
+        status.textContent = "CONTEXT LOST: awaiting webglcontextrestored...";
+        status.dataset.smoke = "starting";
+      });
+
+      canvas.addEventListener("webglcontextrestored", function () {
+        contextRestoredCount += 1;
+        buildAndRender();
+      });
+
+      btnContextLoss.addEventListener("click", function () {
+        const loseExt = gl.getExtension("WEBGL_lose_context");
+        if (!loseExt) {
+          return;
+        }
+        loseExt.loseContext();
+        setTimeout(function () {
+          loseExt.restoreContext();
+        }, 120);
+      });
+
+      buildAndRender();
     })();
   </script>
 </body>

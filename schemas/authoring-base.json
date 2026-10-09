@@ -67,6 +67,15 @@
         "subject": {
           "type": "string"
         },
+        "locale": {
+          "type": "string",
+          "enum": [
+            "en",
+            "zh-CN",
+            "ja",
+            "ko"
+          ]
+        },
         "target_platforms": {
           "type": "array",
           "items": {
@@ -334,6 +343,12 @@
             "type": "string"
           }
         }
+      }
+    },
+    "validation_gates": {
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     }
   }

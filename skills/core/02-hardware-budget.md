@@ -1,147 +1,85 @@
-# Module 02 - Hardware Budget
+# 02 - Hardware Probe and Frame Budget
 
 ## Purpose
 
-Build a performance envelope from first principles without pretending the browser magically tells you everything about the GPU's secret organs.
+Ground architecture and performance decisions in WebGL 2.0 capability limits, bandwidth math, and measured frame timings. Measure before cutting visible features.
 
-## Core rule
+## When to load
 
-Use a three-layer budget, in this order:
+Load for `architecture` and `optimize` tasks, or whenever FPS drops, DPR scaling, memory bandwidth, or thermal throttling are involved.
 
-1. **API-visible capability limits**
-2. **Measured frame-time evidence**
-3. **Theoretical throughput estimates** only when trustworthy device data exists
+## Inputs
 
-Never invert that order.
+- Target platforms, viewport dimensions, and FPS target (`30`, `60`, `90`, or `120`)
+- Runtime WebGL 2.0 context parameters and extension availability if accessible
+- Existing pass timings, frame-time logs, or differential feature toggles if available
 
-## Layer 1 - Capability profile
+## Rules
 
-Start with limits visible from WebGL:
+### 1. Query actual WebGL 2.0 capability limits first
 
-- `MAX_TEXTURE_SIZE`
-- `MAX_VARYING_VECTORS`
-- `MAX_VERTEX_UNIFORM_VECTORS`
-- `MAX_FRAGMENT_UNIFORM_VECTORS`
-- `MAX_DRAW_BUFFERS`
-- extensions such as:
-  - `EXT_color_buffer_float`
-  - `EXT_float_blend`
-  - `EXT_disjoint_timer_query_webgl2`
-  - `KHR_parallel_shader_compile`
-  - compressed texture extensions
+Query the context directly with `gl.getParameter` and `gl.getExtension` instead of guessing device tiers from user-agent strings:
 
-This defines what the renderer may attempt.
+- Texture & volume bounds: `MAX_TEXTURE_SIZE`, `MAX_CUBE_MAP_TEXTURE_SIZE`, `MAX_3D_TEXTURE_SIZE`, `MAX_ARRAY_TEXTURE_LAYERS`, `MAX_TEXTURE_IMAGE_UNITS`, `MAX_VERTEX_TEXTURE_IMAGE_UNITS`
+- MRT & MSAA bounds: `MAX_COLOR_ATTACHMENTS`, `MAX_DRAW_BUFFERS`, `MAX_SAMPLES`, `MAX_RENDERBUFFER_SIZE`
+- Uniform & UBO bounds: `MAX_VERTEX_UNIFORM_VECTORS`, `MAX_FRAGMENT_UNIFORM_VECTORS`, `MAX_UNIFORM_BUFFER_BINDINGS`, `MAX_UNIFORM_BLOCK_SIZE`, `UNIFORM_BUFFER_OFFSET_ALIGNMENT`
+- Transform feedback & vertex bounds: `MAX_VERTEX_ATTRIBS`, `MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS`, `MAX_VARYING_VECTORS`
+- Key extensions: `EXT_disjoint_timer_query_webgl2`, `KHR_parallel_shader_compile`, `EXT_color_buffer_float`, `OES_texture_float_linear`, `WEBGL_compressed_texture_astc`, `WEBGL_compressed_texture_s3tc`, `WEBGL_lose_context`
 
-## Layer 2 - Measured budget
+Treat `WEBGL_debug_renderer_info` (`UNMASKED_RENDERER_WEBGL`) as optional telemetry; browsers frequently mask or disable it for privacy.
 
-If timing data exists, prefer it over guessed FLOPS.
+### 2. Rank evidence strictly
 
-Recommended budgeting flow:
+Use this hierarchy:
 
-1. choose target frame time  
-   `frameBudgetMs = 1000 / targetFPS`
+1. **Ring-buffered GPU timer queries (`EXT_disjoint_timer_query_webgl2`)**
+   - Poll `gl.getQueryParameter(q, gl.QUERY_RESULT_AVAILABLE)` 2-3 frames later.
+   - Check `gl.getParameter(ext.GPU_DISJOINT_EXT)` before trusting `gl.getQueryParameter(q, gl.QUERY_RESULT)`.
+2. **Controlled differential measurements**
+   - Toggle one pass, halve internal resolution, or clamp DPR while holding camera and scene state fixed.
+3. **Explicit capability limits (`gl.getParameter`)**
+4. **Heuristic device-tier estimates** (lowest rank; label as `estimated` or `unknown`).
 
-2. reserve room for browser + app overhead  
-   default planning split:
-   - CPU-side app + browser: `30%`
-   - GPU rendering: `70%`
+### 3. Compute frame, fill-rate, and bandwidth budgets explicitly
 
-3. derive a planning GPU budget  
-   `gpuBudgetMs = frameBudgetMs * 0.70`
-
-4. estimate per-pixel headroom from a representative pass  
-   `msPerMegapixel = measuredPassMs / (pixelCount / 1e6)`
-
-5. use that measurement to decide:
-   - safe DPR cap
-   - pass count
-   - postprocess viability
-   - ray-march step budget
-   - shadow/AO sample budgets
-
-If timer queries are unavailable, use stable frame-time deltas across controlled toggles:
-- base scene
-- base + shadows
-- base + AO
-- base + full-res postprocess
-
-That differential measurement is more honest than invented "cycles per pixel" from missing hardware data.
-
-## Layer 3 - Theoretical estimate
-
-Use only if the device data is known from trusted hardware research or the user supplied it.
-
-Formula:
+State the budget math in every architecture or optimization plan:
 
 ```text
-peakOpsPerSecond = shaderCores * clockHz * opsPerCyclePerCore
-usableOpsPerSecond = peakOpsPerSecond * utilizationFactor
+frameBudgetMs = 1000 / targetFPS
+gpuBudgetMs   = frameBudgetMs - cpuMainThreadReserveMs - browserCompositorReserveMs
+activePixels  = (cssWidth * targetDPR) * (cssHeight * targetDPR)
+bandwidthBps  = activePixels * bytesPerPixelReadWriteAcrossPasses * targetFPS
 ```
 
-Planning defaults:
-- `opsPerCyclePerCore = 2` for FMA-style accounting
-- `utilizationFactor = 0.50` as a conservative planning number
-
-Per-frame envelope:
+At `60 FPS`, `frameBudgetMs = 16.67 ms`. Reserve `3.0-4.5 ms` for JS dispatch and browser compositing on mobile, leaving `12.0-13.5 ms` for GPU execution. If `msPerMegapixel` is measured across two DPR values, clamp DPR dynamically:
 
 ```text
-usableOpsPerFrame = usableOpsPerSecond / targetFPS
-opsPerPixel = usableOpsPerFrame / pixelCount
+targetDPR = min(devicePixelRatio, maxDPRCap, sqrt(gpuBudgetMs / (cssWidth * cssHeight * 1e-6 * msPerMegapixel)))
 ```
 
-Important: this is a planning sketch, not ground truth. Public core counts, clocks, and browser thermals often drift from reality.
+### 4. Define explicit capability tiers
 
-## DPR and fill-rate policy
+Every multi-device architecture must specify at least three tiers (`low`, `mid`, `high`) and state what changes per tier:
 
-Always derive a DPR recommendation, because pixel count is the hidden cost center that eats mobile performance.
+- internal render scale and `targetDPR` cap (for example `1.0`, `1.5`, `2.0`)
+- FBO attachment format (`RGBA8` vs `RGBA16F` gated on `EXT_color_buffer_float`)
+- MSAA sample count (`0` vs `min(4, gl.getParameter(gl.MAX_SAMPLES))`)
+- raymarch step counts, shadow/AO taps, and postprocess pass activation
 
-```text
-pixelCount = cssWidth * cssHeight * targetDPR^2
-```
+### 5. Isolate the bottleneck before cutting quality
 
-If you have a measured megapixel cost:
+- **Fill-rate / fragment bound**: frame time drops roughly linearly when DPR or viewport area is halved.
+- **Bandwidth / tile-flush bound**: frame time drops when reducing FBO switches, switching `RGBA16F` to `R11F_G11F_B10F`/`RGBA8`, or calling `gl.invalidateFramebuffer`.
+- **Vertex / geometry bound**: frame time changes with triangle count or instancing, not viewport size.
+- **CPU / driver sync bound**: frame time spikes on synchronous `gl.readPixels`, `gl.finish`, `getProgramParameter(LINK_STATUS)` stalls, or excessive `uniform*` calls.
 
-```text
-maxMegapixels = gpuBudgetMs / msPerMegapixel
-targetDPR = sqrt((maxMegapixels * 1e6) / (cssWidth * cssHeight))
-```
+## Failure modes
 
-Clamp:
-- minimum `1.0`
-- maximum `devicePixelRatio`
-- project-specific ceiling such as `2.0` when mobile fill-rate dominates
+- Presenting guessed GPU TFLOPS as measured device performance
+- Reading `EXT_disjoint_timer_query_webgl2` results in the same frame or ignoring `GPU_DISJOINT_EXT`
+- Binding `bindBufferRange` offsets that are not multiples of `UNIFORM_BUFFER_OFFSET_ALIGNMENT`
+- Cutting P0 visual cues before clamping DPR or half-res auxiliary passes
 
-## Tiering
+## Output contribution
 
-Create a capability tier only after limits and measurements are known.
-
-Suggested buckets:
-
-- `tier 1 / conservative`
-  - low varyings, no float FBO, weak draw buffer support, unstable timing
-- `tier 2 / balanced`
-  - solid baseline WebGL 2 limits, moderate resolution, selective postprocess
-- `tier 3 / aggressive`
-  - strong caps, good measured headroom, advanced passes viable
-
-Do not treat tier names as quality labels. They are routing labels for render paths.
-
-## Output fields
-
-Return these fields to the orchestrator:
-
-- `hardware_profile`
-- `capability_tier`
-- `frame_budget_ms`
-- `gpu_budget_ms`
-- `pixel_budget`
-- `recommended_dpr`
-- `measured_vs_estimated_confidence`
-- `expensive_features_to_gate`
-
-## Common failure modes
-
-- assuming vendor FLOPS are reliable enough for fine-grained decisions
-- using native DPR by default on mobile
-- applying one budget to both raymarch and mesh pipelines
-- treating extension presence as proof of speed rather than proof of possibility
+Populate `inputs.hardware_data_quality`, `derivations` (frame budget, DPR clamp, bandwidth), `decisions` (tier table), and hardware `risks`.

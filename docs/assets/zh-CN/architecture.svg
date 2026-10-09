@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 860" width="1280" height="860" role="img" aria-labelledby="zh-arch-title zh-arch-desc">
+  <title id="zh-arch-title">WebGL 2.0 系统架构师 · 双环五阶玄玉金枢架构蓝图</title>
+  <desc id="zh-arch-desc">中国工业级CAD双环五阶渐进式披露、五轨并行Worker预备与单WebGL2上下文串行GL提交架构图。</desc>
+  <defs>
+    <style>
+      .bg { fill: #050b09; }
+      .grid { stroke: #0d211b; stroke-width: 1; }
+      .panel { fill: #081511; stroke: #10b981; stroke-width: 1.6; rx: 10; }
+      .panel-gold { fill: #0b1612; stroke: #f59e0b; stroke-width: 1.8; rx: 10; }
+      .card-jade { fill: #0c1f19; stroke: #10b981; stroke-width: 1.5; rx: 8; }
+      .card-gold { fill: #171810; stroke: #f59e0b; stroke-width: 1.5; rx: 8; }
+      .card-cyan { fill: #0b1d24; stroke: #38bdf8; stroke-width: 1.5; rx: 8; }
+      .h1 { fill: #f8fafc; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-size: 22px; font-weight: 700; }
+      .sub { fill: #94b8a8; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-size: 13px; }
+      .sec { fill: #f59e0b; font-family: 'Microsoft YaHei', monospace; font-size: 13px; font-weight: 700; }
+      .t-title { fill: #f8fafc; font-family: 'Microsoft YaHei', sans-serif; font-size: 14px; font-weight: 700; }
+      .t-body { fill: #cbd5e1; font-family: 'Consolas', 'Microsoft YaHei', monospace; font-size: 12px; }
+      .t-muted { fill: #86a899; font-family: 'Consolas', 'Microsoft YaHei', monospace; font-size: 11px; }
+      .flow-jade { stroke: #10b981; stroke-width: 2; fill: none; stroke-dasharray: 5 3; }
+      .flow-gold { stroke: #f59e0b; stroke-width: 2; fill: none; }
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="860"/>
+  <g class="grid">
+    <line x1="0" y1="100" x2="1280" y2="100"/>
+    <line x1="0" y1="260" x2="1280" y2="260"/>
+    <line x1="0" y1="560" x2="1280" y2="560"/>
+    <line x1="640" y1="0" x2="640" y2="860"/>
+  </g>
+
+  <!-- Header -->
+  <rect class="panel-gold" x="28" y="20" width="1224" height="72" rx="10"/>
+  <text class="h1" x="52" y="50">WebGL 2.0 系统架构师 · 双环五阶玄玉金枢架构蓝图 (v2.0.0)</text>
+  <text class="sub" x="52" y="74">外环：6×6 意图分诊与 12.67ms 帧预算红线 · 中枢：五轨 Worker 并行预备 · 内环：单上下文串行 GL 提交与零阻塞 PBO 验证</text>
+  <rect class="card-jade" x="1010" y="34" width="220" height="44" rx="8"/>
+  <text class="t-title" x="1028" y="54">玄玉金枢 · 工业级规范</text>
+  <text class="t-muted" x="1028" y="70">GLSL ES 3.00 · std140 · PBO</text>
+
+  <!-- Stage 1 & 2: Outer Ring Triage & Frame Budget Redline -->
+  <rect class="panel" x="28" y="108" width="1224" height="140" rx="10"/>
+  <text class="sec" x="48" y="132">外环一至二阶 · 6×6 意图分诊路由与硬件帧预算红线门禁 (skills/core/01-triage.md &amp; 02-hardware-budget.md)</text>
+
+  <rect class="card-jade" x="48" y="146" width="275" height="86" rx="8"/>
+  <text class="t-title" x="64" y="168">01 · 渐进式披露入口 (SKILL.md)</text>
+  <text class="t-body" x="64" y="190">加载 locales/zh-CN/ 中文规范包</text>
+  <text class="t-muted" x="64" y="210">拒绝全量上下文噪音 · 严守不变量</text>
+
+  <rect class="card-jade" x="345" y="146" width="285" height="86" rx="8"/>
+  <text class="t-title" x="361" y="168">02 · 6×6 意图与项目类型矩阵</text>
+  <text class="t-body" x="361" y="190">architecture / debug / optimize</text>
+  <text class="t-muted" x="361" y="210">review / implement / migration</text>
+
+  <rect class="card-gold" x="652" y="146" width="285" height="86" rx="8"/>
+  <text class="t-title" x="668" y="168">03 · 帧预算与动态 DPR 钳制</text>
+  <text class="t-body" x="668" y="190">gpuBudgetMs = 12.67ms @ 60Hz</text>
+  <text class="t-muted" x="668" y="210">targetDPR &lt;= 2.0 · 显存带宽精算</text>
+
+  <rect class="card-cyan" x="959" y="146" width="273" height="86" rx="8"/>
+  <text class="t-title" x="975" y="168">04 · 异步编译与计时查询环</text>
+  <text class="t-body" x="975" y="190">KHR_parallel_shader_compile</text>
+  <text class="t-muted" x="975" y="210">GPU_DISJOINT_EXT 3-4帧环形查询</text>
+
+  <!-- Stage 3: 5-Track Parallel Worker Preparation -->
+  <rect class="panel" x="28" y="266" width="1224" height="278" rx="10"/>
+  <text class="sec" x="48" y="292">中枢三阶 · 五轨并行预备管线 (CPU / Web Worker 并行计算 vs 单上下文 GPU 串行边界)</text>
+
+  <rect class="card-jade" x="48" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="64" y="332">A轨 · 数学与SDF审计</text>
+  <text class="t-body" x="64" y="358">04-subject-audit.md</text>
+  <text class="t-muted" x="64" y="382">• 李雅普诺夫有界稳定性</text>
+  <text class="t-muted" x="64" y="404">• 4采样四面体SDF法线</text>
+  <text class="t-muted" x="64" y="426">• 消除6采样轴向梯度</text>
+  <text class="t-muted" x="64" y="448">• 声学/流体CFL步长边界</text>
+  <text class="t-body" x="64" y="496">输出：解析不变量契约</text>
+
+  <rect class="card-gold" x="288" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="304" y="332">B轨 · 着色器与UBO契约</text>
+  <text class="t-body" x="304" y="358">05-shader-rules.md</text>
+  <text class="t-muted" x="304" y="382">• #version 300 es 契约</text>
+  <text class="t-muted" x="304" y="404">• layout(std140) 16B对齐</text>
+  <text class="t-muted" x="304" y="426">• 分支前预计算 dFdx/dFdy</text>
+  <text class="t-muted" x="304" y="448">• 命名常量与推导注释</text>
+  <text class="t-body" x="304" y="496">输出：零魔法数字GLSL</text>
+
+  <rect class="card-jade" x="528" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="544" y="332">C轨 · 通道图与FBO内存</text>
+  <text class="t-body" x="544" y="358">03 &amp; 06-runtime-ops.md</text>
+  <text class="t-muted" x="544" y="382">• gl.texStorage2D 不可变</text>
+  <text class="t-muted" x="544" y="404">• checkFramebufferStatus</text>
+  <text class="t-muted" x="544" y="426">• 移动端 invalidateFBO</text>
+  <text class="t-muted" x="544" y="448">• Ping-Pong 读写解耦</text>
+  <text class="t-body" x="544" y="496">输出：6通道确定性拓扑</text>
+
+  <rect class="card-gold" x="768" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="784" y="332">D轨 · 带宽与降级策略</text>
+  <text class="t-body" x="784" y="358">02-hardware-budget.md</text>
+  <text class="t-muted" x="784" y="382">• 显存带宽 GB/s 核算</text>
+  <text class="t-muted" x="784" y="404">• KTX2 BasisU 压缩纹理</text>
+  <text class="t-muted" x="784" y="426">• 半分辨率体积光降级</text>
+  <text class="t-muted" x="784" y="448">• 销毁链 deleteTexture</text>
+  <text class="t-body" x="784" y="496">输出：帧时间安全边界</text>
+
+  <rect class="card-cyan" x="1008" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="1024" y="332">E轨 · 异步验证与CI门禁</text>
+  <text class="t-body" x="1024" y="358">07-validation-and-ci.md</text>
+  <text class="t-muted" x="1024" y="382">• PBO + fenceSync(0ns)</text>
+  <text class="t-muted" x="1024" y="404">• WEBGL_lose_context 演练</text>
+  <text class="t-muted" x="1024" y="426">• 24项 validate_repo.py</text>
+  <text class="t-muted" x="1024" y="448">• 4项逆向自测门禁</text>
+  <text class="t-body" x="1024" y="496">输出：无头Chrome实证</text>
+
+  <!-- Stage 4 & 5: Inner Ring Serial GL Submission & Verification -->
+  <rect class="panel-gold" x="28" y="562" width="1224" height="274" rx="10"/>
+  <text class="sec" x="48" y="588">内环四至五阶 · 单 WebGL 2.0 上下文串行提交总线与 WebGPU 双栈演进契约</text>
+
+  <rect class="card-jade" x="48" y="606" width="370" height="110" rx="8"/>
+  <text class="t-title" x="64" y="630">单上下文串行 GL 提交核心 (主线程/Offscreen)</text>
+  <text class="t-body" x="64" y="654">1. bindVertexArray(vao) 专属 VAO 常驻绑定</text>
+  <text class="t-body" x="64" y="676">2. bufferSubData 更新 16B 对齐 std140 UBO</text>
+  <text class="t-muted" x="64" y="698">3. 链接后立即 detachShader + deleteShader</text>
+
+  <rect class="card-gold" x="442" y="606" width="380" height="110" rx="8"/>
+  <text class="t-title" x="458" y="630">6通道固定顺序帧执行管线 (Pass 1..6)</text>
+  <text class="t-body" x="458" y="654">Shadow/SDF -&gt; G-Buffer MRT -&gt; 照明合成</text>
+  <text class="t-body" x="458" y="676">-&gt; 半透明混合 -&gt; 后处理链 -&gt; 最终上屏</text>
+  <text class="t-muted" x="458" y="698">严禁同一纹理在单通道内同时绑为采样器与附件</text>
+
+  <rect class="card-cyan" x="846" y="606" width="386" height="110" rx="8"/>
+  <text class="t-title" x="862" y="630">非阻塞 PBO 回读与 WebGPU 1:1 映射</text>
+  <text class="t-body" x="862" y="654">gl.readPixels -&gt; PIXEL_PACK_BUFFER (0偏移)</text>
+  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 零阻塞轮询</text>
+  <text class="t-muted" x="862" y="698">隔离深度 [-1,1]-&gt;[0,1] 与 UV 翻转以无缝迁往 WGSL</text>
+
+  <rect class="card-jade" x="48" y="732" width="1184" height="86" rx="8"/>
+  <text class="t-title" x="68" y="756">双模型输出契约与全仓验证闭环 (schemas/authoring-base.json &amp; runtime-compact.json)</text>
+  <text class="t-body" x="68" y="780">支持 locale="zh-CN" · 完整覆盖 4 组端到端黄金案例 (face-raymarch / terrain-midrange / postprocess-context-loss / webgpu-migration-hybrid)</text>
+  <text class="t-muted" x="68" y="802">验证命令：python scripts/validate_repo.py -&gt; 24项全绿通过 · glError == 0 · XML与文本框边界校验100%合格</text>
+</svg>

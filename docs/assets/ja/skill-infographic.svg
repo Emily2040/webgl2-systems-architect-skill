@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-labelledby="ja-info-title ja-info-desc">
+  <title id="ja-info-title">WebGL 2.0 システムアーキテクト · 日本語品質ゲート＆意図ルーティング早見表</title>
+  <desc id="ja-info-desc">6×6意図マトリクス、厳守条件と調整指針の峻別、PBOポカヨケ検証、WebGPU移行表をまとめた日本語インフォグラフィック。</desc>
+  <defs>
+    <style>
+      .bg { fill: #08090d; }
+      .panel { fill: #0d1017; stroke: #cbd5e1; stroke-width: 1.2; rx: 4; }
+      .panel-verm { fill: #120d12; stroke: #ff4d2e; stroke-width: 1.8; rx: 4; }
+      .box-verm { fill: #181014; stroke: #ff4d2e; stroke-width: 1.3; rx: 4; }
+      .box-cyan { fill: #0d1722; stroke: #38bdf8; stroke-width: 1.3; rx: 4; }
+      .h1 { fill: #f8fafc; font-family: 'Yu Gothic', 'Meiryo', sans-serif; font-size: 20px; font-weight: 700; }
+      .sub { fill: #94a3b8; font-family: 'Yu Gothic', 'Meiryo', sans-serif; font-size: 13px; }
+      .sec { fill: #ff6448; font-family: 'Yu Gothic', sans-serif; font-size: 14px; font-weight: 700; }
+      .t-b { fill: #f8fafc; font-family: 'Yu Gothic', sans-serif; font-size: 13px; font-weight: 700; }
+      .t-m { fill: #cbd5e1; font-family: 'Consolas', 'Yu Gothic', monospace; font-size: 12px; }
+      .t-s { fill: #94a3b8; font-family: 'Consolas', 'Yu Gothic', monospace; font-size: 11px; }
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="720"/>
+
+  <rect class="panel-verm" x="28" y="20" width="1224" height="68" rx="4"/>
+  <text class="h1" x="50" y="48">墨朱精密仕様書 · WebGL 2.0 意図トリアージ＆ポカヨケ品質ゲート早見表 (ja)</text>
+  <text class="sub" x="50" y="72">不変条件 [厳守] と経験則 [指針] の明確な分離 · 最小モジュール読込 · 単一コンテキスト直列提出と非同期 PBO 検証</text>
+
+  <!-- Left Column: 6 Intents -->
+  <rect class="panel" x="28" y="104" width="600" height="390" rx="4"/>
+  <text class="sec" x="48" y="130">一、6大意図 × 最小モジュール編成 (registry/module-map.json)</text>
+
+  <rect class="box-verm" x="48" y="146" width="560" height="48" rx="4"/>
+  <text class="t-b" x="64" y="166">1. architecture (基本設計)</text>
+  <text class="t-m" x="265" y="166">読込: 01, 02, 03, 04, 05, 06, 07 (全7モジュール)</text>
+  <text class="t-s" x="64" y="184">新規マルチパス設計、SDFレイマーチング、std140 UBO設計、CI検証構築</text>
+
+  <rect class="box-cyan" x="48" y="202" width="560" height="48" rx="4"/>
+  <text class="t-b" x="64" y="222">2. debug (障害解析)</text>
+  <text class="t-m" x="265" y="222">読込: 01, 03, 05, 06, 07 (5モジュール)</text>
+  <text class="t-s" x="64" y="240">FBO不完全エラー、コンテキスト喪失、dFdx/dFdy破綻、同期readPixels停止</text>
+
+  <rect class="box-verm" x="48" y="258" width="560" height="48" rx="4"/>
+  <text class="t-b" x="64" y="278">3. optimize (性能改善)</text>
+  <text class="t-m" x="265" y="278">読込: 01, 02, 03, 05, 06, 07 (6モジュール)</text>
+  <text class="t-s" x="64" y="296">高DPIモバイルフレーム落ち対策、帯域削減、UBO統合、タイルGPU最適化</text>
+
+  <rect class="box-cyan" x="48" y="314" width="560" height="48" rx="4"/>
+  <text class="t-b" x="64" y="334">4. review (設計監査)</text>
+  <text class="t-m" x="265" y="334">読込: 01, 02, 03, 04, 05, 06, 07 (全7モジュール)</text>
+  <text class="t-s" x="64" y="352">数理安定性、GLSLマジック定数、VRAMリーク、検証網羅性の総合監査</text>
+
+  <rect class="box-verm" x="48" y="370" width="560" height="48" rx="4"/>
+  <text class="t-b" x="64" y="390">5. implement (実装パッチ)</text>
+  <text class="t-m" x="265" y="390">読込: 01, 02, 03, 04, 05, 06, 07 (全7モジュール)</text>
+  <text class="t-s" x="64" y="408">専用VAO、std140 UBO、コンテキスト復旧、PBO非同期検証を備えた本番実装</text>
+
+  <rect class="box-cyan" x="48" y="426" width="560" height="52" rx="4"/>
+  <text class="t-b" x="64" y="446">6. migration (基盤移行)</text>
+  <text class="t-m" x="265" y="446">読込: 01, 02, 03, 05, 06, 07 (6モジュール)</text>
+  <text class="t-s" x="64" y="466">WebGL 1.0 -&gt; WebGL 2.0 移行、または WebGPU + WebGL 2.0 ハイブリッド設計</text>
+
+  <!-- Right Column: Jidoka Quality Rules -->
+  <rect class="panel-verm" x="652" y="104" width="600" height="390" rx="4"/>
+  <text class="sec" x="672" y="130">二、不変条件 [厳守]・経験則 [指針]・WebGPU 1:1 変換仕様</text>
+
+  <rect class="box-verm" x="672" y="146" width="560" height="104" rx="4"/>
+  <text class="t-b" x="688" y="168">[厳守] WebGL 2.0 絶対不変条件 (破ると即バグ・パイプライン停止)</text>
+  <text class="t-m" x="688" y="192">• #version 300 es 先頭宣言 ＆ 専用VAOバインド ＆ std140 16B境界整列</text>
+  <text class="t-m" x="688" y="214">• 非一様分岐前に dFdx/dFdy を事前計算し textureGrad へ渡す</text>
+  <text class="t-s" x="688" y="236">• clientWaitSync の timeout は必ず 0 (MAX_CLIENT_WAIT_TIMEOUT_WEBGL)</text>
+
+  <rect class="box-cyan" x="672" y="262" width="560" height="104" rx="4"/>
+  <text class="t-b" x="688" y="284">[指針] フレーム予算と帯域算定式 (02-hardware-budget.md)</text>
+  <text class="t-m" x="688" y="308">gpuBudgetMs = (1000 / targetFps) - cpuFrameMs - 1.5ms (60Hz時 12.67ms)</text>
+  <text class="t-m" x="688" y="330">targetDPR = min(deviceDPR, 2.0, sqrt(gpuBudgetMs / (Mpx * cost)))</text>
+  <text class="t-s" x="688" y="352">GPU_DISJOINT_EXT が 0 のフレームのみ 3〜4 フレーム遅延リングで計測採用</text>
+
+  <rect class="box-verm" x="672" y="378" width="560" height="100" rx="4"/>
+  <text class="t-b" x="688" y="400">WebGL 2.0 -&gt; WebGPU (WGSL) 1:1 移行マトリクス</text>
+  <text class="t-m" x="688" y="424">VAO -&gt; GPUVertexBufferLayout | std140 UBO -&gt; GPUBindGroupLayout</text>
+  <text class="t-m" x="688" y="446">Transform Feedback -&gt; Compute | PBO+fenceSync -&gt; mapAsync(READ)</text>
+  <text class="t-s" x="688" y="466">NDC深度 [-1, 1] から [0, 1] への変換と UV Y軸反転を単一ヘルパーに隔離</text>
+
+  <!-- Bottom Row -->
+  <rect class="panel" x="28" y="512" width="1224" height="184" rx="4"/>
+  <text class="sec" x="48" y="538">三、ポカヨケ（ミス防止）3段階自動検証ゲート (scripts/validate_repo.py)</text>
+
+  <rect class="box-verm" x="48" y="554" width="380" height="122" rx="4"/>
+  <text class="t-b" x="64" y="578">検印 1 · XML/文字溢れ＆4言語検査</text>
+  <text class="t-m" x="64" y="602">• 全SVGのXML構文とテキスト余白検査</text>
+  <text class="t-m" x="64" y="624">• 日・英・中・韓のREADMEとlocales同期</text>
+  <text class="t-s" x="64" y="648">• forbidden-slop.json 禁止表現スキャン</text>
+
+  <rect class="box-cyan" x="450" y="554" width="380" height="122" rx="4"/>
+  <text class="t-b" x="466" y="578">検印 2 · JSON契約＆4種逆テスト</text>
+  <text class="t-m" x="466" y="602">• 4例のJSON出力とmodule-map完全一致</text>
+  <text class="t-m" x="466" y="624">• 壊れたXML/文字溢れ/不正Schemaを拒絶</text>
+  <text class="t-s" x="466" y="648">• 形式だけのプロキシ検査を排除</text>
+
+  <rect class="box-verm" x="852" y="554" width="380" height="122" rx="4"/>
+  <text class="t-b" x="868" y="578">検印 3 · ヘッドレスChrome GPU実証</text>
+  <text class="t-m" x="868" y="602">• #version 300 es + VAO + std140 UBO</text>
+  <text class="t-m" x="868" y="624">• PBO + fenceSync (timeout=0) ピクセル一致</text>
+  <text class="t-s" x="868" y="648">• glError == 0 ＆ コンテキスト復旧成功</text>
+</svg>

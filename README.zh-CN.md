@@ -7,36 +7,38 @@
 [![Version](https://img.shields.io/badge/version-2.0.0-2dd4bf.svg)](./CHANGELOG.md)
 [![Locales](https://img.shields.io/badge/locales-EN%20%7C%20zh--CN%20%7C%20ja%20%7C%20ko-f59e0b.svg)](./locales)
 
-![WebGL 2.0 Systems Architect 六大工程支柱概览](./docs/assets/skill-infographic.svg)
+![WebGL 2.0 系统架构师 · 玄玉金枢工业级图形系统主视觉](./docs/assets/zh-CN/webgl2-systems-hero.png)
 
 `webgl2-systems-architect-skill` 是一个支持多智能体并行分流的 **WebGL 2.0 渲染器架构、GLSL ES 3.00 (`#version 300 es`) 着色器规范、GPU 帧预算推导、非阻塞 `PIXEL_PACK_BUFFER` (PBO) + `gl.fenceSync` 回读管线、上下文丢失恢复与 WebGL 2.0 到 WebGPU 迁移** 工程技能包。
 
-本仓库内置 **英文 (`en`)**、**简体中文 (`zh-CN`)**、**日文 (`ja`)** 与 **韩文 (`ko`)** 四语言原生文档、本地化技能模块与反套话（Anti-Slop）校验规则。
+本仓库内置 **英文 (`en`)**、**简体中文 (`zh-CN`)**、**日文 (`ja`)** 与 **韩文 (`ko`)** 四套独立的视觉设计系统、专属工作流模型、本地化技能模块与反套话（Anti-Slop）校验规则。
 
 - **GitHub 仓库**: <https://github.com/Emily2040/webgl2-systems-architect-skill>
-- **交互式 WebGL 2.0 工程工作台 (`docs/index.html`)**: [打开本地四语言工作台](./docs/index.html?lang=zh-CN)
+- **交互式 WebGL 2.0 工程工作台 (`docs/index.html?lang=zh-CN`)**: [打开玄玉金枢中文主题工作台](./docs/index.html?lang=zh-CN)
 - **实时 WebGL 2.0 冒烟测试夹具**: [`fixtures/webgl2-smoke/index.html`](./fixtures/webgl2-smoke/index.html)
 - **作者**: **Iamemily2050** (`Emily2040`) · [个人网站](https://Iamemily2050.com) · [X](https://x.com/iamemily2050) · [Instagram](https://instagram.com/iamemily2050)
 
 ---
 
-## 为什么采用路由式架构
+## 玄玉金枢 · 双环五阶中国工业级图形工程工作流 (`zh-CN` 专属工作流设计)
 
-传统的图形学提示词往往把整本教科书一次性塞进上下文窗口，不仅浪费 Token，还会把不兼容的规则混为一谈（例如在实例化光栅网格管线中强行套用 SDF 光线步进规则），导致输出充满泛泛而谈的空话。
+![玄玉金枢 · 双环五阶中国工业级 GPU 图形系统工程工作流](./docs/assets/zh-CN/webgl2-systems-infographic.png)
 
-本技能将 WebGL 2.0 图形系统工程重构为按需路由的模块化工作流：
+针对国内高分屏移动终端（高 DPR OLED 屏幕）、跨端 WebView 容器与桌面级科学可视化场景，中文版采用 **“双环五阶·玄玉金枢” (Dual-Ring 5-Stage Progressive Workflow)** 架构：
 
-1. **极简路由入口**：根目录 [`SKILL.md`](./SKILL.md) 严格控制在 800 字符以内，直接路由至总控编排器 [`references/00-orchestrator.md`](./references/00-orchestrator.md)（中文会话可直接加载 [`locales/zh-CN/references/00-orchestrator.md`](./locales/zh-CN/references/00-orchestrator.md)）。
-2. **分流优先的模块加载**：[`skills/core/01-triage.md`](./locales/zh-CN/skills/core/01-triage.md) 按 6 类任务意图（`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`）与 6 类项目类型（`raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`）对请求进行分类，仅加载 [`registry/module-map.json`](./registry/module-map.json) 中映射的模块。
-3. **严格区分不变量与启发式默认项**：不变量（无自由变量、显式假设、带推导注释的数值常量、必绑 VAO、FBO 完整性检查）在任何场景下恒成立；启发式策略（`alpha: false`、反向 Z、延迟/前向渲染取舍、DPR 钳制上限、采样步数）则取决于实测帧预算。
-4. **诚实的 WebGL 2.0 并发模型**：Web Worker 可并行处理网络拉取、glTF/Draco 解压、KTX2 转码与视锥剔除；`KHR_parallel_shader_compile` 与 `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` 可跨帧流水线化轮询状态；但单个 `WebGL2RenderingContext` 上的状态切换与绘制调用始终保持串行。
-5. **可执行的自动化门禁**：[`scripts/validate_repo.py`](./scripts/validate_repo.py) 自动校验 JSON Schema、模块集合严格相等、SVG XML 良构性与文本框边界、四语言对等性、禁用套话扫描以及负向自测用例。
+1. **左外环一阶 · 6×6 意图分诊与最小模块集 (`01-triage.md`)**：根目录 [`locales/zh-CN/SKILL.md`](./locales/zh-CN/SKILL.md) 保持在 800 字符以内，按 6 类任务意图（`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`）与 6 类项目类型精准加载 [`registry/module-map.json`](./registry/module-map.json) 中的最小模块集合。
+2. **左外环二阶 · 12.67ms 算力与高 DPR 带宽红线 (`02-hardware-budget.md`)**：在 60Hz 下锁定 `12.67 ms` GPU 帧预算窗口，针对移动端 3x DPR 屏幕强制执行 `targetDPR <= 2.0` 动态钳制与显存带宽核算，并通过 3–4 帧 `EXT_disjoint_timer_query_webgl2` (`GPU_DISJOINT_EXT == 0`) 环形缓冲区采集真实 GPU 耗时。
+3. **中枢三阶 · 九宫五轨 Worker 并行预备 (`A`..`E` 轨)**：在 CPU / Web Worker 上并行推进 **A轨（李雅普诺夫稳定与四面体 4 采样 SDF 法线）**、**B轨（`#version 300 es` 与 16 字节对齐 `std140` UBO）**、**C轨（`texStorage2D` 不可变纹理与瓦片 GPU `invalidateFramebuffer`）**、**D轨（带宽预算与分级降级）** 与 **E轨（无头验证与 CI 门禁）**。
+4. **右内环四阶 · 单上下文串行 GL 提交与零阻塞 PBO 回读 (`03/06/07`)**：所有状态切换与绘制命令在单一 `WebGL2RenderingContext` 上按固定 6 通道顺序串行提交；像素校验一律通过 `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` (`gl.clientWaitSync(fence, 0, 0)`) 非阻塞完成。
+5. **右内环五阶 · 依赖序上下文恢复与 WebGPU 1:1 双栈迁移**：支持 `webglcontextlost` / `webglcontextrestored` 按“缓冲 -> 纹理 -> 着色器 -> UBO -> VAO -> FBO”依赖序重建，并提供向 WebGPU (`WGSL`) 的 1:1 映射。
 
 ---
 
-## 架构蓝图
+## 玄玉金枢 · 矢量架构蓝图与工程决策矩阵 (`zh-CN` SVG)
 
-![WebGL 2.0 Systems Architect 多通道路由与并发执行蓝图](./docs/assets/architecture.svg)
+![WebGL 2.0 系统架构师 · 双环五阶玄玉金枢架构蓝图](./docs/assets/zh-CN/architecture.svg)
+
+![WebGL 2.0 系统架构师 · 中文工程决策矩阵与帧预算速查表](./docs/assets/zh-CN/skill-infographic.svg)
 
 ---
 

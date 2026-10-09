@@ -7,36 +7,36 @@
 [![Version](https://img.shields.io/badge/version-2.0.0-2dd4bf.svg)](./CHANGELOG.md)
 [![Locales](https://img.shields.io/badge/locales-EN%20%7C%20zh--CN%20%7C%20ja%20%7C%20ko-f59e0b.svg)](./locales)
 
-![WebGL 2.0 Systems Architect 6つのエンジニアリング柱の概要](./docs/assets/skill-infographic.svg)
+![WebGL 2.0 システムアーキテクト · 墨朱精密光学・GPUシステム仕様書メインビジュアル](./docs/assets/ja/webgl2-systems-hero.png)
 
 `webgl2-systems-architect-skill` は、**WebGL 2.0 レンダラー設計、GLSL ES 3.00 (`#version 300 es`) シェーダー規律、GPU フレームバジェット計算、非ブロッキング `PIXEL_PACK_BUFFER` (PBO) + `gl.fenceSync` パイプライン、コンテキストロスト復旧、および WebGL 2.0 から WebGPU への移行** のためのルーティング型エンジニアリングスキルです。
 
-本パッケージは **英語 (`en`)**、**簡体字中国語 (`zh-CN`)**、**日本語 (`ja`)**、**韓国語 (`ko`)** の 4 言語において、ネイティブドキュメント、ローカライズされたスキルモジュール、および反スロップ（Anti-Slop）検証ルールを備えています。
+本パッケージは **英語 (`en`)**、**簡体字中国語 (`zh-CN`)**、**日本語 (`ja`)**、**韓国語 (`ko`)** の 4 言語それぞれに独立したビジュアルデザイン体系、固有のワークフロー設計、ローカライズされたスキルモジュール、および反スロップ（Anti-Slop）検証ルールを備えています。
 
 - **リポジトリ**: <https://github.com/Emily2040/webgl2-systems-architect-skill>
-- **インタラクティブ WebGL 2.0 ワークベンチ (`docs/index.html`)**: [ローカルワークベンチを開く](./docs/index.html?lang=ja)
+- **インタラクティブ WebGL 2.0 ワークベンチ (`docs/index.html?lang=ja`)**: [墨朱精密・日本語モノグラフテーマを開く](./docs/index.html?lang=ja)
 - **ライブ WebGL 2.0 スモークテストフィクスチャ**: [`fixtures/webgl2-smoke/index.html`](./fixtures/webgl2-smoke/index.html)
 - **作成者**: **Iamemily2050** (`Emily2040`) · [Webサイト](https://Iamemily2050.com) · [X](https://x.com/iamemily2050) · [Instagram](https://instagram.com/iamemily2050)
 
 ---
 
-## このスキルが存在する理由
+## 墨朱精密 · 品質ゲート駆動（自働化）二層直列 GPU 設計ワークフロー (`ja` 固有ワークフロー設計)
 
-従来のグラフィックス系プロンプトは、巨大な教科書 1 冊分をそのままコンテキストウィンドウへ流し込むものが大半でした。それではトークンを浪費するだけでなく、インスタンシングを用いたラスターメッシュ描画に SDF レイマーチングの規則を混同させるなど、タスクにそぐわない指示を引き起こします。
+![墨朱精密 · 品質ゲート駆動（自働化）二層直列 GPU システム設計ワークフロー](./docs/assets/ja/webgl2-systems-infographic.png)
 
-本リポジトリは WebGL 2.0 システム設計をルーティング型ワークフローとして定義します：
+日本語版は、精密光学・半導体設計仕様書の設計規律に基づき、**不変条件（`[厳守]` Invariants）** と **経験則（`[指針]` Heuristics）** を明確に分離し、各工程にポカヨケ（ミス防止）検印ゲート（`[検 A]`〜`[検 E]`）を設ける **「品質ゲート駆動・二層直列モデル (Jidoka Gate Model)」** を採用しています：
 
-1. **極小ルーターエントリポイント**: ルートの [`SKILL.md`](./SKILL.md) は 800 文字未満に抑えられ、[`references/00-orchestrator.md`](./references/00-orchestrator.md)（日本語セッションでは [`locales/ja/references/00-orchestrator.md`](./locales/ja/references/00-orchestrator.md)）へ直結します。
-2. **トリアージ主導のモジュール選択**: [`skills/core/01-triage.md`](./locales/ja/skills/core/01-triage.md) が 6 つの意図（`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`）と 6 つのプロジェクト分類（`raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`）を判定し、[`registry/module-map.json`](./registry/module-map.json) に定義されたモジュールのみをロードします。
-3. **不変条件とヒューリスティクスの分離**: 不変条件（自由変数の禁止、前提条件の明示、導出コメント付き定数、VAO バインド必須、FBO 完全性検証）は常に適用されます。一方、ヒューリスティクス（`alpha: false`、Reversed-Z、Deferred/Forward 選択、DPR 上限、サンプル数）は実測フレームバジェットに応じて決定されます。
-4. **誠実な WebGL 2.0 並行処理モデル**: Web Worker はアセット取得、glTF/Draco 展開、KTX2 トランスコード、カリングを並列化し、`KHR_parallel_shader_compile` と `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` はフレームをまたいで非同期ポーリングを行いますが、単一 `WebGL2RenderingContext` 上の描画コール送出は直列として扱います。
-5. **実行可能な検証ゲート**: [`scripts/validate_repo.py`](./scripts/validate_repo.py) が JSON スキーマ、モジュール集合の完全一致、SVG の XML 整形式とテキスト収まり、4 言語パリティ、禁止表現チェック、およびネガティブセルフテストを自動実行します。
+1. **第一層 · 6×6 意図トリアージとハードウェア予算境界 (`01-triage.md` & `02-hardware-budget.md`)**: ルートの [`locales/ja/SKILL.md`](./locales/ja/SKILL.md) は 800 文字未満に保たれ、6 意図 × 6 クラスから最小モジュール集合のみを選択します。60Hz での GPU 時間窓を `12.67 ms` に設定し、高 DPI モバイル端末では `targetDPR <= 2.0` クランプと 3〜4 フレーム遅延 `EXT_disjoint_timer_query_webgl2` (`GPU_DISJOINT_EXT == 0`) リングバッファを適用します。
+2. **第二層 · 5 レーン並列準備とポカヨケ品質検印 (`[検 A]`〜`[検 E]`)**: Web Worker による並列準備を 5 つの独立検印レーンに分割します — **`[検 A]` 数理・4点四面体 SDF 法線監査**、**`[検 B]` `#version 300 es`・16B 境界整列 `std140` UBO・分岐前 `dFdx`/`dFdy` 事前計算**、**`[検 C]` `texStorage2D` 不変確保・タイル GPU `invalidateFramebuffer`**、**`[検 D]` 帯域幅試算と段階的縮退**、**`[検 E]` PBO + `fenceSync` 非同期検証と 24 項目 CI ゲート**。
+3. **第三層 · 単一 WebGL 2.0 コンテキスト直列コマンド提出と WebGPU 1:1 移行**: 単一 `WebGL2RenderingContext` 上で専用 VAO バインド、`std140` UBO 一括転送、6 パス確定順序実行を直列に行い、`MAX_CLIENT_WAIT_TIMEOUT_WEBGL == 0` を厳守した `gl.clientWaitSync(fence, 0, 0)` ポーリングでパイプラインストールを根絶します。
 
 ---
 
-## アーキテクチャブループリント
+## 墨朱精密 · ベクター設計図＆品質ゲート早見表 (`ja` SVG)
 
-![WebGL 2.0 Systems Architect ルーティングレーンと並行実行ブループリント](./docs/assets/architecture.svg)
+![WebGL 2.0 システムアーキテクト · 墨朱精密・品質ゲート駆動設計図](./docs/assets/ja/architecture.svg)
+
+![WebGL 2.0 システムアーキテクト · 日本語品質ゲート＆意図ルーティング早見表](./docs/assets/ja/skill-infographic.svg)
 
 ---
 

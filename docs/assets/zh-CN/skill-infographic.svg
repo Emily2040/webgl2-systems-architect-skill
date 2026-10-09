@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-labelledby="zh-info-title zh-info-desc">
+  <title id="zh-info-title">WebGL 2.0 系统架构师 · 中文双环五阶工程决策矩阵</title>
+  <desc id="zh-info-desc">展示6×6意图分诊、移动端高DPR带宽红线、std140内存布局与零阻塞PBO门禁的中文工程信息图。</desc>
+  <defs>
+    <style>
+      .bg { fill: #050b09; }
+      .panel { fill: #081511; stroke: #10b981; stroke-width: 1.6; rx: 10; }
+      .panel-gold { fill: #0c1612; stroke: #f59e0b; stroke-width: 1.8; rx: 10; }
+      .box-jade { fill: #0d221b; stroke: #10b981; stroke-width: 1.4; rx: 8; }
+      .box-gold { fill: #191a10; stroke: #f59e0b; stroke-width: 1.4; rx: 8; }
+      .h1 { fill: #f8fafc; font-family: 'Microsoft YaHei', sans-serif; font-size: 21px; font-weight: 700; }
+      .sub { fill: #94b8a8; font-family: 'Microsoft YaHei', sans-serif; font-size: 13px; }
+      .sec { fill: #f59e0b; font-family: 'Microsoft YaHei', sans-serif; font-size: 14px; font-weight: 700; }
+      .t-b { fill: #f8fafc; font-family: 'Microsoft YaHei', sans-serif; font-size: 13px; font-weight: 700; }
+      .t-m { fill: #cbd5e1; font-family: 'Consolas', 'Microsoft YaHei', monospace; font-size: 12px; }
+      .t-s { fill: #86a899; font-family: 'Consolas', 'Microsoft YaHei', monospace; font-size: 11px; }
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="720"/>
+
+  <rect class="panel-gold" x="28" y="20" width="1224" height="68" rx="10"/>
+  <text class="h1" x="50" y="48">玄玉金枢 · WebGL 2.0 工程决策矩阵与帧预算速查表 (zh-CN)</text>
+  <text class="sub" x="50" y="72">按需加载最小模块集合 · 严守数学与 GLSL ES 3.00 不变量 · 适配高 DPR 终端与 WebGPU 渐进迁移</text>
+
+  <!-- Left Column: 6 Intents Routing Matrix -->
+  <rect class="panel" x="28" y="104" width="600" height="390" rx="10"/>
+  <text class="sec" x="48" y="130">一、6大工程意图 × 最小核心模块集合 (registry/module-map.json)</text>
+
+  <rect class="box-jade" x="48" y="146" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="166">1. architecture (系统架构)</text>
+  <text class="t-m" x="260" y="166">加载模块：01, 02, 03, 04, 05, 06, 07 (全7模块)</text>
+  <text class="t-s" x="64" y="184">适用：从零设计多通道渲染器、SDF光线步进管线、UBO布局与无头验证体系</text>
+
+  <rect class="box-gold" x="48" y="202" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="222">2. debug (故障诊断)</text>
+  <text class="t-m" x="260" y="222">加载模块：01, 03, 05, 06, 07 (5模块)</text>
+  <text class="t-s" x="64" y="240">适用：排查FBO不完整、上下文丢失白屏、导数破面、同步readPixels卡顿</text>
+
+  <rect class="box-jade" x="48" y="258" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="278">3. optimize (性能调优)</text>
+  <text class="t-m" x="260" y="278">加载模块：01, 02, 03, 05, 06, 07 (6模块)</text>
+  <text class="t-s" x="64" y="296">适用：移动端高DPR掉帧修复、显存带宽削减、std140合并、瓦片GPU优化</text>
+
+  <rect class="box-gold" x="48" y="314" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="334">4. review (代码审计)</text>
+  <text class="t-m" x="260" y="334">加载模块：01, 02, 03, 04, 05, 06, 07 (全7模块)</text>
+  <text class="t-s" x="64" y="352">适用：全面审计数学不变量、着色器魔法数字、资源泄漏与CI测试盲区</text>
+
+  <rect class="box-jade" x="48" y="370" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="390">5. implement (功能实现)</text>
+  <text class="t-m" x="260" y="390">加载模块：01, 02, 03, 04, 05, 06, 07 (全7模块)</text>
+  <text class="t-s" x="64" y="408">适用：编写带完整VAO、std140 UBO、上下文恢复与PBO回读的生产级代码</text>
+
+  <rect class="box-gold" x="48" y="426" width="560" height="52" rx="8"/>
+  <text class="t-b" x="64" y="446">6. migration (架构迁移)</text>
+  <text class="t-m" x="260" y="446">加载模块：01, 02, 03, 05, 06, 07 (6模块)</text>
+  <text class="t-s" x="64" y="466">适用：WebGL 1.0 升级 WebGL 2.0，或构建 WebGPU + WebGL 2.0 双栈渲染层</text>
+
+  <!-- Right Column: Hardware Budget & Invariant Redlines -->
+  <rect class="panel-gold" x="652" y="104" width="600" height="390" rx="10"/>
+  <text class="sec" x="672" y="130">二、移动端/桌面端硬件红线与 WebGPU 迁移对照表</text>
+
+  <rect class="box-jade" x="672" y="146" width="560" height="104" rx="8"/>
+  <text class="t-b" x="688" y="168">帧预算与显存带宽核算公式 (02-hardware-budget.md)</text>
+  <text class="t-m" x="688" y="192">gpuBudgetMs = (1000 / targetFps) - cpuFrameMs - 1.5ms</text>
+  <text class="t-m" x="688" y="214">targetDPR = min(deviceDPR, 2.0, sqrt(gpuBudgetMs / (Mpx * cost)))</text>
+  <text class="t-s" x="688" y="236">bandwidthGBps = width * height * dpr^2 * bytesPerPx * passes * fps / 1e9</text>
+
+  <rect class="box-gold" x="672" y="262" width="560" height="104" rx="8"/>
+  <text class="t-b" x="688" y="284">四项核心 GPU 管线不变量 (Invariants)</text>
+  <text class="t-m" x="688" y="308">1. 专属 VAO 常驻绑定 + layout(std140) 16字节对齐 UBO</text>
+  <text class="t-m" x="688" y="330">2. 非均匀分支前预计算 dFdx/dFdy 并使用 textureGrad</text>
+  <text class="t-s" x="688" y="352">3. PBO + fenceSync (timeout=0) 零阻塞回读 · 4. 依赖序上下文恢复</text>
+
+  <rect class="box-jade" x="672" y="378" width="560" height="100" rx="8"/>
+  <text class="t-b" x="688" y="400">WebGL 2.0 -&gt; WebGPU (WGSL) 1:1 架构映射</text>
+  <text class="t-m" x="688" y="424">VAO + VertexAttrib -&gt; GPUVertexBufferLayout | std140 UBO -&gt; GPUBindGroup</text>
+  <text class="t-m" x="688" y="446">Transform Feedback -&gt; Compute (@compute)   | PBO+fence -&gt; mapAsync(READ)</text>
+  <text class="t-s" x="688" y="466">NDC 深度 [-1, 1] 转换至 [0, 1] 并在单一相机/后处理辅助函数中隔离 UV 翻转</text>
+
+  <!-- Bottom Bar: Verification Gate -->
+  <rect class="panel" x="28" y="512" width="1224" height="184" rx="10"/>
+  <text class="sec" x="48" y="538">三、五步闭环验证与无头 GPU 实证门禁 (scripts/validate_repo.py + fixtures/webgl2-smoke)</text>
+
+  <rect class="box-jade" x="48" y="554" width="380" height="122" rx="8"/>
+  <text class="t-b" x="64" y="578">门禁 1 · 静态结构与反套话扫描</text>
+  <text class="t-m" x="64" y="602">• 校验中英日韩 4 语种 README 与 locales/</text>
+  <text class="t-m" x="64" y="624">• 扫描 registry/forbidden-slop.json 禁用词</text>
+  <text class="t-s" x="64" y="648">• 校验所有 SVG 的 XML 合法性与文本边距</text>
+
+  <rect class="box-gold" x="450" y="554" width="380" height="122" rx="8"/>
+  <text class="t-b" x="466" y="578">门禁 2 · JSON 契约与逆向自测</text>
+  <text class="t-m" x="466" y="602">• 校验 4 组黄金案例与 module-map 完全一致</text>
+  <text class="t-m" x="466" y="624">• 执行 4 项逆向自测（拦截坏XML/越界/坏Schema）</text>
+  <text class="t-s" x="466" y="648">• 确保检查器绝不因弱代理指标而假阳性通过</text>
+
+  <rect class="box-jade" x="852" y="554" width="380" height="122" rx="8"/>
+  <text class="t-b" x="868" y="578">门禁 3 · 无头 Chrome WebGL 2.0 实证</text>
+  <text class="t-m" x="868" y="602">• 实测 #version 300 es + VAO + std140 UBO</text>
+  <text class="t-m" x="868" y="624">• PBO + fenceSync (timeout=0) 像素级比对</text>
+  <text class="t-s" x="868" y="648">• 实测 glError == 0 且上下文丢失恢复完整</text>
+</svg>

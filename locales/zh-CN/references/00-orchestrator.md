@@ -4,6 +4,16 @@
 
 将 WebGL 2.0 请求转化为严谨的架构方案、代码审查、WebGPU 迁移蓝图或实现补丁。本技能是任务路由器与执行指南，仅按当前任务意图加载所需模块。
 
+## 简体中文专属视觉与工作流设计（玄玉金枢 · 双环五阶渐进式工程流）
+
+中文版采用**玄玉金枢（Obsidian-Jade `#10B981` & Tungsten-Gold `#F59E0B`）**工业精密工程蓝图体系，配套专属图谱位于 `docs/assets/zh-CN/webgl2-systems-hero.png`、`docs/assets/zh-CN/webgl2-systems-infographic.png`、`docs/assets/zh-CN/architecture.svg` 与 `docs/assets/zh-CN/skill-infographic.svg`：
+
+1. **一阶 · 意图分诊 (`01-triage.md`)**：左外环入口锁定 `intent`、`project_class` 与 `hardware_data_quality`，按 `registry/module-map.json` 精准挂载模块。
+2. **二阶 · 算力红线 (`02-hardware-budget.md`)**：推导 `B_frame <= 16.67ms`、`effectiveDPR = min(devicePixelRatio, dprCap)` 与移动端 tile 内存带宽上限。
+3. **三阶 · 五轨并发 (`03-pipeline-and-concurrency.md`)**：中枢九宫五轨并行预备 Worker 解码、KTX2 转码与 `KHR_parallel_shader_compile` 非阻塞轮询。
+4. **四阶 · 串行提交 (`05-shader-rules.md` + `06-runtime-ops.md`)**：右内环在单一 `WebGL2RenderingContext` 上严格串行执行 VAO、`std140` UBO、`texStorage2D` 与 `invalidateFramebuffer`。
+5. **五阶 · 门禁闭环 (`07-validation-and-ci.md`)**：以 `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync(timeout=0)` 零阻塞回读、`checkFramebufferStatus` 与中文字体反套话契约完成回归门禁。
+
 ## 第一性原理准则
 
 1. 严格区分**不变量 (Invariants)** 与**启发式默认项 (Heuristics)**。

@@ -4,14 +4,14 @@
 
 Turn a WebGL 2.0 request into a disciplined plan, review, migration blueprint, or implementation patch. This skill acts as a task router and execution guide. Load only the modules required for the current task.
 
-## Language routing
+## Language routing and native workflow topologies
 
-This repository provides native support for four locales:
+This repository provides native support and a distinct visual/workflow design system for four locales:
 
-- **English (`en`)**: root `SKILL.md`, `references/00-orchestrator.md`, and `skills/core/*.md`
-- **Simplified Chinese (`zh-CN`)**: `locales/zh-CN/SKILL.md`, `locales/zh-CN/references/00-orchestrator.md`, and `locales/zh-CN/skills/core/*.md`
-- **Japanese (`ja`)**: `locales/ja/SKILL.md`, `locales/ja/references/00-orchestrator.md`, and `locales/ja/skills/core/*.md`
-- **Korean (`ko`)**: `locales/ko/SKILL.md`, `locales/ko/references/00-orchestrator.md`, and `locales/ko/skills/core/*.md`
+- **English (`en` - Swiss-Industrial Slate & Cyan Fork-Join DAG)**: root `SKILL.md`, `references/00-orchestrator.md`, `skills/core/*.md`, and visual blueprints in `docs/assets/architecture.svg`, `docs/assets/skill-infographic.svg`, `docs/assets/webgl2-systems-hero.png`, and `docs/assets/webgl2-systems-infographic.png`
+- **Simplified Chinese (`zh-CN` - 玄玉金枢 · 双环五阶渐进式工程流)**: `locales/zh-CN/SKILL.md`, `locales/zh-CN/references/00-orchestrator.md`, `locales/zh-CN/skills/core/*.md`, and localized blueprints in `docs/assets/zh-CN/architecture.svg`, `docs/assets/zh-CN/skill-infographic.svg`, `docs/assets/zh-CN/webgl2-systems-hero.png`, and `docs/assets/zh-CN/webgl2-systems-infographic.png`
+- **Japanese (`ja` - 墨朱精密 · 自働化品質ゲート駆動二層直列モデル)**: `locales/ja/SKILL.md`, `locales/ja/references/00-orchestrator.md`, `locales/ja/skills/core/*.md`, and localized blueprints in `docs/assets/ja/architecture.svg`, `docs/assets/ja/skill-infographic.svg`, `docs/assets/ja/webgl2-systems-hero.png`, and `docs/assets/ja/webgl2-systems-infographic.png`
+- **Korean (`ko` - 코발트-민트 파운드리 · 고주사율 텔레메트리 5레인 매트릭스)**: `locales/ko/SKILL.md`, `locales/ko/references/00-orchestrator.md`, `locales/ko/skills/core/*.md`, and localized blueprints in `docs/assets/ko/architecture.svg`, `docs/assets/ko/skill-infographic.svg`, `docs/assets/ko/webgl2-systems-hero.png`, and `docs/assets/ko/webgl2-systems-infographic.png`
 
 When the user writes in Simplified Chinese, Japanese, or Korean, load the matching locale tree and enforce that locale's section in `registry/forbidden-slop.json`.
 

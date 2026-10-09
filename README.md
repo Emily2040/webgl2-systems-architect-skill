@@ -7,11 +7,11 @@
 [![Version](https://img.shields.io/badge/version-2.0.0-2dd4bf.svg)](./CHANGELOG.md)
 [![Locales](https://img.shields.io/badge/locales-EN%20%7C%20zh--CN%20%7C%20ja%20%7C%20ko-f59e0b.svg)](./locales)
 
-![WebGL 2.0 Systems Architect six-pillar engineering overview](./docs/assets/skill-infographic.svg)
+![WebGL 2.0 Systems Architect Swiss-industrial GPU telemetry hero](./docs/assets/webgl2-systems-hero.png)
 
 `webgl2-systems-architect-skill` is a routed, multi-agent-ready engineering skill for **WebGL 2.0 renderer architecture, GLSL ES 3.00 (`#version 300 es`) shader discipline, GPU frame-budget derivation, non-blocking `PIXEL_PACK_BUFFER` + `gl.fenceSync` pipelines, context-loss recovery, and WebGL 2.0 to WebGPU migration**.
 
-The package ships with native documentation, localized skill modules, and anti-slop rules across four languages: **English (`en`)**, **Simplified Chinese (`zh-CN`)**, **Japanese (`ja`)**, and **Korean (`ko`)**.
+The package ships with four bespoke visual design systems, native workflow architectures, localized skill modules, and anti-slop rules across **English (`en`)**, **Simplified Chinese (`zh-CN`)**, **Japanese (`ja`)**, and **Korean (`ko`)**.
 
 - **Repository**: <https://github.com/Emily2040/webgl2-systems-architect-skill>
 - **Interactive Workbench (`docs/index.html`)**: [Open local workbench](./docs/index.html)
@@ -20,11 +20,13 @@ The package ships with native documentation, localized skill modules, and anti-s
 
 ---
 
-## Why This Skill Exists
+## Swiss-Industrial 5-Lane Fork-Join Workflow (`en` Workflow Design)
 
-Monolithic graphics prompts waste context tokens. Most graphics prompts dump an entire textbook into the context window, mixing incompatible rules (such as forcing SDF raymarching rules onto an instanced raster mesh pipeline) and encouraging vague advice.
+![WebGL 2.0 Systems Architect Swiss-industrial 5-lane hardware workflow infographic](./docs/assets/webgl2-systems-infographic.png)
 
-This repository treats WebGL 2.0 systems engineering as a routed workflow.
+Monolithic graphics prompts waste context tokens by dumping an entire textbook into the context window, mixing incompatible rules (such as forcing SDF raymarching rules onto an instanced raster mesh pipeline) and encouraging vague advice.
+
+This repository treats WebGL 2.0 systems engineering as a routed 5-stage fork-join workflow:
 
 1. **Tiny router entrypoint**: [`SKILL.md`](./SKILL.md) stays under 800 characters and routes straight to [`references/00-orchestrator.md`](./references/00-orchestrator.md).
 2. **Triage-first module selection**: [`skills/core/01-triage.md`](./skills/core/01-triage.md) classifies the task across 6 intents (`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`) and 6 project classes (`raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`), loading only the modules mapped in [`registry/module-map.json`](./registry/module-map.json).
@@ -34,22 +36,24 @@ This repository treats WebGL 2.0 systems engineering as a routed workflow.
 
 ---
 
-## Architecture Blueprint
+## Architecture Blueprint & Decision Infographic (`en` Vector Blueprints)
 
 ![WebGL 2.0 Systems Architect routed lane and concurrency blueprint](./docs/assets/architecture.svg)
 
+![WebGL 2.0 Systems Architect six-pillar engineering overview](./docs/assets/skill-infographic.svg)
+
 ---
 
-## Four-Language Support (`en`, `zh-CN`, `ja`, `ko`)
+## Four-Language Native Visual Systems & Workflow Architectures (`en`, `zh-CN`, `ja`, `ko`)
 
-Engineers and coding agents can run the skill natively in four locales:
+Each supported language ships with its own visual art direction, AI-generated hardware plates, native vector SVG blueprints, localized skill tree, and culturally tailored GPU engineering workflow:
 
-| Locale | Root README | Localized Skill Router | Localized Orchestrator | Core Modules (`01`..`07`) |
-|---|---|---|---|---|
-| **English (`en`)** | [`README.md`](./README.md) | [`SKILL.md`](./SKILL.md) | [`references/00-orchestrator.md`](./references/00-orchestrator.md) | [`skills/core/`](./skills/core) |
-| **Simplified Chinese (`zh-CN`)** | [`README.zh-CN.md`](./README.zh-CN.md) | [`locales/zh-CN/SKILL.md`](./locales/zh-CN/SKILL.md) | [`locales/zh-CN/references/00-orchestrator.md`](./locales/zh-CN/references/00-orchestrator.md) | [`locales/zh-CN/skills/core/`](./locales/zh-CN/skills/core) |
-| **Japanese (`ja`)** | [`README.ja.md`](./README.ja.md) | [`locales/ja/SKILL.md`](./locales/ja/SKILL.md) | [`locales/ja/references/00-orchestrator.md`](./locales/ja/references/00-orchestrator.md) | [`locales/ja/skills/core/`](./locales/ja/skills/core) |
-| **Korean (`ko`)** | [`README.ko.md`](./README.ko.md) | [`locales/ko/SKILL.md`](./locales/ko/SKILL.md) | [`locales/ko/references/00-orchestrator.md`](./locales/ko/references/00-orchestrator.md) | [`locales/ko/skills/core/`](./locales/ko/skills/core) |
+| Locale | Visual Design System & Palette | Native Workflow Model | Hero & Workflow Visuals | Vector Blueprints | Skill Tree |
+|---|---|---|---|---|---|
+| **English (`en`)** | **Swiss-Industrial Slate & Cyan** (`#080C14` / `#38BDF8` / `#34D399`) | **5-Lane Fork-Join DAG -> Serial GL Ring** | [`hero.png`](./docs/assets/webgl2-systems-hero.png) · [`infographic.png`](./docs/assets/webgl2-systems-infographic.png) | [`architecture.svg`](./docs/assets/architecture.svg) · [`skill-infographic.svg`](./docs/assets/skill-infographic.svg) | [`SKILL.md`](./SKILL.md) · [`skills/core/`](./skills/core) |
+| **Simplified Chinese (`zh-CN`)** | **Obsidian-Jade & Tungsten-Gold CAD (`玄玉金枢`)** (`#050B09` / `#10B981` / `#F59E0B`) | **Dual-Ring 5-Stage Progressive Workflow (`双环五阶·渐进式图形架构`)** | [`zh-CN/hero.png`](./docs/assets/zh-CN/webgl2-systems-hero.png) · [`zh-CN/infographic.png`](./docs/assets/zh-CN/webgl2-systems-infographic.png) | [`zh-CN/architecture.svg`](./docs/assets/zh-CN/architecture.svg) · [`zh-CN/skill-infographic.svg`](./docs/assets/zh-CN/skill-infographic.svg) | [`README.zh-CN.md`](./README.zh-CN.md) · [`locales/zh-CN/`](./locales/zh-CN) |
+| **Japanese (`ja`)** | **Sumi-Ink & Vermilion Monograph (`墨朱精密`)** (`#08090D` / `#FF4D2E` / `#38BDF8`) | **Jidoka Quality-Gate Two-Tier Serial Model (`品質ゲート駆動・二層直列設計`)** | [`ja/hero.png`](./docs/assets/ja/webgl2-systems-hero.png) · [`ja/infographic.png`](./docs/assets/ja/webgl2-systems-infographic.png) | [`ja/architecture.svg`](./docs/assets/ja/architecture.svg) · [`ja/skill-infographic.svg`](./docs/assets/ja/skill-infographic.svg) | [`README.ja.md`](./README.ja.md) · [`locales/ja/`](./locales/ja) |
+| **Korean (`ko`)** | **Cobalt-Carbon & Celadon-Mint Foundry (`코발트-민트`)** (`#060913` / `#2DD4BF` / `#818CF8`) | **High-Refresh Foundry Telemetry Matrix (`고주사율 텔레메트리 & 5-레인 병렬 검증`)** | [`ko/hero.png`](./docs/assets/ko/webgl2-systems-hero.png) · [`ko/infographic.png`](./docs/assets/ko/webgl2-systems-infographic.png) | [`ko/architecture.svg`](./docs/assets/ko/architecture.svg) · [`ko/skill-infographic.svg`](./docs/assets/ko/skill-infographic.svg) | [`README.ko.md`](./README.ko.md) · [`locales/ko/`](./locales/ko) |
 
 [`registry/forbidden-slop.json`](./registry/forbidden-slop.json) enforces locale-specific anti-slop rules across all four languages, replacing generic hype phrases with concrete bottleneck names, pass identifiers, and frame-time numbers.
 

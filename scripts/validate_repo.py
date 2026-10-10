@@ -74,6 +74,10 @@ REQUIRED_FILES = [
 for _loc in CJK_LOCALES:
     REQUIRED_FILES.extend(
         [
+            f"docs/assets/{_loc}/architecture.svg",
+            f"docs/assets/{_loc}/skill-infographic.svg",
+            f"docs/assets/{_loc}/webgl2-systems-hero.png",
+            f"docs/assets/{_loc}/webgl2-systems-infographic.png",
             f"locales/{_loc}/SKILL.md",
             f"locales/{_loc}/references/00-orchestrator.md",
             f"locales/{_loc}/skills/core/01-triage.md",
@@ -627,15 +631,15 @@ def validate_svg_xml_and_fit(svg_text: str, label: str) -> list[str]:
 
 
 def check_svg_assets() -> None:
-    svg_files = sorted((ROOT / "docs" / "assets").glob("*.svg"))
-    if not svg_files:
-        fail("No SVG files found in docs/assets/")
+    svg_files = sorted((ROOT / "docs" / "assets").rglob("*.svg"))
+    if len(svg_files) < 8:
+        fail(f"Expected 8 localized SVG blueprints in docs/assets/, found {len(svg_files)}")
     errors: list[str] = []
     for svg_path in svg_files:
         errors.extend(validate_svg_xml_and_fit(svg_path.read_text(encoding="utf-8"), rel_posix(svg_path)))
     if errors:
         fail("SVG validation failed: " + "; ".join(errors))
-    ok("All SVG diagrams are well-formed XML and pass container text-fit bounds")
+    ok(f"All {len(svg_files)} English and CJK SVG diagrams are well-formed XML and pass container text-fit bounds")
 
 
 def check_multilingual_parity() -> None:
@@ -645,10 +649,21 @@ def check_multilingual_parity() -> None:
         "README.ja.md": "[English](./README.md) · [简体中文](./README.zh-CN.md) · **日本語** · [한국어](./README.ko.md)",
         "README.ko.md": "[English](./README.md) · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md) · **한국어**",
     }
+    expected_readme_asset_prefixes = {
+        "README.md": "docs/assets",
+        "README.zh-CN.md": "docs/assets/zh-CN",
+        "README.ja.md": "docs/assets/ja",
+        "README.ko.md": "docs/assets/ko",
+    }
     for rel, bar in expected_readme_bars.items():
         text = read(rel)
         if bar not in text:
             fail(f"{rel} is missing the standard 4-language selector bar: {bar}")
+        prefix = expected_readme_asset_prefixes[rel]
+        for asset_name in ("webgl2-systems-hero.png", "webgl2-systems-infographic.png", "architecture.svg", "skill-infographic.svg"):
+            expected_ref = f"{prefix}/{asset_name}"
+            if expected_ref not in text:
+                fail(f"{rel} must embed localized visual asset {expected_ref}")
 
     root_version = parse_frontmatter(read("SKILL.md"))["metadata"]["version"]
     for loc in CJK_LOCALES:
@@ -672,8 +687,12 @@ def check_multilingual_parity() -> None:
     for loc in SUPPORTED_LOCALES:
         if f'data-lang="{loc}"' not in docs_html or f'"{loc}":' not in docs_html:
             fail(f"docs/index.html is missing interactive locale support for {loc}")
+        if f'html[data-locale-theme="{loc}"]' not in docs_html:
+            fail(f"docs/index.html is missing unique CSS visual theme html[data-locale-theme=\"{loc}\"]")
+    if "LOCALE_ASSETS" not in docs_html or "locale-workflow-grid" not in docs_html:
+        fail("docs/index.html must include LOCALE_ASSETS switcher and #locale-workflow-grid")
 
-    ok("4-language support (en, zh-CN, ja, ko) verified across READMEs, locales/, forbidden-slop.json, and docs/index.html")
+    ok("4-language support (en, zh-CN, ja, ko) and unique per-locale visual/workflow designs verified across READMEs, locales/, and docs/index.html")
 
 
 def check_forbidden_slop() -> None:

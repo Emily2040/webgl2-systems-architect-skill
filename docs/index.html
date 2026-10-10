@@ -6,23 +6,61 @@
   <title>WebGL 2.0 Systems Architect — Interactive GPU Engineering Workbench</title>
   <meta name="description" content="Modular WebGL 2.0 architecture, GLSL ES 3.00 shader discipline, PBO + fenceSync telemetry, frame-budget calculator, and WebGPU migration workbench (EN / 简体中文 / 日本語 / 한국어)." />
   <style>
-    :root {
+    :root,
+    html[data-locale-theme="en"] {
       color-scheme: dark;
-      --bg: #090d14;
-      --panel: #0f1622;
-      --panel-alt: #131c2e;
-      --well: #0b101b;
-      --border: #1e293b;
+      --bg: #070a10;
+      --panel: #0d131f;
+      --panel-alt: #121b2c;
+      --well: #090e18;
+      --border: #1e2d42;
       --border-strong: #334155;
       --text: #f8fafc;
       --text-secondary: #cbd5e1;
       --muted: #94a3b8;
       --cyan: #38bdf8;
-      --teal: #2dd4bf;
+      --teal: #34d399;
       --amber: #f59e0b;
       --rose: #f43f5e;
+      --radius: 12px;
       --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans", "Yu Gothic UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       --mono: "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+    }
+    html[data-locale-theme="zh-CN"] {
+      --bg: #050b09;
+      --panel: #081511;
+      --panel-alt: #0d211b;
+      --well: #06100d;
+      --border: #163e31;
+      --border-strong: #f59e0b;
+      --cyan: #10b981;
+      --teal: #f59e0b;
+      --amber: #f59e0b;
+      --radius: 10px;
+    }
+    html[data-locale-theme="ja"] {
+      --bg: #08090d;
+      --panel: #0d0f17;
+      --panel-alt: #141722;
+      --well: #0a0b10;
+      --border: #282e40;
+      --border-strong: #ff4d2e;
+      --cyan: #ff6448;
+      --teal: #38bdf8;
+      --amber: #eab308;
+      --radius: 4px;
+    }
+    html[data-locale-theme="ko"] {
+      --bg: #060913;
+      --panel: #0b1122;
+      --panel-alt: #111a33;
+      --well: #080d1a;
+      --border: #1e2d52;
+      --border-strong: #818cf8;
+      --cyan: #2dd4bf;
+      --teal: #818cf8;
+      --amber: #f59e0b;
+      --radius: 10px;
     }
 
     * { box-sizing: border-box; }
@@ -34,6 +72,56 @@
       font-family: var(--sans);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .workflow-stage-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    @media (max-width: 1060px) {
+      .workflow-stage-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .wf-card {
+      background: var(--well);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--cyan);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .wf-card:nth-child(even) {
+      border-top-color: var(--teal);
+    }
+    .wf-step {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--cyan);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .wf-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .wf-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    .visual-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 980px) {
+      .visual-grid-2 {
+        grid-template-columns: 1fr;
+      }
     }
     :lang(zh-CN), :lang(ja) {
       line-break: strict;
@@ -680,18 +768,47 @@
       </div>
     </section>
 
-    <!-- Vector Technical Blueprints -->
+    <!-- Per-Language Native Workflow & Visual Design System Showcase -->
     <div class="diagram-stack">
+      <section class="panel" id="locale-workflow-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" data-i18n="wfPanelTitle">Swiss-Industrial 5-Lane Fork-Join Workflow Architecture</h2>
+            <p class="panel-sub" data-i18n="wfPanelSub">Each native language activates its own industrial visual design system, shader lighting palette, and 5-stage GPU workflow</p>
+          </div>
+          <span class="status-pill" id="workflow-theme-pill">SWISS-INDUSTRIAL · EN</span>
+        </div>
+        <div class="workflow-stage-grid" id="locale-workflow-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" data-i18n="genVisualTitle">AI-Generated Hardware &amp; Optical Pipeline Visuals (Locale-Specific)</h2>
+            <p class="panel-sub" data-i18n="genVisualSub">Bespoke 16:9 macro optical/silicon hero plate and hardware bus workflow infographic tailored to the active language</p>
+          </div>
+          <span class="status-pill" id="pill-hero-path">docs/assets/webgl2-systems-hero.png</span>
+        </div>
+        <div class="visual-grid-2">
+          <div class="diagram-frame">
+            <img id="img-hero-visual" src="./assets/webgl2-systems-hero.png" alt="Locale-specific WebGL 2.0 hero visual" />
+          </div>
+          <div class="diagram-frame">
+            <img id="img-info-visual" src="./assets/webgl2-systems-infographic.png" alt="Locale-specific WebGL 2.0 workflow visual" />
+          </div>
+        </div>
+      </section>
+
       <section class="panel">
         <div class="panel-header">
           <div>
             <h2 class="panel-title" data-i18n="archDiagramTitle">Routed Lane &amp; Concurrency Architecture Blueprint</h2>
             <p class="panel-sub" data-i18n="archDiagramSub">Vector SVG diagram validated for strict XML well-formedness and container text-fit margins</p>
           </div>
-          <span class="status-pill">docs/assets/architecture.svg</span>
+          <span class="status-pill" id="pill-arch-svg">docs/assets/architecture.svg</span>
         </div>
         <div class="diagram-frame">
-          <img src="./assets/architecture.svg" alt="WebGL 2.0 Systems Architect routed lane and concurrency blueprint" />
+          <img id="img-arch-svg" src="./assets/architecture.svg" alt="WebGL 2.0 Systems Architect routed lane and concurrency blueprint" />
         </div>
       </section>
 
@@ -701,10 +818,10 @@
             <h2 class="panel-title" data-i18n="infoDiagramTitle">Six-Pillar Skill Engineering Overview</h2>
             <p class="panel-sub" data-i18n="infoDiagramSub">Progressive router, hardware frame budget, concurrency, GLSL ES 3.00 math, runtime lifecycle, and CI gates</p>
           </div>
-          <span class="status-pill">docs/assets/skill-infographic.svg</span>
+          <span class="status-pill" id="pill-info-svg">docs/assets/skill-infographic.svg</span>
         </div>
         <div class="diagram-frame">
-          <img src="./assets/skill-infographic.svg" alt="WebGL 2.0 Systems Architect six-pillar overview diagram" />
+          <img id="img-info-svg" src="./assets/skill-infographic.svg" alt="WebGL 2.0 Systems Architect six-pillar overview diagram" />
         </div>
       </section>
     </div>
@@ -724,11 +841,85 @@
 
   <script>
     (function () {
+      let activeLocaleIdx = 0; // 0: en, 1: zh-CN, 2: ja, 3: ko
+      const LOCALE_INDEX_MAP = { "en": 0, "zh-CN": 1, "ja": 2, "ko": 3 };
+
+      const LOCALE_ASSETS = {
+        "en": {
+          badge: "SWISS-INDUSTRIAL · EN",
+          heroPng: "./assets/webgl2-systems-hero.png",
+          infoPng: "./assets/webgl2-systems-infographic.png",
+          archSvg: "./assets/architecture.svg",
+          infoSvg: "./assets/skill-infographic.svg",
+          heroLabel: "docs/assets/webgl2-systems-hero.png + infographic.png",
+          archLabel: "docs/assets/architecture.svg",
+          infoLabel: "docs/assets/skill-infographic.svg",
+          stages: [
+            { step: "STAGE 01 · ROUTER", title: "6×6 Intent Triage", desc: "Classify across 6 intents × 6 project classes and load only mapped modules from registry/module-map.json." },
+            { step: "STAGE 02 · BUDGET", title: "12.67 ms GPU Gate", desc: "Lock 60Hz GPU window (12.67 ms), clamp targetDPR <= 2.0, and poll 3-4 frame GPU_DISJOINT_EXT timer rings." },
+            { step: "STAGE 03 · FORK A..E", title: "5-Lane Worker Prep", desc: "Run Math/SDF (A), GLSL/std140 (B), FBO Graph (C), Bandwidth (D), and CI Gates (E) in parallel lanes." },
+            { step: "STAGE 04 · JOIN GL", title: "Serial GL Submission", desc: "Bind dedicated VAO, upload 16B-aligned std140 UBO, allocate immutable texStorage2D, and submit 6 ordered passes." },
+            { step: "STAGE 05 · PROBE & CI", title: "Zero-Stall PBO & CI", desc: "Stage gl.PIXEL_PACK_BUFFER + gl.fenceSync (timeout=0) readback and run 24 repo validation suites." }
+          ]
+        },
+        "zh-CN": {
+          badge: "玄玉金枢 · 双环五阶 (ZH-CN)",
+          heroPng: "./assets/zh-CN/webgl2-systems-hero.png",
+          infoPng: "./assets/zh-CN/webgl2-systems-infographic.png",
+          archSvg: "./assets/zh-CN/architecture.svg",
+          infoSvg: "./assets/zh-CN/skill-infographic.svg",
+          heroLabel: "docs/assets/zh-CN/webgl2-systems-hero.png + infographic.png",
+          archLabel: "docs/assets/zh-CN/architecture.svg",
+          infoLabel: "docs/assets/zh-CN/skill-infographic.svg",
+          stages: [
+            { step: "左外环一阶 · 分诊", title: "6×6 意图精准定界", desc: "按需加载 locales/zh-CN/ 最小核心模块集，严格分离数学不变量与工程启发式默认项。" },
+            { step: "左外环二阶 · 红线", title: "12.67ms 与高 DPR 钳制", desc: "针对国内 3x DPR 移动 OLED 屏强制 targetDPR <= 2.0 动态钳制，并通过 3-4 帧计时环采集真实耗时。" },
+            { step: "中枢三阶 · 九宫五轨", title: "A-E 五轨并行预备", desc: "并行执行李雅普诺夫/四面体SDF法线(A)、std140着色器(B)、texStorage2D/瓦片FBO(C)、带宽(D)与CI(E)。" },
+            { step: "右内环四阶 · 金枢", title: "单上下文串行 GL 提交", desc: "常驻绑定专属 VAO，整块上传 16B 对齐 std140 UBO，链接后立即 detach/deleteShader 并按6通道顺序执行。" },
+            { step: "右内环五阶 · 门禁", title: "零阻塞 PBO 与 WebGPU", desc: "使用 PIXEL_PACK_BUFFER + fenceSync(timeout=0) 消除管线停顿，提供上下文恢复与 1:1 WGSL 映射。" }
+          ]
+        },
+        "ja": {
+          badge: "墨朱精密 · 品質ゲート自働化 (JA)",
+          heroPng: "./assets/ja/webgl2-systems-hero.png",
+          infoPng: "./assets/ja/webgl2-systems-infographic.png",
+          archSvg: "./assets/ja/architecture.svg",
+          infoSvg: "./assets/ja/skill-infographic.svg",
+          heroLabel: "docs/assets/ja/webgl2-systems-hero.png + infographic.png",
+          archLabel: "docs/assets/ja/architecture.svg",
+          infoLabel: "docs/assets/ja/skill-infographic.svg",
+          stages: [
+            { step: "第一層 01 · [厳守]", title: "6×6 意図トリアージ", desc: "locales/ja/ から最小モジュール集合のみを読込み、不変条件 [厳守] と経験則 [指針] を峻別。" },
+            { step: "第一層 02 · [指針]", title: "12.67ms 予算＆DPR制限", desc: "60Hz GPU窓 (12.67ms) と targetDPR <= 2.0 動的減衰を算出し、GPU_DISJOINT_EXT 3〜4F環で計測。" },
+            { step: "第二層 03 · [検 A-E]", title: "5レーン並列ポカヨケ検印", desc: "4点四面体SDF法線(A)、#version 300 es/std140(B)、不変テクスチャ(C)、帯域(D)、CI検証(E)を並列準備。" },
+            { step: "第三層 04 · [直列]", title: "単一コンテキスト直列提出", desc: "専用VAOバインド、16B整列UBO転送、分岐前 dFdx/dFdy 計算を単一WebGL2コンテキストへ直列送出。" },
+            { step: "第三層 05 · [実証]", title: "非同期PBO(0ns)＆WebGPU", desc: "MAX_CLIENT_WAIT_TIMEOUT_WEBGL == 0 を厳守した PBO 回読、24項目CI検証、1:1 WGSL 移行表。" }
+          ]
+        },
+        "ko": {
+          badge: "코발트-민트 파운드리 · KO",
+          heroPng: "./assets/ko/webgl2-systems-hero.png",
+          infoPng: "./assets/ko/webgl2-systems-infographic.png",
+          archSvg: "./assets/ko/architecture.svg",
+          infoSvg: "./assets/ko/skill-infographic.svg",
+          heroLabel: "docs/assets/ko/webgl2-systems-hero.png + infographic.png",
+          archLabel: "docs/assets/ko/architecture.svg",
+          infoLabel: "docs/assets/ko/skill-infographic.svg",
+          stages: [
+            { step: "STAGE 01 · 트리아지", title: "6×6 의도 × 클래스 분류", desc: "locales/ko/ 최소 모듈 세트를 라우팅하고 수학적 불변량과 경험적 휴리스틱을 엄격히 분리합니다." },
+            { step: "STAGE 02 · 텔레메트리", title: "60Hz/120Hz 예산 & DPR", desc: "60Hz(12.67ms) / 120Hz(5.33ms) GPU 예산 창과 targetDPR <= 2.0 동적 클램프 및 GB/s 대역폭을 산출합니다." },
+            { step: "STAGE 03 · 5-레인 병렬", title: "워커 5-레인 병렬 준비", desc: "사면체 SDF 법선(A), std140 UBO(B), texStorage2D/타일 FBO(C), 타이머 링(D), CI 게이트(E)를 병렬 수행합니다." },
+            { step: "STAGE 04 · 직렬 코어", title: "단일 컨텍스트 직렬 제출", desc: "전용 VAO 상시 바인딩, 16B 정렬 std140 UBO 서브데이터 갱신, 6-패스 고정 순서 실행을 보장합니다." },
+            { step: "STAGE 05 · 무헤드 검증", title: "비차단 PBO(0ns) & WebGPU", desc: "PIXEL_PACK_BUFFER + fenceSync(timeout=0) 판독, 컨텍스트 복구 훈련 및 1:1 WebGPU 매핑을 검증합니다." }
+          ]
+        }
+      };
+
       // 1. Native 4-Language Dictionary (en, zh-CN, ja, ko)
       const I18N = {
         "en": {
           brandTitle: "WebGL 2.0 Systems Architect",
-          heroEyebrow: "Modular GPU Engineering Skill · 4 Locales · Live Telemetry",
+          heroEyebrow: "Swiss-Industrial GPU Telemetry · 4 Bespoke Locale Design Systems",
           heroTitle: "WebGL 2.0 Systems Architect Workbench",
           heroLead: "A routed engineering skill for WebGL 2.0 renderer architecture, GLSL ES 3.00 shader review, hardware frame-budget math, non-blocking PBO + fenceSync pipelines, context-loss recovery, and WebGPU migration.",
           ctaRepo: "GitHub Repository",
@@ -765,36 +956,40 @@
           lblIntent: "1. Task Intent (intent)",
           lblClass: "2. Project Class (project_class)",
           lblLoadedModules: "CANONICAL MODULES LOADED (registry/module-map.json):",
-          archDiagramTitle: "Routed Lane & Concurrency Architecture Blueprint",
+          wfPanelTitle: "Swiss-Industrial 5-Lane Fork-Join Workflow Architecture (EN)",
+          wfPanelSub: "Each native language activates its own industrial visual design system, shader lighting palette, and 5-stage GPU workflow",
+          genVisualTitle: "AI-Generated Hardware & Optical Pipeline Visuals (Swiss-Industrial EN)",
+          genVisualSub: "Bespoke 16:9 macro optical/silicon hero plate and 5-lane fiber-optic hardware workflow infographic",
+          archDiagramTitle: "Routed Lane & Concurrency Architecture Blueprint (EN)",
           archDiagramSub: "Vector SVG diagram validated for strict XML well-formedness and container text-fit margins",
-          infoDiagramTitle: "Six-Pillar Skill Engineering Overview",
+          infoDiagramTitle: "Six-Pillar Skill Engineering Overview (EN)",
           infoDiagramSub: "Progressive router, hardware frame budget, concurrency, GLSL ES 3.00 math, runtime lifecycle, and CI gates"
         },
         "zh-CN": {
-          brandTitle: "WebGL 2.0 系统架构师",
-          heroEyebrow: "模块化 GPU 工程技能包 · 原生四语言支持 · 实时遥测",
-          heroTitle: "WebGL 2.0 系统架构师工程工作台",
-          heroLead: "面向 WebGL 2.0 渲染器架构设计、GLSL ES 3.00 着色器审查、硬件帧预算推导、PBO + fenceSync 非阻塞管线、上下文丢失恢复与 WebGPU 迁移的路由式技能包。",
+          brandTitle: "WebGL 2.0 系统架构师 · 玄玉金枢",
+          heroEyebrow: "玄玉金枢工业级 CAD 美学 · 双环五阶渐进式工作流 · 实时 GPU 遥测",
+          heroTitle: "WebGL 2.0 系统架构师 · 玄玉金枢工程工作台",
+          heroLead: "面向 WebGL 2.0 渲染器架构设计、GLSL ES 3.00 着色器审查、12.67ms 帧预算红线推导、PBO + fenceSync 零阻塞回读、上下文丢失恢复与 WebGPU 迁移的双环五阶工程技能包。",
           ctaRepo: "GitHub 仓库",
-          ctaSkill: "SKILL.md 路由入口",
-          ctaOrch: "00-总控编排器",
+          ctaSkill: "中文 SKILL 路由入口",
+          ctaOrch: "中文 00-总控编排器",
           ctaSmoke: "WebGL2 冒烟测试夹具",
-          stat1: "6 类意图 × 6 类项目精准分流",
-          stat2: "硬件 · 主体 · 管线 · 着色 · CI",
-          stat3: "EN · 简体中文 · 日本語 · 한국어",
-          stat4: "60 FPS 帧预算与动态 DPR 钳制",
-          glPanelTitle: "实时 WebGL 2.0 渲染验证与 GPU 遥测",
-          glPanelSub: "#version 300 es · 独立 VAO · std140 UBO · PBO + fenceSync · 上下文恢复",
+          stat1: "6 类意图 × 6 类项目精准分诊",
+          stat2: "双环五阶 · 九宫五轨并行预备",
+          stat3: "玄玉青瓷 (#10B981) · 钨金 (#F59E0B)",
+          stat4: "12.67ms 预算红线与高 DPR 钳制",
+          glPanelTitle: "实时 WebGL 2.0 渲染验证与玄玉金枢光学遥测",
+          glPanelSub: "#version 300 es · 专属 VAO · std140 UBO · PBO + fenceSync · 上下文恢复",
           lblShaderMode: "诊断着色器模式",
-          optMode0: "0: 解析式 SDF 着色（四面体差分法线）",
+          optMode0: "0: 解析式 SDF 着色（玄玉金枢光学材质 + 四面体法线）",
           optMode1: "1: 世界空间法线诊断视图 (N * 0.5 + 0.5)",
           optMode2: "2: 光线步进次数热力图（P0/P1 成本审计）",
           lblStepCap: "最大光线步进次数（循环上界）",
-          btnPboProbe: "PBO + fenceSync 异步回读",
+          btnPboProbe: "PBO + fenceSync 零阻塞回读",
           btnLoseCtx: "模拟上下文丢失恢复",
           btnPause: "暂停 / 继续",
-          calcPanelTitle: "帧预算、显存带宽与动态 DPR 钳制计算器",
-          calcPanelSub: "在裁剪 P0/P1 特征前，先推导 gpuBudgetMs、像素带宽与 targetDPR（02-hardware-budget.md）",
+          calcPanelTitle: "帧预算红线、显存带宽与动态 DPR 钳制计算器",
+          calcPanelSub: "在裁剪 P0/P1 特征前，先推导 gpuBudgetMs、像素带宽与移动端 targetDPR（02-hardware-budget.md）",
           lblTargetFps: "目标帧率 (FPS)",
           lblCssViewport: "CSS 视口分辨率",
           lblNativeDpr: "设备像素比 (devicePixelRatio)",
@@ -804,86 +999,94 @@
           resEstGpuTime: "当前 DPR 预估 GPU 耗时",
           resTargetDpr: "建议 targetDPR 钳制上限",
           resBandwidth: "原生 DPR 显存带宽消耗",
-          triagePanelTitle: "交互式任务分流路由器与模块矩阵检查器",
-          triagePanelSub: "选择任务意图与项目类别，查看 registry/module-map.json 中的精确加载模块与并行通道",
+          triagePanelTitle: "交互式任务分诊路由器与模块矩阵检查器",
+          triagePanelSub: "选择任务意图与项目类别，查看 registry/module-map.json 中的精确加载模块与九宫五轨并行策略",
           lblIntent: "1. 任务意图 (intent)",
           lblClass: "2. 项目类别 (project_class)",
           lblLoadedModules: "按意图加载的标准模块集合 (registry/module-map.json)：",
-          archDiagramTitle: "多通道路由与并发执行架构蓝图",
-          archDiagramSub: "通过严格 XML 良构性与文本框边界校验的矢量架构图",
-          infoDiagramTitle: "六大工程支柱概览",
-          infoDiagramSub: "渐进式路由、硬件帧预算、并发模型、GLSL ES 3.00 数学规范、运行时生命周期与 CI 门禁"
+          wfPanelTitle: "玄玉金枢 · 双环五阶中国工业级图形工程工作流 (zh-CN 专属设计)",
+          wfPanelSub: "左外环分诊与算力红线 -> 中枢九宫 A-E 五轨并行预备 -> 右内环单上下文串行提交与零阻塞 PBO 门禁",
+          genVisualTitle: "AI 生成工业级光学与算力主视觉（玄玉金枢 zh-CN 专属版）",
+          genVisualSub: "八角黑曜石-青玉光学晶格主视觉与双环九宫五轨硬件工作流信息图",
+          archDiagramTitle: "双环五阶 · 多通道路由与并发执行架构蓝图 (zh-CN SVG)",
+          archDiagramSub: "通过严格 XML 良构性与文本框边界校验的中文矢量架构图",
+          infoDiagramTitle: "玄玉金枢 · 中文工程决策矩阵与帧预算速查表 (zh-CN SVG)",
+          infoDiagramSub: "6×6 意图分诊、高 DPR 终端带宽红线、四大 GPU 不变量与 WebGPU 1:1 映射"
         },
         "ja": {
-          brandTitle: "WebGL 2.0 システムアーキテクト",
-          heroEyebrow: "モジュラー型 GPU エンジニアリングスキル · 4 言語ネイティブ対応 · ライブテレメトリ",
-          heroTitle: "WebGL 2.0 システムアーキテクト ワークベンチ",
-          heroLead: "WebGL 2.0 レンダラー設計、GLSL ES 3.00 シェーダーレビュー、フレームバジェット計算、非ブロッキング PBO + fenceSync パイプライン、コンテキストロスト復旧、WebGPU 移行のためのルーティング型スキル。",
+          brandTitle: "WebGL 2.0 システムアーキテクト · 墨朱精密",
+          heroEyebrow: "墨朱精密モノグラフ設計体系 · 品質ゲート駆動（自働化） · ライブテレメトリ",
+          heroTitle: "WebGL 2.0 システムアーキテクト · 墨朱精密設計仕様書",
+          heroLead: "不変条件 [厳守] と経験則 [指針] を峻別し、段階的開示、12.67ms フレーム予算、非同期 PBO + fenceSync (timeout=0) ポカヨケ検証、WebGPU 移行を遂行する精密設計スキル。",
           ctaRepo: "GitHub リポジトリ",
-          ctaSkill: "SKILL.md ルーター",
-          ctaOrch: "00-オーケストレーター",
+          ctaSkill: "日本語 SKILL ルータ",
+          ctaOrch: "日本語 00-オーケストレータ",
           ctaSmoke: "スモークテストフィクスチャ",
-          stat1: "6 意図 × 6 分類のルーティング",
-          stat2: "ハード · 被写体 · パイプ · シェーダ · CI",
-          stat3: "EN · 简体中文 · 日本語 · 한국어",
-          stat4: "60 FPS 予算＆動的 DPR クランプ",
-          glPanelTitle: "ライブ WebGL 2.0 検証＆ GPU テレメトリ",
-          glPanelSub: "#version 300 es · 専用 VAO · std140 UBO · PBO + fenceSync · コンテキスト復旧",
+          stat1: "6 意図 × 6 クラスの精密トリアージ",
+          stat2: "ポカヨケ品質検印 [検 A〜E]",
+          stat3: "墨黒 (#08090D) · 朱赤 (#FF4D2E)",
+          stat4: "12.67ms 予算＆動的 DPR 減衰",
+          glPanelTitle: "ライブ WebGL 2.0 実証＆墨朱光学テレメトリ",
+          glPanelSub: "#version 300 es · 専用 VAO · std140 UBO · PBO + fenceSync (0ns) · 復旧訓練",
           lblShaderMode: "診断シェーダーモード",
-          optMode0: "0: 解析的 SDF シェーディング（四面体法線）",
+          optMode0: "0: 解析的 SDF シェーディング（墨朱光学照明＋四面体法線）",
           optMode1: "1: ワールド法線診断表示 (N * 0.5 + 0.5)",
           optMode2: "2: レイマーチステップ負荷ヒートマップ",
           lblStepCap: "最大レイマーチステップ数（ループ上限）",
-          btnPboProbe: "PBO + fenceSync リードバック",
-          btnLoseCtx: "コンテキストロストをシミュレート",
+          btnPboProbe: "PBO + fenceSync 非同期回読",
+          btnLoseCtx: "コンテキスト喪失復旧訓練",
           btnPause: "一時停止 / 再開",
-          calcPanelTitle: "フレームバジェット・帯域・動的 DPR クランプ計算機",
-          calcPanelSub: "P0/P1 機能を削る前に gpuBudgetMs、帯域、targetDPR を導出（02-hardware-budget.md）",
+          calcPanelTitle: "フレーム予算・帯域幅・動的 DPR 制限計算機",
+          calcPanelSub: "P0/P1 機能を削減する前に gpuBudgetMs、メモリ帯域、targetDPR を算定（02-hardware-budget.md）",
           lblTargetFps: "目標フレームレート (FPS)",
           lblCssViewport: "CSS ビューポート解像度",
           lblNativeDpr: "デバイスピクセル比 (devicePixelRatio)",
           lblMsPerMpx: "実測パス負荷 (ms / 100万ピクセル)",
           lblBytesPerPx: "全パス読み書き合計バイト数 (Bytes / Pixel)",
-          resGpuWindow: "利用可能な GPU 時間枠",
+          resGpuWindow: "利用可能な GPU 時間窓",
           resEstGpuTime: "推定フレーム GPU 時間",
           resTargetDpr: "推奨 targetDPR クランプ値",
           resBandwidth: "ネイティブ DPR 時のメモリ帯域",
-          triagePanelTitle: "インタラクティブ・トリアージルーター＆モジュール検査",
-          triagePanelSub: "意図とプロジェクト分類を選択し、registry/module-map.json のロード対象モジュールと並列レーンを確認",
+          triagePanelTitle: "インタラクティブ・トリアージルータ＆モジュール編成検査",
+          triagePanelSub: "意図とプロジェクト分類を選択し、registry/module-map.json の最小モジュール集合と並列検印レーンを確認",
           lblIntent: "1. タスク意図 (intent)",
           lblClass: "2. プロジェクト分類 (project_class)",
-          lblLoadedModules: "ロードされる標準モジュール (registry/module-map.json):",
-          archDiagramTitle: "ルーティングレーン＆並行実行アーキテクチャ図",
-          archDiagramSub: "厳密な XML 整形式およびテキストボックス余白検証済みのベクター図",
-          infoDiagramTitle: "6 つのエンジニアリング柱の概要",
-          infoDiagramSub: "段階的ルーター、フレームバジェット、並行処理、GLSL ES 3.00 数学規律、ライフサイクル、CI ゲート"
+          lblLoadedModules: "ロードされる最小モジュール集合 (registry/module-map.json):",
+          wfPanelTitle: "墨朱精密 · 品質ゲート駆動（自働化）二層直列設計ワークフロー (ja 固有設計)",
+          wfPanelSub: "第一層：意図トリアージ＆予算境界 -> 第二層：5レーン並列準備＆検印 [検 A〜E] -> 第三層：単一コンテキスト直列提出",
+          genVisualTitle: "AI 生成・精密光学レンズ断面＆半導体リソグラフィボード (墨朱精密 ja 版)",
+          genVisualSub: "シネマレンズ断面レーザー計測メインビジュアルと二層直列光学プリズム検印インフォグラフィック",
+          archDiagramTitle: "墨朱精密 · 品質ゲート駆動（自働化）二層直列設計図 (ja SVG)",
+          archDiagramSub: "厳密な XML 整形式およびテキスト余白検査をクリアした日本語ベクター仕様図",
+          infoDiagramTitle: "墨朱精密 · 意図トリアージ＆ポカヨケ品質ゲート早見表 (ja SVG)",
+          infoDiagramSub: "厳守条件と調整指針の分離、6×6 意図編成、非同期 PBO 検証、WebGPU 1:1 移行マトリクス"
         },
         "ko": {
-          brandTitle: "WebGL 2.0 시스템 아키텍트",
-          heroEyebrow: "모듈형 GPU 엔지니어링 스킬 · 4개 언어 네이티브 지원 · 실시간 텔레메트리",
-          heroTitle: "WebGL 2.0 시스템 아키텍트 워크벤치",
-          heroLead: "WebGL 2.0 렌더러 아키텍처, GLSL ES 3.00 셰이더 리뷰, 프레임 예산 수식 유도, 비차단 PBO + fenceSync 파이프라인, 컨텍스트 손실 복구 및 WebGPU 마이그레이션을 위한 라우팅 기반 엔지니어링 스킬.",
+          brandTitle: "WebGL 2.0 시스템 아키텍트 · 코발트-민트",
+          heroEyebrow: "코발트-민트 반도체 파운드리 미학 · 고주사율 텔레메트리 · 5-레인 병렬 검증",
+          heroTitle: "WebGL 2.0 시스템 아키텍트 · 파운드리 텔레메트리 콘솔",
+          heroLead: "고주사율(60Hz/120Hz) 프레임 예산 텔레메트리, GLSL ES 3.00 셰이더 규율, 5-레인 병렬 워커 준비, 비차단 PBO + fenceSync (0ns) 판독 및 WebGPU 하이브리드 이관을 위한 한국어 엔지니어링 워크스테이션.",
           ctaRepo: "GitHub 저장소",
-          ctaSkill: "SKILL.md 라우터",
-          ctaOrch: "00-오케스트레이터",
+          ctaSkill: "한국어 SKILL 라우터",
+          ctaOrch: "한국어 00-오케스트레이터",
           ctaSmoke: "스모크 테스트 픽스처",
-          stat1: "6가지 의도 × 6가지 프로젝트 분류",
-          stat2: "하드웨어 · 피사체 · 파이프 · 셰이더 · CI",
-          stat3: "EN · 简体中文 · 日本語 · 한국어",
-          stat4: "60 FPS 예산 및 동적 DPR 클램프",
-          glPanelTitle: "실시간 WebGL 2.0 검증 및 GPU 텔레메트리",
-          glPanelSub: "#version 300 es · 전용 VAO · std140 UBO · PBO + fenceSync · 컨텍스트 복구",
+          stat1: "6대 의도 × 6대 클래스 자동 라우팅",
+          stat2: "5-레인 병렬 워커 & 직렬 GL 코어",
+          stat3: "셀라돈 민트 (#2DD4BF) · 인디고 (#818CF8)",
+          stat4: "60Hz(12.67ms) / 120Hz(5.33ms) 예산",
+          glPanelTitle: "실시간 WebGL 2.0 검증 및 파운드리 GPU 텔레메트리",
+          glPanelSub: "#version 300 es · 전용 VAO · std140 UBO · PBO + fenceSync (0ns) · 컨텍스트 복구",
           lblShaderMode: "진단 셰이더 모드",
-          optMode0: "0: 해석적 SDF 셰이딩 (사면체 차분 노멀)",
-          optMode1: "1: 월드 노멀 진단 뷰 (N * 0.5 + 0.5)",
+          optMode0: "0: 해석적 SDF 셰이딩 (코발트-민트 레이저 조명 + 사면체 법선)",
+          optMode1: "1: 월드 법선 진단 뷰 (N * 0.5 + 0.5)",
           optMode2: "2: 레이마칭 스텝 비용 히트맵",
           lblStepCap: "최대 레이마칭 스텝 수 (루프 상한)",
-          btnPboProbe: "PBO + fenceSync 리드백",
-          btnLoseCtx: "컨텍스트 손실 시뮬레이션",
+          btnPboProbe: "PBO + fenceSync 비차단 판독",
+          btnLoseCtx: "컨텍스트 손실 복구 훈련",
           btnPause: "일시정지 / 재생",
-          calcPanelTitle: "프레임 예산, 대역폭 및 동적 DPR 클램프 계산기",
-          calcPanelSub: "P0/P1 기능을 축소하기 전에 gpuBudgetMs, 픽셀 대역폭, targetDPR을 먼저 유도 (02-hardware-budget.md)",
-          lblTargetFps: "목표 프레임 레이트 (FPS)",
+          calcPanelTitle: "고주사율 프레임 예산, 메모리 대역폭 및 동적 DPR 클램프 계산기",
+          calcPanelSub: "P0/P1 피처를 축소하기 전에 gpuBudgetMs, 픽셀 대역폭(GB/s), targetDPR을 먼저 산출 (02-hardware-budget.md)",
+          lblTargetFps: "목표 주사율 (FPS)",
           lblCssViewport: "CSS 뷰포트 해상도",
           lblNativeDpr: "디바이스 픽셀 비율 (devicePixelRatio)",
           lblMsPerMpx: "실측 패스 비용 (ms / 메가픽셀)",
@@ -892,15 +1095,19 @@
           resEstGpuTime: "예상 프레임 GPU 소요 시간",
           resTargetDpr: "권장 targetDPR 클램프 상한",
           resBandwidth: "네이티브 DPR 메모리 대역폭",
-          triagePanelTitle: "대화형 작업 분류 라우터 및 모듈 매트릭스 검사기",
-          triagePanelSub: "작업 의도와 프로젝트 분류를 선택하여 registry/module-map.json의 로드 모듈과 병렬 레인을 확인",
+          triagePanelTitle: "대화형 의도 트리아지 라우터 및 모듈 매트릭스 검사기",
+          triagePanelSub: "작업 의도와 프로젝트 분류를 선택하여 registry/module-map.json의 최소 모듈 세트와 5-레인 병렬 구성을 확인",
           lblIntent: "1. 작업 의도 (intent)",
           lblClass: "2. 프로젝트 분류 (project_class)",
-          lblLoadedModules: "로드되는 표준 모듈 목록 (registry/module-map.json):",
-          archDiagramTitle: "라우팅 레인 및 동시성 아키텍처 청사진",
-          archDiagramSub: "엄격한 XML 정합성 및 텍스트 박스 여백 검증을 통과한 벡터 다이어그램",
-          infoDiagramTitle: "6대 엔지니어링 핵심 기둥 개요",
-          infoDiagramSub: "점진적 라우터, 하드웨어 예산, 동시성 모델, GLSL ES 3.00 수학 규율, 런타임 수명 주기 및 CI 게이트"
+          lblLoadedModules: "로드되는 최소 모듈 세트 (registry/module-map.json):",
+          wfPanelTitle: "코발트-민트 파운드리 · 고주사율 텔레메트리 & 5-레인 병렬 검증 워크플로 (ko 전용 설계)",
+          wfPanelSub: "1~2단계: 6×6 트리아지 및 60Hz/120Hz 예산 -> 3단계: 5-레인 병렬 워커 준비 -> 4~5단계: 직렬 GL 코어 & 비차단 PBO 판독",
+          genVisualTitle: "AI 생성 HBM 인터포저 & 광학 SDF 파이프라인 비주얼 (코발트-민트 ko 전용판)",
+          genVisualSub: "적층형 HBM 실리콘 인터포저 메인 비주얼 및 5-레인 파운드리 텔레메트리 인포그래픽",
+          archDiagramTitle: "코발트-민트 파운드리 텔레메트리 & 5-레인 병렬 아키텍처 청사진 (ko SVG)",
+          archDiagramSub: "엄격한 XML 정형성 및 텍스트 여백 검증을 통과한 한국어 벡터 청사진",
+          infoDiagramTitle: "코발트-민트 파운드리 · 한국어 의사결정 매트릭스 & 텔레메트리 레퍼런스 (ko SVG)",
+          infoDiagramSub: "6×6 의도 라우팅, 고주사율 예산 수식, 4대 핵심 불변량 및 WebGPU 1:1 매핑"
         }
       };
 
@@ -983,9 +1190,17 @@
         ]
       };
 
+      let runPboProbeFn = null;
+
       function applyLocale(lang) {
-        const dict = I18N[lang] || I18N["en"];
-        document.documentElement.lang = lang;
+        const safeLang = I18N[lang] ? lang : "en";
+        const dict = I18N[safeLang];
+        const assets = LOCALE_ASSETS[safeLang] || LOCALE_ASSETS["en"];
+        activeLocaleIdx = LOCALE_INDEX_MAP[safeLang] || 0;
+
+        document.documentElement.lang = safeLang;
+        document.documentElement.setAttribute("data-locale-theme", safeLang);
+
         document.querySelectorAll("[data-i18n]").forEach(function (el) {
           const key = el.getAttribute("data-i18n");
           if (dict[key]) {
@@ -993,8 +1208,46 @@
           }
         });
         document.querySelectorAll(".lang-btn").forEach(function (btn) {
-          btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === lang ? "true" : "false");
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-lang") === safeLang ? "true" : "false");
         });
+
+        // Update locale-specific workflow stage cards and visual assets
+        const wfPill = document.getElementById("workflow-theme-pill");
+        if (wfPill) wfPill.textContent = assets.badge;
+
+        const wfGrid = document.getElementById("locale-workflow-grid");
+        if (wfGrid) {
+          wfGrid.innerHTML = "";
+          assets.stages.forEach(function (st) {
+            const card = document.createElement("div");
+            card.className = "wf-card";
+            card.innerHTML =
+              '<div class="wf-step">' + st.step + '</div>' +
+              '<div class="wf-title">' + st.title + '</div>' +
+              '<div class="wf-desc">' + st.desc + '</div>';
+            wfGrid.appendChild(card);
+          });
+        }
+
+        const heroImg = document.getElementById("img-hero-visual");
+        const infoImg = document.getElementById("img-info-visual");
+        const archSvg = document.getElementById("img-arch-svg");
+        const infoSvg = document.getElementById("img-info-svg");
+        if (heroImg) heroImg.src = assets.heroPng;
+        if (infoImg) infoImg.src = assets.infoPng;
+        if (archSvg) archSvg.src = assets.archSvg;
+        if (infoSvg) infoSvg.src = assets.infoSvg;
+
+        const pHero = document.getElementById("pill-hero-path");
+        const pArch = document.getElementById("pill-arch-svg");
+        const pInfo = document.getElementById("pill-info-svg");
+        if (pHero) pHero.textContent = assets.heroLabel;
+        if (pArch) pArch.textContent = assets.archLabel;
+        if (pInfo) pInfo.textContent = assets.infoLabel;
+
+        if (typeof runPboProbeFn === "function") {
+          runPboProbeFn();
+        }
       }
 
       document.querySelectorAll(".lang-btn").forEach(function (btn) {
@@ -1010,9 +1263,7 @@
       });
 
       const initialLang = new URLSearchParams(window.location.search).get("lang");
-      if (initialLang && I18N[initialLang]) {
-        applyLocale(initialLang);
-      }
+      applyLocale(initialLang && I18N[initialLang] ? initialLang : "en");
 
       // 2. Interactive Frame-Budget & DPR Calculator
       const elFps = document.getElementById("calc-fps");
@@ -1148,7 +1399,7 @@ in vec2 vUv;
 layout(location = 0) out vec4 outColor;
 
 layout(std140) uniform WorkbenchBlock {
-  vec4 uResTimeMode;   // xy: resolution, z: wrappedTime, w: diagnosticMode (0, 1, 2)
+  vec4 uResTimeMode;   // xy: resolution, z: wrappedTime, w: mode + localeIdx * 10.0
   vec4 uStepAndParams; // x: maxSteps, y: hitEps, z: normalEps, w: lipschitzScale
 };
 
@@ -1189,7 +1440,9 @@ void main() {
   float normEps = uStepAndParams.z;
   float stepScale = uStepAndParams.w;
   float timeVal = uResTimeMode.z;
-  int mode = int(uResTimeMode.w + 0.5);
+  float packedMode = uResTimeMode.w;
+  int locIdx = int(floor(packedMode / 10.0) + 0.5);
+  int mode = int(mod(packedMode, 10.0) + 0.5);
 
   float t = 0.0;
   int stepsUsed = 0;
@@ -1214,8 +1467,33 @@ void main() {
     return;
   }
 
+  // Locale-specific background and surface lighting palettes:
+  vec3 bgLow = vec3(0.04, 0.07, 0.12);
+  vec3 bgHigh = vec3(0.08, 0.15, 0.26);
+  vec3 diffTint = vec3(0.16, 0.62, 0.86);
+  vec3 rimTint = vec3(0.18, 0.83, 0.75);
+  if (locIdx == 1) {
+    // zh-CN: Obsidian-Jade (#10B981) & Tungsten-Gold (#F59E0B)
+    bgLow = vec3(0.02, 0.06, 0.05);
+    bgHigh = vec3(0.05, 0.14, 0.11);
+    diffTint = vec3(0.08, 0.72, 0.52);
+    rimTint = vec3(0.96, 0.62, 0.08);
+  } else if (locIdx == 2) {
+    // ja: Sumi-Ink (#08090D), Vermilion (#FF4D2E) & Asagi-Cyan (#38BDF8)
+    bgLow = vec3(0.04, 0.04, 0.07);
+    bgHigh = vec3(0.10, 0.08, 0.14);
+    diffTint = vec3(0.92, 0.32, 0.22);
+    rimTint = vec3(0.22, 0.74, 0.96);
+  } else if (locIdx == 3) {
+    // ko: Cobalt-Carbon (#060913), Celadon-Mint (#2DD4BF) & Royal-Indigo (#818CF8)
+    bgLow = vec3(0.03, 0.05, 0.11);
+    bgHigh = vec3(0.07, 0.11, 0.24);
+    diffTint = vec3(0.16, 0.80, 0.72);
+    rimTint = vec3(0.52, 0.56, 0.98);
+  }
+
   if (!hit) {
-    vec3 bg = mix(vec3(0.04, 0.07, 0.12), vec3(0.08, 0.15, 0.26), vUv.y);
+    vec3 bg = mix(bgLow, bgHigh, vUv.y);
     outColor = vec4(bg, 1.0);
     return;
   }
@@ -1235,7 +1513,7 @@ void main() {
   float spec = pow(max(dot(N, H), 0.0), 32.0);
   float rim = pow(clamp(1.0 - max(dot(N, V), 0.0), 0.0, 1.0), 3.0);
 
-  vec3 baseCol = vec3(0.16, 0.62, 0.86) * (0.22 + 0.78 * diff) + vec3(0.18, 0.83, 0.75) * (0.35 * rim) + vec3(0.95) * (0.35 * spec);
+  vec3 baseCol = diffTint * (0.22 + 0.78 * diff) + rimTint * (0.42 * rim) + vec3(0.95) * (0.35 * spec);
   outColor = vec4(clamp(baseCol, 0.0, 1.0), 1.0);
 }
 `;
@@ -1309,7 +1587,7 @@ void main() {
         uboScratch[0] = canvas.width;
         uboScratch[1] = canvas.height;
         uboScratch[2] = wrappedTime;
-        uboScratch[3] = mode;
+        uboScratch[3] = mode + activeLocaleIdx * 10.0;
         uboScratch[4] = maxSteps;
         uboScratch[5] = 0.0035; // hitEps
         uboScratch[6] = 0.0070; // normalEps (2x hitEps)
@@ -1350,9 +1628,11 @@ void main() {
           pixel: Array.from(dst),
           fence: syncLabel,
           glError: glErr,
-          lossCount: lossCount
+          lossCount: lossCount,
+          localeIdx: activeLocaleIdx
         };
       }
+      runPboProbeFn = runPboProbe;
 
       function tick(now) {
         renderFrame(now);

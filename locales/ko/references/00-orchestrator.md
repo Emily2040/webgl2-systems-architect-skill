@@ -4,6 +4,16 @@
 
 WebGL 2.0 요청을 검증 가능한 아키텍처 설계안, 코드 리뷰, WebGPU 마이그레이션 청사진 또는 구현 패치로 전환합니다. 이 스킬은 작업 라우터이자 실행 가이드이며, 현재 작업에 필요한 모듈만 선택적으로 로드합니다.
 
+## 한국어판 고유 비주얼 및 워크플로 설계 (코발트-민트 파운드리 · 고주사율 텔레메트리 5레인 매트릭스)
+
+한국어판은 **코발트-민트 파운드리 (Cobalt-Carbon `#060913` & Celadon-Mint `#2DD4BF` / Indigo `#818CF8`)** 반도체 텔레메트리 비주얼 시스템과 5단계 파이프라인을 사용하며, 전용 시각 자산은 `docs/assets/ko/webgl2-systems-hero.png`, `docs/assets/ko/webgl2-systems-infographic.png`, `docs/assets/ko/architecture.svg`, `docs/assets/ko/skill-infographic.svg`에 배치되어 있습니다.
+
+1. **STEP 01 · 트리아지 분류 (`01-triage.md`)**: `intent` / `project_class` / `hardware_data_quality` 3축 분류로 `registry/module-map.json` 모듈 세트를 잠근다.
+2. **STEP 02 · 주사율 예산 수립 (`02-hardware-budget.md`)**: `60Hz(16.67ms)` / `120Hz(8.33ms)` 프레임 예산, DPR 클램프, 대역폭 한계를 산출한다.
+3. **STEP 03 · 5레인 병렬 준비 (`03-pipeline-and-concurrency.md`)**: Worker 지오메트리·KTX2 트랜스코드·`KHR_parallel_shader_compile` 비동기 폴링을 병렬 수행한다.
+4. **STEP 04 · 직렬 GL 커밋 (`05-shader-rules.md` + `06-runtime-ops.md`)**: 단일 `WebGL2RenderingContext`에서 VAO, `std140` UBO, `texStorage2D`를 순서대로 제출한다.
+5. **STEP 05 · PBO 펜스 검증 (`07-validation-and-ci.md`)**: `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync(timeout=0)` 무블로킹 리드백과 한국어 안티 슬롭 게이트를 통과시킨다.
+
 ## 제1원리 규칙
 
 1. **불변 규칙 (Invariants)** 과 **조건부 휴리스틱 (Heuristics)** 을 엄격히 분리한다.

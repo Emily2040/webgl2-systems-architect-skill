@@ -7,36 +7,36 @@
 [![Version](https://img.shields.io/badge/version-2.0.0-2dd4bf.svg)](./CHANGELOG.md)
 [![Locales](https://img.shields.io/badge/locales-EN%20%7C%20zh--CN%20%7C%20ja%20%7C%20ko-f59e0b.svg)](./locales)
 
-![WebGL 2.0 Systems Architect 6대 엔지니어링 기둥 개요](./docs/assets/skill-infographic.svg)
+![WebGL 2.0 시스템 아키텍트 · 코발트-민트 반도체 파운드리 & GPU 파이프라인 메인 비주얼](./docs/assets/ko/webgl2-systems-hero.png)
 
 `webgl2-systems-architect-skill`은 **WebGL 2.0 렌더러 아키텍처 설계, GLSL ES 3.00 (`#version 300 es`) 셰이더 규율, GPU 프레임 예산 수식 유도, 비차단 `PIXEL_PACK_BUFFER` (PBO) + `gl.fenceSync` 파이프라인, 컨텍스트 손실 복구 및 WebGL 2.0에서 WebGPU로의 마이그레이션**을 위한 라우팅 기반 멀티 에이전트 엔지니어링 스킬입니다.
 
-이 패키지는 **영어 (`en`)**, **중국어 간체 (`zh-CN`)**, **일본어 (`ja`)**, **한국어 (`ko`)** 4개 언어의 네이티브 문서, 로컬라이즈된 스킬 모듈 및 안티 슬롭(Anti-Slop) 검증 규칙을 기본 제공합니다.
+이 패키지는 **영어 (`en`)**, **중국어 간체 (`zh-CN`)**, **일본어 (`ja`)**, **한국어 (`ko`)** 4개 언어 각각에 고유한 비주얼 디자인 시스템, 전용 엔지니어링 워크플로, 로컬라이즈된 스킬 모듈 및 안티 슬롭(Anti-Slop) 검증 규칙을 기본 제공합니다.
 
 - **GitHub 저장소**: <https://github.com/Emily2040/webgl2-systems-architect-skill>
-- **대화형 WebGL 2.0 워크벤치 (`docs/index.html`)**: [로컬 워크벤치 열기](./docs/index.html?lang=ko)
+- **대화형 WebGL 2.0 워크벤치 (`docs/index.html?lang=ko`)**: [코발트-민트 파운드리 한국어 테마 워크벤치 열기](./docs/index.html?lang=ko)
 - **실시간 WebGL 2.0 스모크 테스트 픽스처**: [`fixtures/webgl2-smoke/index.html`](./fixtures/webgl2-smoke/index.html)
 - **작성자**: **Iamemily2050** (`Emily2040`) · [웹사이트](https://Iamemily2050.com) · [X](https://x.com/iamemily2050) · [Instagram](https://instagram.com/iamemily2050)
 
 ---
 
-## 왜 라우팅 아키텍처인가
+## 코발트-민트 파운드리 · 고주사율 텔레메트리 & 5-레인 병렬 검증 워크플로 (`ko` 전용 워크플로 설계)
 
-대부분의 그래픽스 프롬프트는 방대한 교과서 분량의 텍스트를 컨텍스트 창에 한꺼번에 쏟아붓습니다. 이는 토큰을 낭비할 뿐 아니라 인스턴싱 기반 래스터 메시 파이프라인에 SDF 레이마칭 규칙을 섞어버리는 등 작업 의도와 맞지 않는 지시를 유발합니다.
+![코발트-민트 파운드리 · 한국형 반도체/GPU 파이프라인 텔레메트리 & 5-레인 병렬 검증 워크플로](./docs/assets/ko/webgl2-systems-infographic.png)
 
-이 저장소는 WebGL 2.0 그래픽스 시스템 엔지니어링을 선택적 라우팅 워크플로로 구성합니다:
+한국어 에디션은 고주사율(60Hz/120Hz) 및 고밀도 디스플레이 환경과 HBM급 메모리 대역폭 버짓팅에 최적화된 **“파운드리 텔레메트리 & 5-레인 병렬 검증 매트릭스 (Foundry Telemetry Matrix)”** 아키텍처를 채택합니다:
 
-1. **초소형 라우터 진입점**: 루트 [`SKILL.md`](./SKILL.md)는 800자 미만으로 유지되며 [`references/00-orchestrator.md`](./references/00-orchestrator.md)(한국어 세션에서는 [`locales/ko/references/00-orchestrator.md`](./locales/ko/references/00-orchestrator.md))로 즉시 연결됩니다.
-2. **분류(Triage) 우선 모듈 선택**: [`skills/core/01-triage.md`](./locales/ko/skills/core/01-triage.md)가 6가지 작업 의도(`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`)와 6가지 프로젝트 분류(`raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`)를 판별하여 [`registry/module-map.json`](./registry/module-map.json)에 매핑된 필수 모듈만 로드합니다.
-3. **불변 규칙과 조건부 휴리스틱 분리**: 불변 규칙(자유 변수 금지, 명시적 가정, 유도 주석이 포함된 상수, VAO 바인딩 필수, FBO 완전성 검증)은 항상 적용되며, 조건부 휴리스틱(`alpha: false`, Reversed-Z, Deferred/Forward 선택, DPR 상한, 탭 수)은 실측 프레임 예산에 따라 결정됩니다.
-4. **정직한 WebGL 2.0 동시성 모델**: Web Worker는 에셋 다운로드, glTF/Draco 디코딩, KTX2 트랜스코딩, 컬링을 병렬화하고 `KHR_parallel_shader_compile`과 `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync`는 프레임 간 비차단 폴링을 수행하지만, 단일 `WebGL2RenderingContext`의 드로우 콜 제출은 직렬로 다룹니다.
-5. **실행 가능한 검증 게이트**: [`scripts/validate_repo.py`](./scripts/validate_repo.py)가 JSON 스키마, 모듈 집합 일치, SVG XML 정합성 및 텍스트 박스 여백, 4개 언어 패리티, 금지 수식어 검사, 네거티브 셀프 테스트를 자동으로 수행합니다.
+1. **1~2단계 · 6×6 의도 트리아지 및 고주사율 프레임 예산 게이트 (`01-triage.md` & `02-hardware-budget.md`)**: 루트 [`locales/ko/SKILL.md`](./locales/ko/SKILL.md)는 800자 미만으로 유지되며 6대 의도 × 6대 프로젝트 분류에서 최소 모듈 세트만 로드합니다. 60Hz(`12.67 ms`) 및 120Hz(`5.33 ms`) GPU 시간 예산을 산출하고, 고해상도 패널에서 `targetDPR <= 2.0` 동적 클램프와 메모리 대역폭(`GB/s`) 상한을 검증합니다.
+2. **3단계 · 5-레인 병렬 워커 준비 파이프라인 (`레인 A`..`레인 E`)**: CPU 및 Web Worker에서 **레인 A(리아푸노프 안정성 및 4-탭 사면체 SDF 법선)**, **레인 B(`#version 300 es` 및 16바이트 정렬 `std140` UBO)**, **레인 C(`texStorage2D` 불변 할당 및 모바일 타일 GPU `invalidateFramebuffer`)**, **레인 D(`EXT_disjoint_timer_query_webgl2` 3~4 프레임 링버퍼)**, **레인 E(비차단 PBO 및 24개 CI 게이트)**를 병렬로 준비합니다.
+3. **4~5단계 · 단일 컨텍스트 직렬 GL 제출 및 WebGPU 하이브리드 이관**: 단일 `WebGL2RenderingContext`에서 전용 VAO 바인딩, `std140` UBO 일괄 갱신, 6-패스 확정 순서 실행을 직렬로 수행하며, `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` (`timeout = 0`) 비차단 판독과 WebGL 2.0 -> WebGPU(`WGSL`) 1:1 매핑을 보장합니다.
 
 ---
 
-## 아키텍처 청사진
+## 코발트-민트 파운드리 · 벡터 아키텍처 청사진 & 의사결정 매트릭스 (`ko` SVG)
 
-![WebGL 2.0 Systems Architect 라우팅 레인 및 동시성 청사진](./docs/assets/architecture.svg)
+![WebGL 2.0 시스템 아키텍트 · 코발트-민트 파운드리 텔레메트리 청사진](./docs/assets/ko/architecture.svg)
+
+![WebGL 2.0 시스템 아키텍트 · 한국어 의사결정 매트릭스 & 텔레메트리 레퍼런스](./docs/assets/ko/skill-infographic.svg)
 
 ---
 

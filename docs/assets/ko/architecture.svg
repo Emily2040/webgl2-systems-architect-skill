@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 860" width="1280" height="860" role="img" aria-labelledby="ko-arch-title ko-arch-desc">
+  <title id="ko-arch-title">WebGL 2.0 시스템 아키텍트 · 코발트-민트 반도체 파운드리 &amp; 5-레인 병렬 파이프라인</title>
+  <desc id="ko-arch-desc">고주사율(60Hz/120Hz) 프레임 예산 텔레메트리, 5-레인 병렬 워커 준비 및 단일 컨텍스트 직렬 GL 제출을 위한 한국어 아키텍처 다이어그램.</desc>
+  <defs>
+    <style>
+      .bg { fill: #060913; }
+      .grid { stroke: #111a30; stroke-width: 1; }
+      .panel { fill: #0b1122; stroke: #2dd4bf; stroke-width: 1.6; rx: 10; }
+      .panel-indigo { fill: #0c1026; stroke: #818cf8; stroke-width: 1.8; rx: 10; }
+      .card-mint { fill: #0d1d2a; stroke: #2dd4bf; stroke-width: 1.5; rx: 8; }
+      .card-indigo { fill: #121530; stroke: #818cf8; stroke-width: 1.5; rx: 8; }
+      .card-amber { fill: #1b1710; stroke: #f59e0b; stroke-width: 1.5; rx: 8; }
+      .h1 { fill: #f8fafc; font-family: 'Malgun Gothic', sans-serif; font-size: 21px; font-weight: 700; }
+      .sub { fill: #94a3b8; font-family: 'Malgun Gothic', sans-serif; font-size: 13px; }
+      .sec { fill: #2dd4bf; font-family: 'Malgun Gothic', monospace; font-size: 13px; font-weight: 700; }
+      .t-title { fill: #f8fafc; font-family: 'Malgun Gothic', sans-serif; font-size: 14px; font-weight: 700; }
+      .t-body { fill: #cbd5e1; font-family: 'Consolas', 'Malgun Gothic', monospace; font-size: 12px; }
+      .t-muted { fill: #94a3b8; font-family: 'Consolas', 'Malgun Gothic', monospace; font-size: 11px; }
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="860"/>
+  <g class="grid">
+    <line x1="0" y1="100" x2="1280" y2="100"/>
+    <line x1="0" y1="260" x2="1280" y2="260"/>
+    <line x1="0" y1="560" x2="1280" y2="560"/>
+    <line x1="640" y1="0" x2="640" y2="860"/>
+  </g>
+
+  <!-- Header -->
+  <rect class="panel-indigo" x="28" y="20" width="1224" height="72" rx="10"/>
+  <text class="h1" x="52" y="50">WebGL 2.0 시스템 아키텍트 · 코발트-민트 파운드리 텔레메트리 청사진 (v2.0.0)</text>
+  <text class="sub" x="52" y="74">1단계: 6×6 의도 트리아지 · 2단계: 60Hz/120Hz 프레임 예산 &amp; DPR 클램프 · 3단계: 5-레인 병렬 준비 · 4~5단계: 직렬 GL 제출 &amp; PBO 검증</text>
+  <rect class="card-mint" x="1000" y="34" width="230" height="44" rx="8"/>
+  <text class="t-title" x="1016" y="54">HBM-Grade GPU 파이프라인</text>
+  <text class="t-muted" x="1016" y="70">GLSL ES 3.00 · std140 · PBO</text>
+
+  <!-- Stage 1 & 2 -->
+  <rect class="panel" x="28" y="108" width="1224" height="140" rx="10"/>
+  <text class="sec" x="48" y="132">1~2단계 · 점진적 공개 트리아지 및 고주사율 하드웨어 예산 게이트 (01-triage.md &amp; 02-hardware-budget.md)</text>
+
+  <rect class="card-mint" x="48" y="146" width="275" height="86" rx="8"/>
+  <text class="t-title" x="64" y="168">01 · 점진적 공개 라우터</text>
+  <text class="t-body" x="64" y="190">locales/ko/ 한국어 스킬 트리 로드</text>
+  <text class="t-muted" x="64" y="210">불필요한 컨텍스트 오염 원천 차단</text>
+
+  <rect class="card-indigo" x="345" y="146" width="285" height="86" rx="8"/>
+  <text class="t-title" x="361" y="168">02 · 6×6 의도 × 클래스 매트릭스</text>
+  <text class="t-body" x="361" y="190">architecture / debug / optimize</text>
+  <text class="t-muted" x="361" y="210">review / implement / migration</text>
+
+  <rect class="card-amber" x="652" y="146" width="285" height="86" rx="8"/>
+  <text class="t-title" x="668" y="168">03 · 프레임 예산 &amp; DPR 클램프</text>
+  <text class="t-body" x="668" y="190">60Hz: 12.67ms | 120Hz: 5.33ms</text>
+  <text class="t-muted" x="668" y="210">targetDPR &lt;= 2.0 · 대역폭(GB/s) 산출</text>
+
+  <rect class="card-mint" x="959" y="146" width="273" height="86" rx="8"/>
+  <text class="t-title" x="975" y="168">04 · 비차단 컴파일 &amp; 타이머 링</text>
+  <text class="t-body" x="975" y="190">KHR_parallel_shader_compile</text>
+  <text class="t-muted" x="975" y="210">GPU_DISJOINT_EXT 3~4프레임 링버퍼</text>
+
+  <!-- Stage 3: 5-Lane Parallel Prep -->
+  <rect class="panel" x="28" y="266" width="1224" height="278" rx="10"/>
+  <text class="sec" x="48" y="292">3단계 · 5-레인 병렬 워커 준비 파이프라인 (CPU/Worker 병렬 처리 vs 단일 컨텍스트 직렬 GL 경계)</text>
+
+  <rect class="card-mint" x="48" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="64" y="332">레인 A · 수학 및 SDF 감사</text>
+  <text class="t-body" x="64" y="358">04-subject-audit.md</text>
+  <text class="t-muted" x="64" y="382">• 리아푸노프 유계 안정성</text>
+  <text class="t-muted" x="64" y="404">• 4-탭 사면체 SDF 법선</text>
+  <text class="t-muted" x="64" y="426">• 6-탭 축방향 그래디언트 제거</text>
+  <text class="t-muted" x="64" y="448">• 유체/음향 CFL 시간 스텝</text>
+  <text class="t-body" x="64" y="496">산출물: 수학적 불변량 계약</text>
+
+  <rect class="card-indigo" x="288" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="304" y="332">레인 B · 셰이더 &amp; UBO</text>
+  <text class="t-body" x="304" y="358">05-shader-rules.md</text>
+  <text class="t-muted" x="304" y="382">• #version 300 es 필수</text>
+  <text class="t-muted" x="304" y="404">• layout(std140) 16B 정렬</text>
+  <text class="t-muted" x="304" y="426">• 분기 전 dFdx/dFdy 계산</text>
+  <text class="t-muted" x="304" y="448">• 명명 상수 및 유도 주석</text>
+  <text class="t-body" x="304" y="496">산출물: 매직 리터럴 제로</text>
+
+  <rect class="card-mint" x="528" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="544" y="332">레인 C · 패스 그래프 &amp; FBO</text>
+  <text class="t-body" x="544" y="358">03 &amp; 06-runtime-ops.md</text>
+  <text class="t-muted" x="544" y="382">• texStorage2D 불변 할당</text>
+  <text class="t-muted" x="544" y="404">• checkFramebufferStatus</text>
+  <text class="t-muted" x="544" y="426">• 모바일 타일 invalidateFBO</text>
+  <text class="t-muted" x="544" y="448">• 동시 읽기/쓰기 루프 차단</text>
+  <text class="t-body" x="544" y="496">산출물: 6-패스 확정 토폴로지</text>
+
+  <rect class="card-amber" x="768" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="784" y="332">레인 D · 대역폭 &amp; 폴백</text>
+  <text class="t-body" x="784" y="358">02-hardware-budget.md</text>
+  <text class="t-muted" x="784" y="382">• GB/s 메모리 대역폭 산출</text>
+  <text class="t-muted" x="784" y="404">• KTX2 BasisU 압축 텍스처</text>
+  <text class="t-muted" x="784" y="426">• 반해상도 볼류메트릭 폴백</text>
+  <text class="t-muted" x="784" y="448">• 명시적 delete 해제 체인</text>
+  <text class="t-body" x="784" y="496">산출물: 프레임 예산 안전망</text>
+
+  <rect class="card-indigo" x="1008" y="308" width="224" height="216" rx="8"/>
+  <text class="t-title" x="1024" y="332">레인 E · 비차단 PBO &amp; CI</text>
+  <text class="t-body" x="1024" y="358">07-validation-and-ci.md</text>
+  <text class="t-muted" x="1024" y="382">• PBO + fenceSync(0ns)</text>
+  <text class="t-muted" x="1024" y="404">• WEBGL_lose_context 훈련</text>
+  <text class="t-muted" x="1024" y="426">• 24개 validate_repo 스위트</text>
+  <text class="t-muted" x="1024" y="448">• 4개 네거티브 자체 테스트</text>
+  <text class="t-body" x="1024" y="496">산출물: 무헤드 GPU 실증</text>
+
+  <!-- Stage 4 & 5 -->
+  <rect class="panel-indigo" x="28" y="562" width="1224" height="274" rx="10"/>
+  <text class="sec" x="48" y="588">4~5단계 · 단일 WebGL 2.0 컨텍스트 직렬 커맨드 버스 및 WebGPU 하이브리드 이관</text>
+
+  <rect class="card-mint" x="48" y="606" width="370" height="110" rx="8"/>
+  <text class="t-title" x="64" y="630">단일 컨텍스트 직렬 GL 제출 코어</text>
+  <text class="t-body" x="64" y="654">1. 전용 VAO (createVertexArray) 상시 바인딩</text>
+  <text class="t-body" x="64" y="676">2. 16B 정렬 std140 UBO 일괄 bufferSubData</text>
+  <text class="t-muted" x="64" y="698">3. 링크 직후 detachShader + deleteShader</text>
+
+  <rect class="card-indigo" x="442" y="606" width="380" height="110" rx="8"/>
+  <text class="t-title" x="458" y="630">6-패스 확정 순서 프레임 실행 (Pass 1..6)</text>
+  <text class="t-body" x="458" y="654">Shadow/SDF -&gt; G-Buffer MRT -&gt; 라이팅 합성</text>
+  <text class="t-body" x="458" y="676">-&gt; 반투명 패스 -&gt; 포스트프로세스 -&gt; 최종 출력</text>
+  <text class="t-muted" x="458" y="698">동일 패스 내 텍스처 동시 샘플링 및 렌더 타깃 바인딩 금지</text>
+
+  <rect class="card-amber" x="846" y="606" width="386" height="110" rx="8"/>
+  <text class="t-title" x="862" y="630">비차단 PBO 판독 &amp; WebGPU 1:1 매핑</text>
+  <text class="t-body" x="862" y="654">MAX_CLIENT_WAIT_TIMEOUT_WEBGL == 0 준수</text>
+  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 비차단 폴링</text>
+  <text class="t-muted" x="862" y="698">클립 깊이 [-1,1]-&gt;[0,1] 및 UV Y-플립 단일 헬퍼 격리</text>
+
+  <rect class="card-mint" x="48" y="732" width="1184" height="86" rx="8"/>
+  <text class="t-title" x="68" y="756">이중 JSON 출력 계약 및 24개 자동 검증 게이트 (authoring-base.json / runtime-compact.json)</text>
+  <text class="t-body" x="68" y="780">locale="ko" 지원 · 4개 엔드투엔드 골든 예제 쌍 (face-raymarch / terrain-midrange / postprocess-context-loss / webgpu-migration-hybrid)</text>
+  <text class="t-muted" x="68" y="802">검증 명령: python scripts/validate_repo.py -&gt; 24개 스위트 통과 · glError == 0 · XML 및 텍스트 여백 검증 100% 통과</text>
+</svg>

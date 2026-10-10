@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 860" width="1280" height="860" role="img" aria-labelledby="ja-arch-title ja-arch-desc">
+  <title id="ja-arch-title">WebGL 2.0 システムアーキテクト · 墨朱精密・品質ゲート駆動（自働化）設計図</title>
+  <desc id="ja-arch-desc">不変条件（厳守）と経験則（指針）を峻別し、段階的開示と5レーン並列準備・単一コンテキスト直列提出を行う日本の精密工学設計図。</desc>
+  <defs>
+    <style>
+      .bg { fill: #08090d; }
+      .grid { stroke: #181c26; stroke-width: 1; }
+      .panel { fill: #0d1017; stroke: #cbd5e1; stroke-width: 1.2; rx: 4; }
+      .panel-verm { fill: #110d12; stroke: #ff4d2e; stroke-width: 1.8; rx: 4; }
+      .card-verm { fill: #181014; stroke: #ff4d2e; stroke-width: 1.4; rx: 4; }
+      .card-cyan { fill: #0d1722; stroke: #38bdf8; stroke-width: 1.4; rx: 4; }
+      .card-gold { fill: #18160e; stroke: #eab308; stroke-width: 1.4; rx: 4; }
+      .h1 { fill: #f8fafc; font-family: 'Yu Gothic', 'Meiryo', sans-serif; font-size: 21px; font-weight: 700; }
+      .sub { fill: #94a3b8; font-family: 'Yu Gothic', 'Meiryo', sans-serif; font-size: 13px; }
+      .sec { fill: #ff6448; font-family: 'Yu Gothic', monospace; font-size: 13px; font-weight: 700; }
+      .t-title { fill: #f8fafc; font-family: 'Yu Gothic', sans-serif; font-size: 14px; font-weight: 700; }
+      .t-body { fill: #cbd5e1; font-family: 'Consolas', 'Yu Gothic', monospace; font-size: 12px; }
+      .t-muted { fill: #94a3b8; font-family: 'Consolas', 'Yu Gothic', monospace; font-size: 11px; }
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="860"/>
+  <g class="grid">
+    <line x1="0" y1="100" x2="1280" y2="100"/>
+    <line x1="0" y1="260" x2="1280" y2="260"/>
+    <line x1="0" y1="560" x2="1280" y2="560"/>
+    <line x1="640" y1="0" x2="640" y2="860"/>
+  </g>
+
+  <!-- Header -->
+  <rect class="panel-verm" x="28" y="20" width="1224" height="72" rx="4"/>
+  <text class="h1" x="52" y="50">WebGL 2.0 システムアーキテクト · 墨朱精密・品質ゲート駆動設計図 [v2.0.0 検]</text>
+  <text class="sub" x="52" y="74">第一層：6×6 意図トリアージ＆12.67ms予算境界 · 第二層：5レーン並列準備 (A〜E) · 第三層：単一コンテキスト直列提出＆ポカヨケ検証</text>
+  <rect class="card-verm" x="1010" y="34" width="220" height="44" rx="4"/>
+  <text class="t-title" x="1026" y="54">[検] 墨朱精密工学仕様</text>
+  <text class="t-muted" x="1026" y="70">厳守条件 / 指針分離モデル</text>
+
+  <!-- Tier 1: Triage & Frame Budget Gate -->
+  <rect class="panel" x="28" y="108" width="1224" height="140" rx="4"/>
+  <text class="sec" x="48" y="132">第一層 · 段階的開示トリアージとハードウェア予算境界 (skills/core/01-triage.md &amp; 02-hardware-budget.md)</text>
+
+  <rect class="card-verm" x="48" y="146" width="275" height="86" rx="4"/>
+  <text class="t-title" x="64" y="168">[厳守] 01 · 段階的開示ルータ</text>
+  <text class="t-body" x="64" y="190">locales/ja/ 日本語仕様ツリー読込</text>
+  <text class="t-muted" x="64" y="210">不要モジュールのコンテキスト汚染防止</text>
+
+  <rect class="card-cyan" x="345" y="146" width="285" height="86" rx="4"/>
+  <text class="t-title" x="361" y="168">[厳守] 02 · 6意図×6クラス分類</text>
+  <text class="t-body" x="361" y="190">architecture / debug / optimize</text>
+  <text class="t-muted" x="361" y="210">review / implement / migration</text>
+
+  <rect class="card-gold" x="652" y="146" width="285" height="86" rx="4"/>
+  <text class="t-title" x="668" y="168">[指針] 03 · 12.67ms 予算＆DPR制限</text>
+  <text class="t-body" x="668" y="190">60Hz GPU窓 = 12.67ms / 16.67ms</text>
+  <text class="t-muted" x="668" y="210">targetDPR &lt;= 2.0 動的クランプ</text>
+
+  <rect class="card-cyan" x="959" y="146" width="273" height="86" rx="4"/>
+  <text class="t-title" x="975" y="168">[厳守] 04 · 非同期計測リング</text>
+  <text class="t-body" x="975" y="190">KHR_parallel_shader_compile</text>
+  <text class="t-muted" x="975" y="210">GPU_DISJOINT_EXT 3〜4F待機</text>
+
+  <!-- Tier 2: 5-Lane Parallel Preparation -->
+  <rect class="panel" x="28" y="266" width="1224" height="278" rx="4"/>
+  <text class="sec" x="48" y="292">第二層 · 5レーン並列準備パイプライン (Web Worker 並列計算とポカヨケ品質ゲート A〜E)</text>
+
+  <rect class="card-verm" x="48" y="308" width="224" height="216" rx="4"/>
+  <text class="t-title" x="64" y="332">[検 A] 数学・SDF監査</text>
+  <text class="t-body" x="64" y="358">04-subject-audit.md</text>
+  <text class="t-muted" x="64" y="382">• リアプノフ有界安定性</text>
+  <text class="t-muted" x="64" y="404">• 4点四面体SDF法線計算</text>
+  <text class="t-muted" x="64" y="426">• 6点軸勾配の冗長排除</text>
+  <text class="t-muted" x="64" y="448">• 流体・音響CFL境界検証</text>
+  <text class="t-body" x="64" y="496">成果物：数理不変条件表</text>
+
+  <rect class="card-cyan" x="288" y="308" width="224" height="216" rx="4"/>
+  <text class="t-title" x="304" y="332">[検 B] シェーダ・UBO</text>
+  <text class="t-body" x="304" y="358">05-shader-rules.md</text>
+  <text class="t-muted" x="304" y="382">• #version 300 es 必須</text>
+  <text class="t-muted" x="304" y="404">• layout(std140) 16B整列</text>
+  <text class="t-muted" x="304" y="426">• 分岐前 dFdx/dFdy 計算</text>
+  <text class="t-muted" x="304" y="448">• 定数名と導出コメント</text>
+  <text class="t-body" x="304" y="496">成果物：マジック定数ゼロ</text>
+
+  <rect class="card-verm" x="528" y="308" width="224" height="216" rx="4"/>
+  <text class="t-title" x="544" y="332">[検 C] パス・FBO設計</text>
+  <text class="t-body" x="544" y="358">03 &amp; 06-runtime-ops.md</text>
+  <text class="t-muted" x="544" y="382">• texStorage2D 不変確保</text>
+  <text class="t-muted" x="544" y="404">• checkFramebufferStatus</text>
+  <text class="t-muted" x="544" y="426">• タイルGPU invalidate</text>
+  <text class="t-muted" x="544" y="448">• 同時読み書き競合禁止</text>
+  <text class="t-body" x="544" y="496">成果物：6パス確定順序</text>
+
+  <rect class="card-cyan" x="768" y="308" width="224" height="216" rx="4"/>
+  <text class="t-title" x="784" y="332">[検 D] 帯域・段階縮退</text>
+  <text class="t-body" x="784" y="358">02-hardware-budget.md</text>
+  <text class="t-muted" x="784" y="382">• 帯域幅 GB/s 事前試算</text>
+  <text class="t-muted" x="784" y="404">• KTX2 圧縮テクスチャ</text>
+  <text class="t-muted" x="784" y="426">• 半解像度レイマーチ縮退</text>
+  <text class="t-muted" x="784" y="448">• 明示的 delete 解放鎖</text>
+  <text class="t-body" x="784" y="496">成果物：フレーム予算保証</text>
+
+  <rect class="card-gold" x="1008" y="308" width="224" height="216" rx="4"/>
+  <text class="t-title" x="1024" y="332">[検 E] 非同期PBO・CI</text>
+  <text class="t-body" x="1024" y="358">07-validation-and-ci.md</text>
+  <text class="t-muted" x="1024" y="382">• PBO + fenceSync(0ns)</text>
+  <text class="t-muted" x="1024" y="404">• コンテキスト喪失訓練</text>
+  <text class="t-muted" x="1024" y="426">• 24項目 validate_repo</text>
+  <text class="t-muted" x="1024" y="448">• 4種ネガティブ自己検証</text>
+  <text class="t-body" x="1024" y="496">成果物：実機GPU合格証跡</text>
+
+  <!-- Tier 3: Single-Context Serial GL Submission & WebGPU Migration -->
+  <rect class="panel-verm" x="28" y="562" width="1224" height="274" rx="4"/>
+  <text class="sec" x="48" y="588">第三層 · 単一 WebGL 2.0 コンテキスト直列コマンド提出バスと WebGPU 移行仕様</text>
+
+  <rect class="card-verm" x="48" y="606" width="370" height="110" rx="4"/>
+  <text class="t-title" x="64" y="630">単一コンテキスト直列提出コア</text>
+  <text class="t-body" x="64" y="654">1. 専用VAO (createVertexArray) 常時バインド</text>
+  <text class="t-body" x="64" y="676">2. std140 UBO 一括 bufferSubData 転送</text>
+  <text class="t-muted" x="64" y="698">3. リンク直後の detachShader / deleteShader</text>
+
+  <rect class="card-cyan" x="442" y="606" width="380" height="110" rx="4"/>
+  <text class="t-title" x="458" y="630">6パス確定順序レンダリング (Pass 1..6)</text>
+  <text class="t-body" x="458" y="654">Shadow/SDF -&gt; G-Buffer MRT -&gt; ライティング</text>
+  <text class="t-body" x="458" y="676">-&gt; 半透明合成 -&gt; ポストプロセス -&gt; 最終表示</text>
+  <text class="t-muted" x="458" y="698">同一テクスチャの同時サンプル・描画アタッチ禁止</text>
+
+  <rect class="card-gold" x="846" y="606" width="386" height="110" rx="4"/>
+  <text class="t-title" x="862" y="630">ポカヨケ PBO 回読＆WebGPU 1:1 移行</text>
+  <text class="t-body" x="862" y="654">MAX_CLIENT_WAIT_TIMEOUT_WEBGL == 0 厳守</text>
+  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 非ブロッキング</text>
+  <text class="t-muted" x="862" y="698">深度 [-1,1]-&gt;[0,1] と UV 反転を単一ヘルパーへ隔離</text>
+
+  <rect class="card-cyan" x="48" y="732" width="1184" height="86" rx="4"/>
+  <text class="t-title" x="68" y="756">構造化 JSON 出力スキーマ＆24項目自動検証ゲート (authoring-base.json / runtime-compact.json)</text>
+  <text class="t-body" x="68" y="780">locale="ja" 対応 · 4種のゴールデン入出力ペア (face-raymarch / terrain-midrange / postprocess-context-loss / webgpu-migration-hybrid)</text>
+  <text class="t-muted" x="68" y="802">検証コマンド: python scripts/validate_repo.py -&gt; 24スイート合格 · glError == 0 · XML整形式・テキスト境界検査クリア</text>
+</svg>

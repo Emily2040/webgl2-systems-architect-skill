@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-labelledby="ko-info-title ko-info-desc">
+  <title id="ko-info-title">WebGL 2.0 시스템 아키텍트 · 한국어 텔레메트리 및 의사결정 매트릭스</title>
+  <desc id="ko-info-desc">6×6 의도 라우팅, 고주사율 프레임 예산 공식, 불변량 계약 및 WebGPU 1:1 매핑을 정리한 한국어 인포그래픽.</desc>
+  <defs>
+    <style>
+      .bg { fill: #060913; }
+      .panel { fill: #0b1122; stroke: #2dd4bf; stroke-width: 1.6; rx: 10; }
+      .panel-indigo { fill: #0c1026; stroke: #818cf8; stroke-width: 1.8; rx: 10; }
+      .box-mint { fill: #0d1d2a; stroke: #2dd4bf; stroke-width: 1.4; rx: 8; }
+      .box-indigo { fill: #121530; stroke: #818cf8; stroke-width: 1.4; rx: 8; }
+      .h1 { fill: #f8fafc; font-family: 'Malgun Gothic', sans-serif; font-size: 20px; font-weight: 700; }
+      .sub { fill: #94a3b8; font-family: 'Malgun Gothic', sans-serif; font-size: 13px; }
+      .sec { fill: #2dd4bf; font-family: 'Malgun Gothic', sans-serif; font-size: 14px; font-weight: 700; }
+      .t-b { fill: #f8fafc; font-family: 'Malgun Gothic', sans-serif; font-size: 13px; font-weight: 700; }
+      .t-m { fill: #cbd5e1; font-family: 'Consolas', 'Malgun Gothic', monospace; font-size: 12px; }
+      .t-s { fill: #94a3b8; font-family: 'Consolas', 'Malgun Gothic', monospace; font-size: 11px; }
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="720"/>
+
+  <rect class="panel-indigo" x="28" y="20" width="1224" height="68" rx="10"/>
+  <text class="h1" x="50" y="48">코발트-민트 파운드리 · WebGL 2.0 의사결정 매트릭스 &amp; 텔레메트리 레퍼런스 (ko)</text>
+  <text class="sub" x="50" y="72">최소 모듈 세트 라우팅 · 60Hz/120Hz 프레임 예산 수식 · 비차단 PBO 판독 및 WebGPU 하이브리드 이관</text>
+
+  <!-- Left Column -->
+  <rect class="panel" x="28" y="104" width="600" height="390" rx="10"/>
+  <text class="sec" x="48" y="130">1. 6대 엔지니어링 의도 × 최소 모듈 세트 (registry/module-map.json)</text>
+
+  <rect class="box-mint" x="48" y="146" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="166">1. architecture (아키텍처 설계)</text>
+  <text class="t-m" x="280" y="166">모듈: 01, 02, 03, 04, 05, 06, 07 (전체 7개)</text>
+  <text class="t-s" x="64" y="184">신규 멀티패스 렌더러, SDF 레이마칭, std140 UBO 및 무헤드 CI 설계</text>
+
+  <rect class="box-indigo" x="48" y="202" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="222">2. debug (결함 디버깅)</text>
+  <text class="t-m" x="280" y="222">모듈: 01, 03, 05, 06, 07 (5개 모듈)</text>
+  <text class="t-s" x="64" y="240">FBO 불완전성, 컨텍스트 손실 블랙스크린, 미분 아티팩트, readPixels 스톨</text>
+
+  <rect class="box-mint" x="48" y="258" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="278">3. optimize (성능 최적화)</text>
+  <text class="t-m" x="280" y="278">모듈: 01, 02, 03, 05, 06, 07 (6개 모듈)</text>
+  <text class="t-s" x="64" y="296">고해상도/고주사율 프레임 드롭 해결, 대역폭 절감, 타일 GPU invalidateFBO</text>
+
+  <rect class="box-indigo" x="48" y="314" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="334">4. review (코드/설계 감사)</text>
+  <text class="t-m" x="280" y="334">모듈: 01, 02, 03, 04, 05, 06, 07 (전체 7개)</text>
+  <text class="t-s" x="64" y="352">수학적 안정성, 셰이더 매직 리터럴, GPU 리소스 누수 및 CI 게이트 감사</text>
+
+  <rect class="box-mint" x="48" y="370" width="560" height="48" rx="8"/>
+  <text class="t-b" x="64" y="390">5. implement (기능 구현)</text>
+  <text class="t-m" x="280" y="390">모듈: 01, 02, 03, 04, 05, 06, 07 (전체 7개)</text>
+  <text class="t-s" x="64" y="408">전용 VAO, std140 UBO, 컨텍스트 복구 및 PBO 판독을 포함한 프로덕션 패치</text>
+
+  <rect class="box-indigo" x="48" y="426" width="560" height="52" rx="8"/>
+  <text class="t-b" x="64" y="446">6. migration (플랫폼 이관)</text>
+  <text class="t-m" x="280" y="446">모듈: 01, 02, 03, 05, 06, 07 (6개 모듈)</text>
+  <text class="t-s" x="64" y="466">WebGL 1.0 -&gt; WebGL 2.0 업그레이드 또는 WebGPU + WebGL 2.0 하이브리드 이관</text>
+
+  <!-- Right Column -->
+  <rect class="panel-indigo" x="652" y="104" width="600" height="390" rx="10"/>
+  <text class="sec" x="672" y="130">2. 고주사율 하드웨어 예산 수식 &amp; WebGPU 1:1 이관 매트릭스</text>
+
+  <rect class="box-mint" x="672" y="146" width="560" height="104" rx="8"/>
+  <text class="t-b" x="688" y="168">프레임 시간 예산 및 메모리 대역폭 수식 (02-hardware-budget.md)</text>
+  <text class="t-m" x="688" y="192">gpuBudgetMs = (1000 / targetFps) - cpuFrameMs - 1.5ms (60Hz: 12.67ms)</text>
+  <text class="t-m" x="688" y="214">targetDPR = min(deviceDPR, 2.0, sqrt(gpuBudgetMs / (Mpx * cost)))</text>
+  <text class="t-s" x="688" y="236">bandwidthGBps = width * height * dpr^2 * bytesPerPx * passes * fps / 1e9</text>
+
+  <rect class="box-indigo" x="672" y="262" width="560" height="104" rx="8"/>
+  <text class="t-b" x="688" y="284">WebGL 2.0 4대 핵심 불변량 (Invariants)</text>
+  <text class="t-m" x="688" y="308">1. 전용 VAO 상시 바인딩 + layout(std140) 16바이트 정렬 UBO</text>
+  <text class="t-m" x="688" y="330">2. 비균일 분기 전 dFdx/dFdy 사전 계산 및 textureGrad 명시 호출</text>
+  <text class="t-s" x="688" y="352">3. PBO + fenceSync (timeout=0) 비차단 판독 · 4. 의존성 순서 컨텍스트 복구</text>
+
+  <rect class="box-mint" x="672" y="378" width="560" height="100" rx="8"/>
+  <text class="t-b" x="688" y="400">WebGL 2.0 -&gt; WebGPU (WGSL) 1:1 매핑</text>
+  <text class="t-m" x="688" y="424">VAO -&gt; GPUVertexBufferLayout | std140 UBO -&gt; GPUBindGroupLayout</text>
+  <text class="t-m" x="688" y="446">Transform Feedback -&gt; Compute | PBO+fenceSync -&gt; mapAsync(READ)</text>
+  <text class="t-s" x="688" y="466">클립 공간 깊이 [-1, 1] -&gt; [0, 1] 및 UV Y-플립을 단일 카메라 헬퍼에 격리</text>
+
+  <!-- Bottom Row -->
+  <rect class="panel" x="28" y="512" width="1224" height="184" rx="10"/>
+  <text class="sec" x="48" y="538">3. 3단계 자동 검증 게이트 및 무헤드 GPU 실증 (scripts/validate_repo.py)</text>
+
+  <rect class="box-mint" x="48" y="554" width="380" height="122" rx="8"/>
+  <text class="t-b" x="64" y="578">게이트 1 · 정적 구조 &amp; 4개 국어 패리티</text>
+  <text class="t-m" x="64" y="602">• 한/영/중/일 4개 국어 README 및 locales 검증</text>
+  <text class="t-m" x="64" y="624">• forbidden-slop.json 금지 구문 스캔</text>
+  <text class="t-s" x="64" y="648">• 모든 SVG XML 정형성 및 텍스트 여백 검증</text>
+
+  <rect class="box-indigo" x="450" y="554" width="380" height="122" rx="8"/>
+  <text class="t-b" x="466" y="578">게이트 2 · JSON 스키마 &amp; 네거티브 테스트</text>
+  <text class="t-m" x="466" y="602">• 4개 골든 예제와 module-map 완전 일치</text>
+  <text class="t-m" x="466" y="624">• 잘못된 XML/텍스트 오버플로/스키마 즉시 차단</text>
+  <text class="t-s" x="466" y="648">• 허위 통과를 막는 4개 자체 역테스트 내장</text>
+
+  <rect class="box-mint" x="852" y="554" width="380" height="122" rx="8"/>
+  <text class="t-b" x="868" y="578">게이트 3 · 무헤드 크롬 WebGL 2.0 실증</text>
+  <text class="t-m" x="868" y="602">• #version 300 es + VAO + std140 UBO</text>
+  <text class="t-m" x="868" y="624">• PBO + fenceSync (timeout=0) 픽셀 검증</text>
+  <text class="t-s" x="868" y="648">• glError == 0 및 컨텍스트 복구 완료</text>
+</svg>

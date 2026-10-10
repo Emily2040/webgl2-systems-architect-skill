@@ -4,6 +4,16 @@
 
 WebGL 2.0 に関する要求を、検証可能な設計計画、コードレビュー、WebGPU 移行ブループリント、または実装パッチへ変換します。本スキルはタスクルーターおよび実行ガイドであり、現在のタスクに必要なモジュールのみを選択的にロードします。
 
+## 日本語版固有のビジュアル＆ワークフロー設計（墨朱精密 · 自働化品質ゲート駆動二層直列モデル）
+
+日本語版は**墨朱精密（Sumi-Ink `#08090D` & Vermilion `#FF4D2E`）**のエンジニアリング・モノグラフ仕様を採用し、専用の図面およびインフォグラフィックを `docs/assets/ja/webgl2-systems-hero.png`、`docs/assets/ja/webgl2-systems-infographic.png`、`docs/assets/ja/architecture.svg`、`docs/assets/ja/skill-infographic.svg` に配置しています。
+
+1. **第一関門 · 意図分類 (`01-triage.md`)**：`intent` / `project_class` / `hardware_data_quality` を特定し、`[不変条件]` と `[経験則]` を明確に分離してロード対象を確定する。
+2. **第二関門 · 予算算定 (`02-hardware-budget.md`)**：`16.67ms` (60Hz) バジェット、DPR 上限、`EXT_disjoint_timer_query_webgl2` 実測条件を検証する。
+3. **第三関門 · 並列準備 (`03-pipeline-and-concurrency.md`)**：Worker デコード・KTX2 展開・`KHR_parallel_shader_compile` 非同期ポーリングを並列レーンで完了させる。
+4. **第四関門 · 直列送出 (`05-shader-rules.md` + `06-runtime-ops.md`)**：単一 `WebGL2RenderingContext` 上で VAO、`std140` UBO、`texStorage2D`、状態リセットを順序保証付きで送出する。
+5. **第五関門 · 品質検査 (`07-validation-and-ci.md`)**：PBO + `fenceSync(timeout=0)` 非ブロッキング読戻し、コンテキスト喪失復旧、日本語反スロップ検査で合格判定を下す。
+
 ## 第一原理ルール
 
 1. **不変条件 (Invariants)** と **条件付きヒューリスティクス (Heuristics)** を明確に分離する。

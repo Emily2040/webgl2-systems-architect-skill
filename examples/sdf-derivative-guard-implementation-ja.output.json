@@ -1,0 +1,42 @@
+{
+  "intent": "implementation",
+  "project_class": "sdf-raymarch",
+  "subject": "GLSL ES 3.00 SDF レイマーチングにおける事前微分 textureGrad 保護と 4 タップ四面体法線の実装",
+  "locale": "ja",
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md"
+  ],
+  "assumptions": [
+    "レイマーチングの早期 break ループおよびヒット後のマテリアル ID 分岐は 2x2 ピクセルクアッド内で非一様制御フローとなる。",
+    "フルスクリーントライアングル描画は gl_VertexID を用いるが、WebGL 2.0 仕様により空でない VAO のバインドが必須である。"
+  ],
+  "derivations": [
+    "NORMAL_GRAD_EPS = 2.0 * SURF_HIT_EPS = 2.0 * 0.0042 = 0.0084（4 タップ四面体法線のサンプル半径）",
+    "tetrahedralTapReduction = (6 - 4) / 6 = 33.3%（中心差分 6 回に対し mapScene 評価を 4 回へ削減）"
+  ],
+  "key_decisions": [
+    "非一様なレイマーチ break ループやマテリアル if 分岐に入る前に vec2 dPdx = dFdx(vUv); vec2 dPdy = dFdy(vUv); を事前計算し、分岐内のテクスチャ参照をすべて textureGrad(uMatAtlas, matUv, dPdx, dPdy) に統一する。",
+    "SDF 表面法線の算出を 6 タップ中心差分から 4 タップ四面体差分 calcNormal(p) へ置き換え、ドメイン歪みのある SDF には Lipschitz 係数 stepScale = 0.75 を適用する。",
+    "カメラ・時間・デバッグモードを 16 バイト境界整列の layout(std140) uniform FrameBlock UBO に集約し、専用 VAO と WebGLSampler をバインドして描画する。"
+  ],
+  "parallel_tasks": [
+    "KHR_parallel_shader_compile の COMPLETION_STATUS_KHR をフレーム間でポーリングしてメインスレッドのリンク停止を防ぐ",
+    "Web Worker 側でマテリアルアトラス KTX2 テクスチャをデコードし texStorage2D + texSubImage2D で転送する"
+  ],
+  "risks": [
+    "レイマーチループ脱出後の if (hit) ブロック内で暗黙 LOD の texture() を呼ぶと、シルエット境界の 2x2 クアッドでミップレベルが破綻する。",
+    "std140 UBO 内で vec3 をパディングなしで並べると JS 側 Float32Array オフセットと 4 バイトずれて描画が崩れる。"
+  ],
+  "next_steps": [
+    "シェーダー先頭バイトを #version 300 es とし、分岐前に dFdx/dFdy を計算して textureGrad へ渡すよう書き換える",
+    "calcNormal 関数を k = vec2(1.0, -1.0) を用いた 4 タップ四面体差分へ置換し、inversesqrt(max(dot(n, n), 1e-12)) で正規化を保護する",
+    "初期化時に createVertexArray() と std140 UBO を構成し、リンク完了直後に detachShader / deleteShader を実行する"
+  ],
+  "validation_gates": [
+    "#version 300 es シェーダーの COMPILE_STATUS および LINK_STATUS が true かつ infoLog が空であること",
+    "複数フレーム PBO + gl.fenceSync (timeout = 0) 非同期リードバックにより中央ピクセルが正常描画され gl.getError() === gl.NO_ERROR であること"
+  ]
+}

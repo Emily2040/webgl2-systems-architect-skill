@@ -1,0 +1,158 @@
+{
+  "skill": {
+    "name": "webgl2-systems-architect-skill",
+    "version": "2.0.0"
+  },
+  "task": {
+    "intent": "review",
+    "project_class": "ui",
+    "subject": "车载 HUD 矢量 SDF 仪表盘与多通道毛玻璃背景合成着色器审计",
+    "locale": "zh-CN",
+    "target_platforms": [
+      "嵌入式车载 Chromium WebGL 2.0",
+      "桌面端 Chrome / Safari"
+    ],
+    "fps_target": 60
+  },
+  "inputs": {
+    "artifacts": [
+      {
+        "kind": "shader-source",
+        "label": "HUD SDF 边框与动态分支纹理采样片元着色器",
+        "used": true
+      }
+    ],
+    "hardware_data_quality": "provided",
+    "constraints": [
+      "60 FPS 硬实时显示（帧预算 16.67 ms）",
+      "P0 速度数字与刻度 SDF 边缘必须在任何降级档位下保持锐利",
+      "消除动态 if 分支内的 2x2 像素块导数破面"
+    ]
+  },
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/04-subject-audit.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "assumptions": [
+    {
+      "statement": "HUD 仪表盘中 P0 级信息为车速/告警 SDF 字形与主刻度环，毛玻璃背景模糊属于 P2 级润色特性。",
+      "confidence": "high"
+    },
+    {
+      "statement": "2x2 像素块锯齿源于在非均匀 if 分支内直接调用了 fwidth(sd) 与隐式 LOD texture()。",
+      "confidence": "high"
+    }
+  ],
+  "decisions": [
+    {
+      "area": "subject-hierarchy",
+      "decision": "将速度读数、告警图标与主刻度环定为 P0（全分辨率必保），内环辉光定为 P1，背景双通道高斯毛玻璃定为 P2（超预算时首先降至 0.5x 分辨率或关闭）。",
+      "rationale": "车载 HUD 的首要工程指标是主轮廓与字形可读性，绝不能因 P2 模糊开销导致掉帧。",
+      "confidence": "high"
+    },
+    {
+      "area": "shader-derivatives",
+      "decision": "在进入任何非均匀条件分支前统一预计算 vec2 dUvx = dFdx(vUv); vec2 dUvy = dFdy(vUv); 及标量距离场梯度，并在分支内改用 textureGrad。",
+      "rationale": "遵循 GLSL ES 3.00 规范，消除 2x2 片元四元组在分支分叉时的未定义偏导数。",
+      "confidence": "high"
+    },
+    {
+      "area": "runtime-state",
+      "decision": "使用 gl.texStorage2D 分配不可变半分辨率模糊 FBO，并在上屏合成后对瞬态附件调用 gl.invalidateFramebuffer。",
+      "rationale": "降低嵌入式瓦片 GPU 的主存写回带宽并避免运行时 Mipmap 校验开销。",
+      "confidence": "high"
+    }
+  ],
+  "derivations": [
+    {
+      "name": "SDF_AA_HALF_WIDTH",
+      "formula": "0.7071 * length(vec2(dFdx(sd), dFdy(sd)))",
+      "values": {
+        "diagonalPixelFactor": 0.7071
+      },
+      "result": 0.7071,
+      "units": "signed-distance-units",
+      "notes": "在一致控制流中预先计算半像素抗锯齿宽度，用于 smoothstep(-w, w, sd)。"
+    },
+    {
+      "name": "halfResBlurSavingsRatio",
+      "formula": "1.0 - (0.5 * 0.5)",
+      "values": {
+        "axisScale": 0.5
+      },
+      "result": 0.75,
+      "units": "ratio",
+      "notes": "将 P2 毛玻璃 FBO 从 1.0x 降至每轴 0.5x 可削减 75% 的片元填充与带宽。"
+    }
+  ],
+  "parallel_plan": {
+    "execution_mode": "parallel",
+    "lanes": [
+      {
+        "lane": "B",
+        "purpose": "HUD 视觉层级审计与 P0/P1/P2 降级裁剪序制定",
+        "independent_of": [
+          "D",
+          "E"
+        ],
+        "outputs": [
+          "P0 字形与刻度环清单",
+          "P2 毛玻璃半分辨率降级策略"
+        ]
+      },
+      {
+        "lane": "D",
+        "purpose": "GLSL ES 3.00 导数安全重构与 std140 UBO 对齐检查",
+        "independent_of": [
+          "B",
+          "E"
+        ],
+        "outputs": [
+          "分支前 dFdx/dFdy 预计算补丁",
+          "16字节对齐 HudFrameBlock UBO"
+        ]
+      },
+      {
+        "lane": "E",
+        "purpose": "五级验证阶梯与 PBO 像素回归门禁",
+        "independent_of": [
+          "B"
+        ],
+        "outputs": [
+          "uDebugMode == 3 微分接缝检测视图",
+          "跨帧 PBO + fenceSync 非阻塞回读校验"
+        ]
+      }
+    ]
+  },
+  "deliverables": [
+    {
+      "type": "shader-review-report",
+      "summary": "定位并修复非均匀流下 fwidth/texture 导致的 2x2 像素块破面与未推导常量。"
+    },
+    {
+      "type": "cut-order-table",
+      "summary": "确立 P2 毛玻璃降采样 -> DPR 钳制 -> P1 辉光收敛 -> 严保 P0 字形的确定性裁剪序。"
+    }
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "issue": "在根据图层 ID 动态分支的 if 块内直接调用 fwidth(sd) 会导致仪表边缘出现块状闪烁。",
+      "mitigation": "将 dFdx/dFdy 提升至分支外顶层作用域计算，并通过 uDebugMode == 3 验证接缝消失。"
+    },
+    {
+      "severity": "medium",
+      "issue": "标签页或车机休眠唤醒后若未处理 webglcontextlost 会导致 HUD 永久黑屏。",
+      "mitigation": "注册 webglcontextlost (调用 preventDefault) 与 webglcontextrestored，按依赖序重建字体纹理、VAO、UBO 与 FBO。"
+    }
+  ],
+  "validation_gates": [
+    "切换至 uDebugMode == 3（UV 与距离场导数检查）时，圆角边框无 2x2 像素阶跃亮斑",
+    "所有自定义 FBO 通过 gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE 检查",
+    "跨帧 PBO + gl.fenceSync (timeout = 0) 非阻塞回读确认中心刻度与字形 RGBA 像素非空且 gl.getError() === gl.NO_ERROR"
+  ]
+}

@@ -42,14 +42,14 @@
 
 ## 4 言語ネイティブサポート (`en`, `zh-CN`, `ja`, `ko`)
 
-| 言語 (Locale) | ルート README | ローカライズ SKILL | ローカライズ Orchestrator | コアモジュール (`01`..`07`) |
+| 言語 (Locale) | ルート README | ローカライズ SKILL | ローカライズ参照文書 (`00`..`02`) | コアモジュール (`01`..`07`) |
 |---|---|---|---|---|
-| **English (`en`)** | [`README.md`](./README.md) | [`SKILL.md`](./SKILL.md) | [`references/00-orchestrator.md`](./references/00-orchestrator.md) | [`skills/core/`](./skills/core) |
-| **简体中文 (`zh-CN`)** | [`README.zh-CN.md`](./README.zh-CN.md) | [`locales/zh-CN/SKILL.md`](./locales/zh-CN/SKILL.md) | [`locales/zh-CN/references/00-orchestrator.md`](./locales/zh-CN/references/00-orchestrator.md) | [`locales/zh-CN/skills/core/`](./locales/zh-CN/skills/core) |
-| **日本語 (`ja`)** | [`README.ja.md`](./README.ja.md) | [`locales/ja/SKILL.md`](./locales/ja/SKILL.md) | [`locales/ja/references/00-orchestrator.md`](./locales/ja/references/00-orchestrator.md) | [`locales/ja/skills/core/`](./locales/ja/skills/core) |
-| **한국어 (`ko`)** | [`README.ko.md`](./README.ko.md) | [`locales/ko/SKILL.md`](./locales/ko/SKILL.md) | [`locales/ko/references/00-orchestrator.md`](./locales/ko/references/00-orchestrator.md) | [`locales/ko/skills/core/`](./locales/ko/skills/core) |
+| **English (`en`)** | [`README.md`](./README.md) | [`SKILL.md`](./SKILL.md) | [`references/`](./references) | [`skills/core/`](./skills/core) |
+| **简体中文 (`zh-CN`)** | [`README.zh-CN.md`](./README.zh-CN.md) | [`locales/zh-CN/SKILL.md`](./locales/zh-CN/SKILL.md) | [`locales/zh-CN/references/`](./locales/zh-CN/references) | [`locales/zh-CN/skills/core/`](./locales/zh-CN/skills/core) |
+| **日本語 (`ja`)** | [`README.ja.md`](./README.ja.md) | [`locales/ja/SKILL.md`](./locales/ja/SKILL.md) | [`locales/ja/references/`](./locales/ja/references) | [`locales/ja/skills/core/`](./locales/ja/skills/core) |
+| **한국어 (`ko`)** | [`README.ko.md`](./README.ko.md) | [`locales/ko/SKILL.md`](./locales/ko/SKILL.md) | [`locales/ko/references/`](./locales/ko/references) | [`locales/ko/skills/core/`](./locales/ko/skills/core) |
 
-[`registry/forbidden-slop.json`](./registry/forbidden-slop.json) は 4 言語すべての曖昧な宣伝文句（「圧倒的なパフォーマンス」「映画のような質感」「シームレスな体験」など）を検出し、具体的なボトルネック名、レンダーパス、数値閾値への置き換えを強制します。
+[`registry/forbidden-slop.json`](./registry/forbidden-slop.json) は 4 言語すべての曖昧な宣伝文句を検出し、具体的なボトルネック名、レンダーパス、数値閾値への置き換えを強制します。
 
 ---
 
@@ -70,12 +70,16 @@
 
 ## 構造化出力スキーマとサンプル
 
-- [`schemas/authoring-base.json`](./schemas/authoring-base.json) — フル設計・移行スキーマ（`skill`, `task`, `inputs`, `modules`, `assumptions`, `decisions`, `derivations`, `parallel_plan`, `deliverables`, `risks`, `validation_gates`）。
-  - サンプル (`architecture` / `sdf-raymarch`): [`examples/face-raymarch.output.json`](./examples/face-raymarch.output.json)
-  - サンプル (`migration` / `hybrid`): [`examples/webgpu-migration-hybrid.output.json`](./examples/webgpu-migration-hybrid.output.json)
+- [`schemas/authoring-base.json`](./schemas/authoring-base.json) — フル設計・レビュー・移行スキーマ（`skill`, `task`, `inputs`, `modules`, `assumptions`, `decisions`, `derivations`, `parallel_plan`, `deliverables`, `risks`, `validation_gates`）。
+  - サンプル (`architecture` / `sdf-raymarch` / `en`): [`examples/face-raymarch.output.json`](./examples/face-raymarch.output.json)
+  - サンプル (`migration` / `hybrid` / `en`): [`examples/webgpu-migration-hybrid.output.json`](./examples/webgpu-migration-hybrid.output.json)
+  - サンプル (`review` / `ui` / `zh-CN`): [`examples/pbr-shader-audit-review-zh.output.json`](./examples/pbr-shader-audit-review-zh.output.json)
 - [`schemas/runtime-compact.json`](./schemas/runtime-compact.json) — コンパクト応答スキーマ（`intent`, `project_class`, `subject`, `locale`, `modules`, `assumptions`, `derivations`, `key_decisions`, `parallel_tasks`, `risks`, `next_steps`, `validation_gates`）。
-  - サンプル (`optimize` / `raster-mesh`): [`examples/terrain-midrange.output.json`](./examples/terrain-midrange.output.json)
-  - サンプル (`debug` / `postprocess`): [`examples/postprocess-context-loss.output.json`](./examples/postprocess-context-loss.output.json)
+  - サンプル (`optimize` / `raster-mesh` / `en`): [`examples/terrain-midrange.output.json`](./examples/terrain-midrange.output.json)
+  - サンプル (`debug` / `postprocess` / `en`): [`examples/postprocess-context-loss.output.json`](./examples/postprocess-context-loss.output.json)
+  - サンプル (`implementation` / `raster-mesh` / `en`): [`examples/instanced-mesh-ubo-implementation.output.json`](./examples/instanced-mesh-ubo-implementation.output.json)
+  - サンプル (`implementation` / `sdf-raymarch` / `ja`): [`examples/sdf-derivative-guard-implementation-ja.output.json`](./examples/sdf-derivative-guard-implementation-ja.output.json)
+  - サンプル (`optimize` / `data-vis` / `ko`): [`examples/high-fps-data-vis-optimize-ko.output.json`](./examples/high-fps-data-vis-optimize-ko.output.json)
 
 ---
 

@@ -27,8 +27,8 @@
 한국어 에디션은 고주사율(60Hz/120Hz) 및 고밀도 디스플레이 환경과 HBM급 메모리 대역폭 버짓팅에 최적화된 **“파운드리 텔레메트리 & 5-레인 병렬 검증 매트릭스 (Foundry Telemetry Matrix)”** 아키텍처를 채택합니다:
 
 1. **1~2단계 · 6×6 의도 트리아지 및 고주사율 프레임 예산 게이트 (`01-triage.md` & `02-hardware-budget.md`)**: 루트 [`locales/ko/SKILL.md`](./locales/ko/SKILL.md)는 800자 미만으로 유지되며 6대 의도 × 6대 프로젝트 분류에서 최소 모듈 세트만 로드합니다. 60Hz(`12.67 ms`) 및 120Hz(`5.33 ms`) GPU 시간 예산을 산출하고, 고해상도 패널에서 `targetDPR <= 2.0` 동적 클램프와 메모리 대역폭(`GB/s`) 상한을 검증합니다.
-2. **3단계 · 5-레인 병렬 워커 준비 파이프라인 (`레인 A`..`레인 E`)**: CPU 및 Web Worker에서 **레인 A(리아푸노프 안정성 및 4-탭 사면체 SDF 법선)**, **레인 B(`#version 300 es` 및 16바이트 정렬 `std140` UBO)**, **레인 C(`texStorage2D` 불변 할당 및 모바일 타일 GPU `invalidateFramebuffer`)**, **레인 D(`EXT_disjoint_timer_query_webgl2` 3~4 프레임 링버퍼)**, **레인 E(비차단 PBO 및 24개 CI 게이트)**를 병렬로 준비합니다.
-3. **4~5단계 · 단일 컨텍스트 직렬 GL 제출 및 WebGPU 하이브리드 이관**: 단일 `WebGL2RenderingContext`에서 전용 VAO 바인딩, `std140` UBO 일괄 갱신, 6-패스 확정 순서 실행을 직렬로 수행하며, `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` (`timeout = 0`) 비차단 판독과 WebGL 2.0 -> WebGPU(`WGSL`) 1:1 매핑을 보장합니다.
+2. **3단계 · 5-레인 병렬 워커 준비 파이프라인 (`레인 A`..`레인 E`)**: CPU 및 Web Worker에서 **레인 A(5계층 관측 구조, P0/P1/P2 절감 및 4-탭 사면체 SDF 법선)**, **레인 B(`#version 300 es` 및 16바이트 정렬 `std140` UBO)**, **레인 C(`texStorage2D` 불변 할당 및 모바일 타일 GPU `invalidateFramebuffer`)**, **레인 D(`EXT_disjoint_timer_query_webgl2` 3~4 프레임 링버퍼)**, **레인 E(비차단 PBO 및 24개 CI 게이트)**를 병렬로 준비합니다.
+3. **4~5단계 · 단일 컨텍스트 직렬 GL 제출 및 WebGPU 하이브리드 이관**: 단일 `WebGL2RenderingContext`에서 전용 VAO 바인딩, `std140` UBO 일괄 갱신, 6-패스 확정 순서 실행을 직렬로 수행하며, `gl.PIXEL_PACK_BUFFER` + `gl.fenceSync` (`timeout = 0`) 다중 프레임 비차단 판독과 WebGL 2.0 -> WebGPU(`WGSL`) 1:1 매핑을 보장합니다.
 
 ---
 
@@ -42,14 +42,14 @@
 
 ## 4개 언어 네이티브 지원 (`en`, `zh-CN`, `ja`, `ko`)
 
-| 언어 (Locale) | 루트 README | 로컬라이즈 SKILL | 로컬라이즈 Orchestrator | 코어 모듈 (`01`..`07`) |
+| 언어 (Locale) | 루트 README | 로컬라이즈 SKILL | 로컬라이즈 레퍼런스 (`00`..`02`) | 코어 모듈 (`01`..`07`) |
 |---|---|---|---|---|
-| **English (`en`)** | [`README.md`](./README.md) | [`SKILL.md`](./SKILL.md) | [`references/00-orchestrator.md`](./references/00-orchestrator.md) | [`skills/core/`](./skills/core) |
-| **简体中文 (`zh-CN`)** | [`README.zh-CN.md`](./README.zh-CN.md) | [`locales/zh-CN/SKILL.md`](./locales/zh-CN/SKILL.md) | [`locales/zh-CN/references/00-orchestrator.md`](./locales/zh-CN/references/00-orchestrator.md) | [`locales/zh-CN/skills/core/`](./locales/zh-CN/skills/core) |
-| **日本語 (`ja`)** | [`README.ja.md`](./README.ja.md) | [`locales/ja/SKILL.md`](./locales/ja/SKILL.md) | [`locales/ja/references/00-orchestrator.md`](./locales/ja/references/00-orchestrator.md) | [`locales/ja/skills/core/`](./locales/ja/skills/core) |
-| **한국어 (`ko`)** | [`README.ko.md`](./README.ko.md) | [`locales/ko/SKILL.md`](./locales/ko/SKILL.md) | [`locales/ko/references/00-orchestrator.md`](./locales/ko/references/00-orchestrator.md) | [`locales/ko/skills/core/`](./locales/ko/skills/core) |
+| **English (`en`)** | [`README.md`](./README.md) | [`SKILL.md`](./SKILL.md) | [`references/`](./references) | [`skills/core/`](./skills/core) |
+| **简体中文 (`zh-CN`)** | [`README.zh-CN.md`](./README.zh-CN.md) | [`locales/zh-CN/SKILL.md`](./locales/zh-CN/SKILL.md) | [`locales/zh-CN/references/`](./locales/zh-CN/references) | [`locales/zh-CN/skills/core/`](./locales/zh-CN/skills/core) |
+| **日本語 (`ja`)** | [`README.ja.md`](./README.ja.md) | [`locales/ja/SKILL.md`](./locales/ja/SKILL.md) | [`locales/ja/references/`](./locales/ja/references) | [`locales/ja/skills/core/`](./locales/ja/skills/core) |
+| **한국어 (`ko`)** | [`README.ko.md`](./README.ko.md) | [`locales/ko/SKILL.md`](./locales/ko/SKILL.md) | [`locales/ko/references/`](./locales/ko/references) | [`locales/ko/skills/core/`](./locales/ko/skills/core) |
 
-[`registry/forbidden-slop.json`](./registry/forbidden-slop.json)은 4개 언어 모두에서 "압도적인 퀄리티", "극한의 성능", "시네마틱한 느낌" 같은 모호한 과장 표현을 차단하고 구체적인 병목 원인, 렌더 패스 이름, 수치 임계값으로 대체하도록 강제합니다.
+[`registry/forbidden-slop.json`](./registry/forbidden-slop.json)은 4개 언어 모두에서 모호한 과장 표현을 차단하고 구체적인 병목 원인, 렌더 패스 이름, 수치 임계값으로 대체하도록 강제합니다.
 
 ---
 
@@ -70,12 +70,16 @@
 
 ## 구조화된 출력 스키마 및 예제
 
-- [`schemas/authoring-base.json`](./schemas/authoring-base.json) — 전체 아키텍처 및 마이그레이션 스키마 (`skill`, `task`, `inputs`, `modules`, `assumptions`, `decisions`, `derivations`, `parallel_plan`, `deliverables`, `risks`, `validation_gates`).
-  - 예제 (`architecture` / `sdf-raymarch`): [`examples/face-raymarch.output.json`](./examples/face-raymarch.output.json)
-  - 예제 (`migration` / `hybrid`): [`examples/webgpu-migration-hybrid.output.json`](./examples/webgpu-migration-hybrid.output.json)
+- [`schemas/authoring-base.json`](./schemas/authoring-base.json) — 전체 아키텍처, 리뷰 및 마이그레이션 스키마 (`skill`, `task`, `inputs`, `modules`, `assumptions`, `decisions`, `derivations`, `parallel_plan`, `deliverables`, `risks`, `validation_gates`).
+  - 예제 (`architecture` / `sdf-raymarch` / `en`): [`examples/face-raymarch.output.json`](./examples/face-raymarch.output.json)
+  - 예제 (`migration` / `hybrid` / `en`): [`examples/webgpu-migration-hybrid.output.json`](./examples/webgpu-migration-hybrid.output.json)
+  - 예제 (`review` / `ui` / `zh-CN`): [`examples/pbr-shader-audit-review-zh.output.json`](./examples/pbr-shader-audit-review-zh.output.json)
 - [`schemas/runtime-compact.json`](./schemas/runtime-compact.json) — 컴팩트 응답 스키마 (`intent`, `project_class`, `subject`, `locale`, `modules`, `assumptions`, `derivations`, `key_decisions`, `parallel_tasks`, `risks`, `next_steps`, `validation_gates`).
-  - 예제 (`optimize` / `raster-mesh`): [`examples/terrain-midrange.output.json`](./examples/terrain-midrange.output.json)
-  - 예제 (`debug` / `postprocess`): [`examples/postprocess-context-loss.output.json`](./examples/postprocess-context-loss.output.json)
+  - 예제 (`optimize` / `raster-mesh` / `en`): [`examples/terrain-midrange.output.json`](./examples/terrain-midrange.output.json)
+  - 예제 (`debug` / `postprocess` / `en`): [`examples/postprocess-context-loss.output.json`](./examples/postprocess-context-loss.output.json)
+  - 예제 (`implementation` / `raster-mesh` / `en`): [`examples/instanced-mesh-ubo-implementation.output.json`](./examples/instanced-mesh-ubo-implementation.output.json)
+  - 예제 (`implementation` / `sdf-raymarch` / `ja`): [`examples/sdf-derivative-guard-implementation-ja.output.json`](./examples/sdf-derivative-guard-implementation-ja.output.json)
+  - 예제 (`optimize` / `data-vis` / `ko`): [`examples/high-fps-data-vis-optimize-ko.output.json`](./examples/high-fps-data-vis-optimize-ko.output.json)
 
 ---
 

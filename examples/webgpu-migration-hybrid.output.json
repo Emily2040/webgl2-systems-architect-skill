@@ -50,7 +50,7 @@
   "decisions": [
     {
       "area": "uniform-layout",
-      "decision": "Consolidate all loose gl.uniform* calls into three 16-byte-aligned std140 UBOs (FrameBlock at binding 0, PassBlock at binding 1, MaterialBlock at binding 2) padded solely with mat4, vec4, andvec2 pairs.",
+      "decision": "Consolidate all loose gl.uniform* calls into three 16-byte-aligned std140 UBOs (FrameBlock at binding 0, PassBlock at binding 1, MaterialBlock at binding 2) padded solely with mat4, vec4, and vec2 pairs.",
       "rationale": "Matches both GLSL ES 3.00 layout(std140) and WGSL uniform address-space alignment rules without per-backend repacking.",
       "confidence": "high"
     },

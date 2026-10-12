@@ -46,7 +46,7 @@
   <rect class="card-indigo" x="345" y="146" width="285" height="86" rx="8"/>
   <text class="t-title" x="361" y="168">02 · 6×6 의도 × 클래스 매트릭스</text>
   <text class="t-body" x="361" y="190">architecture / debug / optimize</text>
-  <text class="t-muted" x="361" y="210">review / implement / migration</text>
+  <text class="t-muted" x="361" y="210">review / implementation / migration</text>
 
   <rect class="card-amber" x="652" y="146" width="285" height="86" rx="8"/>
   <text class="t-title" x="668" y="168">03 · 프레임 예산 &amp; DPR 클램프</text>
@@ -63,13 +63,13 @@
   <text class="sec" x="48" y="292">3단계 · 5-레인 병렬 워커 준비 파이프라인 (CPU/Worker 병렬 처리 vs 단일 컨텍스트 직렬 GL 경계)</text>
 
   <rect class="card-mint" x="48" y="308" width="224" height="216" rx="8"/>
-  <text class="t-title" x="64" y="332">레인 A · 수학 및 SDF 감사</text>
+  <text class="t-title" x="64" y="332">레인 A · 시각 계층 &amp; SDF</text>
   <text class="t-body" x="64" y="358">04-subject-audit.md</text>
-  <text class="t-muted" x="64" y="382">• 리아푸노프 유계 안정성</text>
+  <text class="t-muted" x="64" y="382">• 5단계 관찰 레이어 &amp; P0 실루엣</text>
   <text class="t-muted" x="64" y="404">• 4-탭 사면체 SDF 법선</text>
-  <text class="t-muted" x="64" y="426">• 6-탭 축방향 그래디언트 제거</text>
-  <text class="t-muted" x="64" y="448">• 유체/음향 CFL 시간 스텝</text>
-  <text class="t-body" x="64" y="496">산출물: 수학적 불변량 계약</text>
+  <text class="t-muted" x="64" y="426">• Lipschitz 스텝(0.65..0.85)</text>
+  <text class="t-muted" x="64" y="448">• P2-&gt;0.5x-&gt;DPR-&gt;P1 축소 순서</text>
+  <text class="t-body" x="64" y="496">산출물: P0/P1/P2 시각 우선순위</text>
 
   <rect class="card-indigo" x="288" y="308" width="224" height="216" rx="8"/>
   <text class="t-title" x="304" y="332">레인 B · 셰이더 &amp; UBO</text>
@@ -104,7 +104,7 @@
   <text class="t-muted" x="1024" y="382">• PBO + fenceSync(0ns)</text>
   <text class="t-muted" x="1024" y="404">• WEBGL_lose_context 훈련</text>
   <text class="t-muted" x="1024" y="426">• 24개 validate_repo 스위트</text>
-  <text class="t-muted" x="1024" y="448">• 4개 네거티브 자체 테스트</text>
+  <text class="t-muted" x="1024" y="448">• 6개 네거티브 자체 테스트</text>
   <text class="t-body" x="1024" y="496">산출물: 무헤드 GPU 실증</text>
 
   <!-- Stage 4 & 5 -->
@@ -126,11 +126,11 @@
   <rect class="card-amber" x="846" y="606" width="386" height="110" rx="8"/>
   <text class="t-title" x="862" y="630">비차단 PBO 판독 &amp; WebGPU 1:1 매핑</text>
   <text class="t-body" x="862" y="654">MAX_CLIENT_WAIT_TIMEOUT_WEBGL == 0 준수</text>
-  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 비차단 폴링</text>
+  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 다중 프레임 폴링</text>
   <text class="t-muted" x="862" y="698">클립 깊이 [-1,1]-&gt;[0,1] 및 UV Y-플립 단일 헬퍼 격리</text>
 
   <rect class="card-mint" x="48" y="732" width="1184" height="86" rx="8"/>
   <text class="t-title" x="68" y="756">이중 JSON 출력 계약 및 24개 자동 검증 게이트 (authoring-base.json / runtime-compact.json)</text>
-  <text class="t-body" x="68" y="780">locale="ko" 지원 · 4개 엔드투엔드 골든 예제 쌍 (face-raymarch / terrain-midrange / postprocess-context-loss / webgpu-migration-hybrid)</text>
+  <text class="t-body" x="68" y="780">en / zh-CN / ja / ko 4개 국어 지원 · 8개 엔드투엔드 골든 예제 쌍 (6대 의도 × 6대 클래스 × 4개 국어)</text>
   <text class="t-muted" x="68" y="802">검증 명령: python scripts/validate_repo.py -&gt; 24개 스위트 통과 · glError == 0 · XML 및 텍스트 여백 검증 100% 통과</text>
 </svg>

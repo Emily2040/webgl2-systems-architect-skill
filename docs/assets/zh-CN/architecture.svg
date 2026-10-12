@@ -48,7 +48,7 @@
   <rect class="card-jade" x="345" y="146" width="285" height="86" rx="8"/>
   <text class="t-title" x="361" y="168">02 · 6×6 意图与项目类型矩阵</text>
   <text class="t-body" x="361" y="190">architecture / debug / optimize</text>
-  <text class="t-muted" x="361" y="210">review / implement / migration</text>
+  <text class="t-muted" x="361" y="210">review / implementation / migration</text>
 
   <rect class="card-gold" x="652" y="146" width="285" height="86" rx="8"/>
   <text class="t-title" x="668" y="168">03 · 帧预算与动态 DPR 钳制</text>
@@ -65,13 +65,13 @@
   <text class="sec" x="48" y="292">中枢三阶 · 五轨并行预备管线 (CPU / Web Worker 并行计算 vs 单上下文 GPU 串行边界)</text>
 
   <rect class="card-jade" x="48" y="308" width="224" height="216" rx="8"/>
-  <text class="t-title" x="64" y="332">A轨 · 数学与SDF审计</text>
+  <text class="t-title" x="64" y="332">A轨 · 视觉层级与SDF审计</text>
   <text class="t-body" x="64" y="358">04-subject-audit.md</text>
-  <text class="t-muted" x="64" y="382">• 李雅普诺夫有界稳定性</text>
+  <text class="t-muted" x="64" y="382">• 5层可观测结构与P0轮廓</text>
   <text class="t-muted" x="64" y="404">• 4采样四面体SDF法线</text>
-  <text class="t-muted" x="64" y="426">• 消除6采样轴向梯度</text>
-  <text class="t-muted" x="64" y="448">• 声学/流体CFL步长边界</text>
-  <text class="t-body" x="64" y="496">输出：解析不变量契约</text>
+  <text class="t-muted" x="64" y="426">• Lipschitz步长界(0.65..0.85)</text>
+  <text class="t-muted" x="64" y="448">• P2-&gt;0.5x-&gt;DPR-&gt;P1裁剪序</text>
+  <text class="t-body" x="64" y="496">输出：P0/P1/P2视觉特征表</text>
 
   <rect class="card-gold" x="288" y="308" width="224" height="216" rx="8"/>
   <text class="t-title" x="304" y="332">B轨 · 着色器与UBO契约</text>
@@ -106,7 +106,7 @@
   <text class="t-muted" x="1024" y="382">• PBO + fenceSync(0ns)</text>
   <text class="t-muted" x="1024" y="404">• WEBGL_lose_context 演练</text>
   <text class="t-muted" x="1024" y="426">• 24项 validate_repo.py</text>
-  <text class="t-muted" x="1024" y="448">• 4项逆向自测门禁</text>
+  <text class="t-muted" x="1024" y="448">• 6项逆向自测门禁</text>
   <text class="t-body" x="1024" y="496">输出：无头Chrome实证</text>
 
   <!-- Stage 4 & 5: Inner Ring Serial GL Submission & Verification -->
@@ -128,11 +128,11 @@
   <rect class="card-cyan" x="846" y="606" width="386" height="110" rx="8"/>
   <text class="t-title" x="862" y="630">非阻塞 PBO 回读与 WebGPU 1:1 映射</text>
   <text class="t-body" x="862" y="654">gl.readPixels -&gt; PIXEL_PACK_BUFFER (0偏移)</text>
-  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 零阻塞轮询</text>
+  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 跨帧轮询</text>
   <text class="t-muted" x="862" y="698">隔离深度 [-1,1]-&gt;[0,1] 与 UV 翻转以无缝迁往 WGSL</text>
 
   <rect class="card-jade" x="48" y="732" width="1184" height="86" rx="8"/>
-  <text class="t-title" x="68" y="756">双模型输出契约与全仓验证闭环 (schemas/authoring-base.json &amp; runtime-compact.json)</text>
-  <text class="t-body" x="68" y="780">支持 locale="zh-CN" · 完整覆盖 4 组端到端黄金案例 (face-raymarch / terrain-midrange / postprocess-context-loss / webgpu-migration-hybrid)</text>
+  <text class="t-title" x="68" y="756">双模式输出契约与全仓验证闭环 (schemas/authoring-base.json &amp; runtime-compact.json)</text>
+  <text class="t-body" x="68" y="780">支持 en / zh-CN / ja / ko 四语种 · 完整覆盖 8 组端到端黄金案例（6大意图 × 6类项目形态 × 4语种）</text>
   <text class="t-muted" x="68" y="802">验证命令：python scripts/validate_repo.py -&gt; 24项全绿通过 · glError == 0 · XML与文本框边界校验100%合格</text>
 </svg>

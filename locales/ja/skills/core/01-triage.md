@@ -1,60 +1,53 @@
-# 01 - トリアージとタスク分類 (ja)
+# 01 - 意図トリアージとスコープ定義 (ja)
 
-## Purpose
+## 目的 (Purpose)
 
-WebGL 2.0 の要求を正確に分類し、必要なモジュールのみをロードして無関係なルールの混入を防ぐ。すべてのタスクはここから開始する。
+シェーダーの数式導出、FBO パス設計、または最適化作業に入る前に、ユーザーの WebGL 2.0 タスクを単一の主要な意図（Intent）とプロジェクト分類（Project Class）へ切り分け、最小のモジュール集合を確定する。トリアージを省略して実装に入ってはならない。
 
-## When to load
+## ロード時期 (When to load)
 
-すべてのリクエストにおいて最初にロードする。
+すべてのタスクで最初にロードする（`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`）。
 
-## Inputs
+## 入力 (Inputs)
 
-- ユーザープロンプトおよび対象言語（`en`, `zh-CN`, `ja`, `ko`）
-- 既存のシェーダー、JS/TS コード、パスグラフ、リポジトリファイル（存在する場合）
-- スクリーンショット、動画、GPU プロファイル、エラーログ（存在する場合）
-- 対象デバイス、ブラウザ、目標 FPS（既知の場合）
+- ユーザーの要件、対象プラットフォーム、目標フレームレート
+- 提供されたコード、シェーダー、スクリーンショット、計測ログ、またはプロンプトのみ（`prompt-only`）
 
-## Rules
+## 設計ルール (Rules)
 
-### 1. 要求を 4 つの軸で分類する
+### 1. 主要なエンジニアリング意図を 1 つ選ぶ
 
-1. **意図 (`intent`)**
-   - `architecture`：全体設計、パスグラフ、機能ティア分け、起動シーケンス
-   - `implementation`：新規 `#version 300 es` シェーダー、FBO パス、VAO/UBO 実装
-   - `debug`：描画不具合、`NaN`/精度バグ、不完全な FBO、状態リーク、コンテキストロスト
-   - `optimize`：フレームレート低下、フィルレート圧迫、帯域ボトルネック、同期リードバック停止
-   - `review`：コード監査、視覚的説得力評価、移植性チェック、本番出荷判定
-   - `migration`：WebGL 1 から WebGL 2.0 への更新、または WebGL 2.0 から WebGPU/WGSL への移行計画
+- **`architecture`**：新規のマルチパス WebGL 2.0 レンダラー、SDF レイマーチングパイプライン、FBO トポロジー、またはハイブリッド設計を構築する。
+- **`implementation`**：`#version 300 es` シェーダー、VAO/UBO/Sampler バインド、FBO 構築、またはホスト側 JS/TS 描画コードを実装する。
+- **`debug`**：ブラックアウト、`FRAMEBUFFER_INCOMPLETE_*`、非一様分岐での微分アーティファクト、NaN 伝播、`webglcontextlost` クラッシュ、同期リードバック停止を診断する。
+- **`optimize`**：フレーム落ち、高 DPI モバイル端末でのフィルレート過負荷、タイルメモリ帯域圧迫、CPU/GPU 同期ストールを解消する。
+- **`review`**：既存のシェーダーまたはレンダラーの数値安定性、マジックナンバー、ステート漏れ、テスト網羅性を監査する。
+- **`migration`**：WebGL 1.0 から WebGL 2.0 へ移行する、または WebGL 2.0 フォールバック付きの WebGPU (`navigator.gpu` + WGSL) デュアルバックエンドを設計する。
 
-2. **プロジェクト分類 (`project_class`)**
-   - `raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`
+### 2. プロジェクト分類を 1 つ選ぶ
 
-3. **対象 (`subject`)**
-   - `human face bust`、`terrain flyover`、`HDR bloom chain`、`WebGPU bind-group migration` など具体的な対象を明記する。
+```text
+raster-mesh | sdf-raymarch | hybrid | postprocess | data-vis | ui
+```
 
-4. **エビデンス品質 (`hardware_data_quality`)**
-   - `measured`（実測値あり）、`estimated`（デバイス層から推定）、`unknown`（プロンプトのみ、前提条件の明示が必須）。
+### 3. 入力証跡を整理しハードウェアデータ品質を明記する
 
-### 2. 変更提案の前に既存の成果物を検査する
+`inputs.hardware_data_quality` を以下の 4 段階のいずれかに分類する：
+- **`measured`**：`EXT_disjoint_timer_query_webgl2` の実測値、または制御されたパス切り替え差分計測がある場合。
+- **`partial`**：`gl.getParameter` の上限値や断片的な FPS 記録はあるが、パス単位の計測がない場合。
+- **`estimated`**：デバイス層（「ミドルレンジ Android」「モバイル Safari」など）のみが判明している場合（必ずヒューリスティック推定と明記）。
+- **`unknown`**：ターゲットハードウェア情報が一切ない場合。
 
-- シェーダーやコードがある場合は、`#version 300 es` 宣言、VAO/UBO バインド、FBO 構成、描画ループを先に確認する。
+### 4. `registry/module-map.json` の最小モジュール集合に厳密一致させる
 
-### 3. 意図別のモジュール選択 (`registry/module-map.json` と完全一致)
+出力の `modules` 配列は `registry/module-map.json[intent]` と完全一致させる（不要なモジュールを追加せず、必須モジュールを省かない）。
 
-- `architecture`: `skills/core/01-triage.md`, `skills/core/02-hardware-budget.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/04-subject-audit.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `implementation`: `skills/core/01-triage.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`
-- `debug`: `skills/core/01-triage.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `optimize`: `skills/core/01-triage.md`, `skills/core/02-hardware-budget.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `review`: `skills/core/01-triage.md`, `skills/core/04-subject-audit.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `migration`: `skills/core/01-triage.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
+## 典型的な失敗モード (Failure modes)
 
-## Failure modes
+- 局所的な `debug` や `implementation` タスクで全 7 モジュールを読み込み、コンテキストを希釈させる
+- デバイス層からの推測値を実測（`measured`）データとして扱う
+- `registry/module-map.json` と異なるモジュール一覧を出力する
 
-- 1 行のシェーダー修正に対して全モジュールをロードする
-- ラスターメッシュパイプラインに SDF レイマーチング規則を強制する
-- ボトルネックの切り分け前に視覚機能を削除する
+## 出力契約への寄与 (Output contribution)
 
-## Output contribution
-
-`task.intent`, `task.project_class`, `task.subject`, `inputs.hardware_data_quality`, `modules`, 初期 `assumptions` を確定する。
+`task`（またはトップレベルの `intent`, `project_class`, `subject`, `locale`）、`inputs`、`modules`、および初期 `assumptions` を出力する。

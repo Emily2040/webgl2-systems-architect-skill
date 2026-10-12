@@ -78,12 +78,16 @@ Each supported language ships with its own visual art direction, AI-generated ha
 
 Downstream tools and CI pipelines can request validated JSON output matching either schema:
 
-- [`schemas/authoring-base.json`](./schemas/authoring-base.json) defines the full architectural and migration contract (`skill`, `task`, `inputs`, `modules`, `assumptions`, `decisions`, `derivations`, `parallel_plan`, `deliverables`, `risks`, `validation_gates`).
-  - Example (`architecture` / `sdf-raymarch`): [`examples/face-raymarch.output.json`](./examples/face-raymarch.output.json)
-  - Example (`migration` / `hybrid`): [`examples/webgpu-migration-hybrid.output.json`](./examples/webgpu-migration-hybrid.output.json)
+- [`schemas/authoring-base.json`](./schemas/authoring-base.json) defines the full architectural, review, and migration contract (`skill`, `task`, `inputs`, `modules`, `assumptions`, `decisions`, `derivations`, `parallel_plan`, `deliverables`, `risks`, `validation_gates`).
+  - Example (`architecture` / `sdf-raymarch` / `en`): [`examples/face-raymarch.output.json`](./examples/face-raymarch.output.json)
+  - Example (`migration` / `hybrid` / `en`): [`examples/webgpu-migration-hybrid.output.json`](./examples/webgpu-migration-hybrid.output.json)
+  - Example (`review` / `ui` / `zh-CN`): [`examples/pbr-shader-audit-review-zh.output.json`](./examples/pbr-shader-audit-review-zh.output.json)
 - [`schemas/runtime-compact.json`](./schemas/runtime-compact.json) defines the compact engineering response (`intent`, `project_class`, `subject`, `locale`, `modules`, `assumptions`, `derivations`, `key_decisions`, `parallel_tasks`, `risks`, `next_steps`, `validation_gates`).
-  - Example (`optimize` / `raster-mesh`): [`examples/terrain-midrange.output.json`](./examples/terrain-midrange.output.json)
-  - Example (`debug` / `postprocess`): [`examples/postprocess-context-loss.output.json`](./examples/postprocess-context-loss.output.json)
+  - Example (`optimize` / `raster-mesh` / `en`): [`examples/terrain-midrange.output.json`](./examples/terrain-midrange.output.json)
+  - Example (`debug` / `postprocess` / `en`): [`examples/postprocess-context-loss.output.json`](./examples/postprocess-context-loss.output.json)
+  - Example (`implementation` / `raster-mesh` / `en`): [`examples/instanced-mesh-ubo-implementation.output.json`](./examples/instanced-mesh-ubo-implementation.output.json)
+  - Example (`implementation` / `sdf-raymarch` / `ja`): [`examples/sdf-derivative-guard-implementation-ja.output.json`](./examples/sdf-derivative-guard-implementation-ja.output.json)
+  - Example (`optimize` / `data-vis` / `ko`): [`examples/high-fps-data-vis-optimize-ko.output.json`](./examples/high-fps-data-vis-optimize-ko.output.json)
 
 ---
 
@@ -107,19 +111,19 @@ webgl2-systems-architect-skill/
 │   ├── 05-shader-rules.md                # GLSL ES 3.00, std140 UBOs, derivatives & precision
 │   ├── 06-runtime-ops.md                 # VAOs, texStorage2D, context loss & WebGPU map
 │   └── 07-validation-and-ci.md           # 5-stage verification ladder & CI gates
-├── locales/{zh-CN,ja,ko}/                # Native CJK skill routers, orchestrators & core modules
+├── locales/{zh-CN,ja,ko}/                # Native CJK routers, references (00..02) & core modules (01..07)
 ├── registry/
 │   ├── module-map.json                   # Canonical intent -> module list
 │   └── forbidden-slop.json               # 4-locale banned phrases & evidence replacements
 ├── schemas/
 │   ├── authoring-base.json               # Full structured output JSON Schema
 │   └── runtime-compact.json              # Compact runtime JSON Schema
-├── examples/                             # 4 schema-validated output examples across intents
-├── fixtures/webgl2-smoke/index.html      # Live WebGL2 VAO + std140 UBO + PBO/fenceSync fixture
+├── examples/                             # 8 schema-validated golden examples across all 6 intents & 4 locales
+├── fixtures/webgl2-smoke/index.html      # Live WebGL2 offscreen FBO + VAO + std140 UBO + multi-frame PBO/fenceSync fixture
 ├── docs/
-│   ├── index.html                        # Interactive 4-language WebGL2 Workbench
+│   ├── index.html                        # Interactive 4-language WebGL2 Workbench, Contract Generator & Slop Linter
 │   └── assets/                           # Validated SVG & PNG technical blueprints
-└── scripts/validate_repo.py              # Zero-dependency validator with negative self-tests
+└── scripts/validate_repo.py              # Zero-dependency validator with 6 negative self-tests
 ```
 
 ---

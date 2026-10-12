@@ -63,8 +63,17 @@ REQUIRED_FILES = [
     "examples/postprocess-context-loss.output.json",
     "examples/webgpu-migration-hybrid.input.md",
     "examples/webgpu-migration-hybrid.output.json",
+    "examples/instanced-mesh-ubo-implementation.input.md",
+    "examples/instanced-mesh-ubo-implementation.output.json",
+    "examples/pbr-shader-audit-review-zh.input.md",
+    "examples/pbr-shader-audit-review-zh.output.json",
+    "examples/sdf-derivative-guard-implementation-ja.input.md",
+    "examples/sdf-derivative-guard-implementation-ja.output.json",
+    "examples/high-fps-data-vis-optimize-ko.input.md",
+    "examples/high-fps-data-vis-optimize-ko.output.json",
     "fixtures/webgl2-smoke/index.html",
     "scripts/validate_repo.py",
+    "scripts/verify_browser.py",
     ".github/ISSUE_TEMPLATE/bug_report.md",
     ".github/ISSUE_TEMPLATE/feature_request.md",
     ".github/PULL_REQUEST_TEMPLATE.md",
@@ -80,6 +89,8 @@ for _loc in CJK_LOCALES:
             f"docs/assets/{_loc}/webgl2-systems-infographic.png",
             f"locales/{_loc}/SKILL.md",
             f"locales/{_loc}/references/00-orchestrator.md",
+            f"locales/{_loc}/references/01-redesign-rationale.md",
+            f"locales/{_loc}/references/02-webgl2-source-table.md",
             f"locales/{_loc}/skills/core/01-triage.md",
             f"locales/{_loc}/skills/core/02-hardware-budget.md",
             f"locales/{_loc}/skills/core/03-pipeline-and-concurrency.md",
@@ -118,6 +129,10 @@ PLACEHOLDER_PATTERNS = [
 ]
 TEXT_FILE_GLOBS = ["*.md", "*.json", "*.html", "*.yml", "*.yaml", "*.py", "*.svg"]
 BIDI_CONTROL_PATTERN = re.compile("[\u202A-\u202E\u2066-\u2069]")
+
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
 def fail(message: str) -> None:
@@ -290,7 +305,7 @@ def check_wrappers() -> None:
 
 
 def check_core_modules() -> None:
-    required_headings = (
+    required_en_headings = (
         "## Purpose",
         "## When to load",
         "## Inputs",
@@ -298,18 +313,63 @@ def check_core_modules() -> None:
         "## Failure modes",
         "## Output contribution",
     )
-    all_module_paths = sorted(CORE_MODULES) + [
-        f"locales/{loc}/{mod}" for loc in CJK_LOCALES for mod in sorted(CORE_MODULES)
-    ]
-    for rel in all_module_paths:
-        text = read(rel)
+    required_cjk_headings = {
+        "zh-CN": (
+            "## 目的 (Purpose)",
+            "## 适用时机 (When to load)",
+            "## 输入 (Inputs)",
+            "## 核心规则 (Rules)",
+            "## 常见失效模式 (Failure modes)",
+            "## 输出契约贡献 (Output contribution)",
+        ),
+        "ja": (
+            "## 目的 (Purpose)",
+            "## ロード時期 (When to load)",
+            "## 入力 (Inputs)",
+            "## 設計ルール (Rules)",
+            "## 典型的な失敗モード (Failure modes)",
+            "## 出力契約への寄与 (Output contribution)",
+        ),
+        "ko": (
+            "## 목적 (Purpose)",
+            "## 로드 시점 (When to load)",
+            "## 입력 (Inputs)",
+            "## 핵심 규칙 (Rules)",
+            "## 주요 실패 모드 (Failure modes)",
+            "## 출력 계약 기여 (Output contribution)",
+        ),
+    }
+    code_bearing_modules = {
+        "skills/core/02-hardware-budget.md",
+        "skills/core/03-pipeline-and-concurrency.md",
+        "skills/core/05-shader-rules.md",
+        "skills/core/06-runtime-ops.md",
+        "skills/core/07-validation-and-ci.md",
+    }
+    for mod in sorted(CORE_MODULES):
+        text = read(mod)
         lines = text.splitlines()
-        if len(lines) > 140:
-            fail(f"{rel} should stay concise (<= 140 lines), got {len(lines)}")
-        for heading in required_headings:
+        if len(lines) > 150:
+            fail(f"{mod} should stay concise (<= 150 lines), got {len(lines)}")
+        for heading in required_en_headings:
             if heading not in text:
-                fail(f"{rel} missing required section heading: {heading}")
-    ok("All English and localized CJK core modules have required sections and concise line counts")
+                fail(f"{mod} missing required section heading: {heading}")
+        if mod in code_bearing_modules and "```" not in text:
+            fail(f"{mod} must include executable code examples")
+
+    for loc in CJK_LOCALES:
+        for mod in sorted(CORE_MODULES):
+            rel = f"locales/{loc}/{mod}"
+            text = read(rel)
+            lines = text.splitlines()
+            if len(lines) > 150:
+                fail(f"{rel} should stay concise (<= 150 lines), got {len(lines)}")
+            for heading in required_cjk_headings[loc]:
+                if heading not in text:
+                    fail(f"{rel} missing localized section heading: {heading}")
+            if mod in code_bearing_modules and "```" not in text:
+                fail(f"{rel} must include executable code blocks matching the English module")
+    ok("All English and localized CJK core modules have localized headings, code-block parity, and concise line counts")
 
 
 def check_no_extraneous_readmes() -> None:
@@ -495,8 +555,8 @@ def check_json() -> None:
         "schemas/runtime-compact.json",
     ]
     example_files = sorted(rel_posix(p) for p in (ROOT / "examples").glob("*.output.json"))
-    if len(example_files) < 4:
-        fail(f"Expected at least 4 example output JSON files in examples/, found {len(example_files)}")
+    if len(example_files) < 8:
+        fail(f"Expected at least 8 example output JSON files in examples/, found {len(example_files)}")
 
     parsed = {rel: load_json(rel) for rel in base_json_files + example_files}
 
@@ -511,6 +571,8 @@ def check_json() -> None:
     assert isinstance(metadata, dict)
     module_map = parsed["registry/module-map.json"]
 
+    seen_intents: set[str] = set()
+    seen_locales: set[str] = set()
     validation_errors: list[str] = []
     for example_rel in example_files:
         example = parsed[example_rel]
@@ -523,18 +585,28 @@ def check_json() -> None:
             authoring_skill = example["skill"]
             if authoring_skill["name"] != skill["name"] or authoring_skill["version"] != metadata["version"]:
                 fail(f"{example_rel}: skill name/version must match SKILL.md ({metadata['version']})")
+            loc = example["task"].get("locale")
+        else:
+            loc = example.get("locale")
+        if isinstance(loc, str):
+            seen_locales.add(loc)
 
         intent = example.get("task", example).get("intent")
         if intent not in module_map:
             fail(f"{example_rel}: unknown intent {intent!r}")
+        seen_intents.add(intent)
         set_errors = check_module_set_equality(example["modules"], module_map[intent])
         if set_errors:
             fail(f"{example_rel} module set mismatch for intent {intent!r}: " + "; ".join(set_errors))
 
     if validation_errors:
         fail("Schema validation failed: " + "; ".join(validation_errors))
+    if seen_intents != EXPECTED_INTENTS:
+        fail(f"Examples do not cover all 6 intents: missing {sorted(EXPECTED_INTENTS - seen_intents)}")
+    if seen_locales != set(SUPPORTED_LOCALES):
+        fail(f"Examples do not cover all 4 supported locales: missing {sorted(set(SUPPORTED_LOCALES) - seen_locales)}")
 
-    ok(f"All {len(example_files)} example JSON outputs validate against schemas and exact module-map sets")
+    ok(f"All {len(example_files)} example JSON outputs validate against schemas, cover all 6 intents & 4 locales, and match module-map sets")
 
 
 def check_module_map() -> None:
@@ -571,6 +643,10 @@ def validate_svg_xml_and_fit(svg_text: str, label: str) -> list[str]:
         root = ET.fromstring(svg_text)
     except Exception as exc:
         return [f"{label}: invalid XML: {exc}"]
+
+    for drift_term in ("Lyapunov", "李雅普诺夫", "リアプノフ", "리아푸노프"):
+        if drift_term in svg_text:
+            errors.append(f"{label}: contains conceptual drift term {drift_term!r}")
 
     class_sizes: dict[str, tuple[float, bool]] = {}
     for style_el in root.iter("{http://www.w3.org/2000/svg}style"):
@@ -639,7 +715,7 @@ def check_svg_assets() -> None:
         errors.extend(validate_svg_xml_and_fit(svg_path.read_text(encoding="utf-8"), rel_posix(svg_path)))
     if errors:
         fail("SVG validation failed: " + "; ".join(errors))
-    ok(f"All {len(svg_files)} English and CJK SVG diagrams are well-formed XML and pass container text-fit bounds")
+    ok(f"All {len(svg_files)} English and CJK SVG diagrams are well-formed XML, drift-free, and pass container text-fit bounds")
 
 
 def check_multilingual_parity() -> None:
@@ -695,27 +771,54 @@ def check_multilingual_parity() -> None:
     ok("4-language support (en, zh-CN, ja, ko) and unique per-locale visual/workflow designs verified across READMEs, locales/, and docs/index.html")
 
 
+def find_slop_hits(text: str, banned_phrases: list[str]) -> list[str]:
+    text_lower = text.lower()
+    return [phrase for phrase in banned_phrases if phrase.lower() in text_lower]
+
+
 def check_forbidden_slop() -> None:
     slop = load_json("registry/forbidden-slop.json")
+    banned_by_loc: dict[str, list[str]] = slop.get("banned_phrases_by_locale", {})
     banned_en = [phrase.lower() for phrase in slop.get("banned_phrases", [])]
-    # Check that every replacement_rules 'ban' is covered by banned_phrases:
     for rule in slop.get("replacement_rules", []):
         ban_term = rule["ban"].lower()
         if not any(ban_term in phrase or phrase in ban_term for phrase in banned_en):
             fail(f"registry/forbidden-slop.json replacement_rules ban {ban_term!r} is missing from banned_phrases")
 
-    # Scan SKILL.md, references/*.md, and examples/*.output.json for English banned phrases:
-    targets = ["SKILL.md", "references/00-orchestrator.md", "references/01-redesign-rationale.md", "references/02-webgl2-source-table.md"]
-    targets.extend(rel_posix(p) for p in (ROOT / "examples").glob("*.output.json"))
+    locale_targets: dict[str, list[str]] = {
+        "en": [
+            "SKILL.md",
+            "references/00-orchestrator.md",
+            "references/01-redesign-rationale.md",
+            "references/02-webgl2-source-table.md",
+            *sorted(CORE_MODULES),
+        ],
+    }
+    for loc in CJK_LOCALES:
+        locale_targets[loc] = [
+            f"locales/{loc}/SKILL.md",
+            f"locales/{loc}/references/00-orchestrator.md",
+            f"locales/{loc}/references/01-redesign-rationale.md",
+            f"locales/{loc}/references/02-webgl2-source-table.md",
+            *(f"locales/{loc}/{mod}" for mod in sorted(CORE_MODULES)),
+        ]
+
+    for example_path in sorted((ROOT / "examples").glob("*.output.json")):
+        rel = rel_posix(example_path)
+        data = load_json(rel)
+        loc = data.get("task", data).get("locale", "en")
+        locale_targets.setdefault(loc, []).append(rel)
+
     hits: list[str] = []
-    for rel in targets:
-        text_lower = read(rel).lower()
-        for phrase in banned_en:
-            if phrase in text_lower:
-                hits.append(f"{rel}: {phrase!r}")
+    for loc, files in locale_targets.items():
+        phrases = banned_by_loc.get(loc, [])
+        for rel in files:
+            matched = find_slop_hits(read(rel), phrases)
+            for phrase in matched:
+                hits.append(f"{rel} ({loc}): {phrase!r}")
     if hits:
-        fail("Forbidden slop phrases detected in active skill/example files: " + ", ".join(hits))
-    ok("No forbidden slop phrases detected in active skill references or examples")
+        fail("Forbidden slop phrases detected in active skill/module/example files: " + ", ".join(hits))
+    ok("No forbidden slop phrases detected across all 4 locales in SKILL.md, references, core modules, or examples")
 
 
 def check_versions() -> None:
@@ -783,12 +886,17 @@ def check_webgl_fixture() -> None:
     required = [
         'getContext("webgl2"',
         "window.__webgl2Smoke",
+        "window.__WEBGL2_SMOKE_RESULT__",
         "status.dataset.smoke",
         "#version 300 es",
         "gl.createVertexArray",
         "gl.bindVertexArray",
         "layout(std140)",
         "gl.UNIFORM_BUFFER",
+        "gl.texStorage2D",
+        "gl.checkFramebufferStatus",
+        "gl.FRAMEBUFFER_COMPLETE",
+        "gl.invalidateFramebuffer",
         "gl.PIXEL_PACK_BUFFER",
         "gl.fenceSync",
         "gl.clientWaitSync",
@@ -806,12 +914,25 @@ def check_webgl_fixture() -> None:
         fail("WebGL2 smoke fixture calls clientWaitSync with timeout > 0 (violates MAX_CLIENT_WAIT_TIMEOUT_WEBGL)")
 
     workbench = read("docs/index.html")
-    for bit in ('getContext("webgl2"', "#version 300 es", "gl.createVertexArray", "layout(std140)", "gl.PIXEL_PACK_BUFFER", "gl.fenceSync", "webglcontextlost"):
+    for bit in (
+        'getContext("webgl2"',
+        "#version 300 es",
+        "gl.createVertexArray",
+        "layout(std140)",
+        "gl.texStorage2D",
+        "gl.checkFramebufferStatus",
+        "gl.invalidateFramebuffer",
+        "gl.PIXEL_PACK_BUFFER",
+        "gl.fenceSync",
+        "webglcontextlost",
+        "btn-copy-contract",
+        "btn-slop-sample",
+    ):
         if bit not in workbench:
-            fail(f"docs/index.html workbench missing live WebGL2 proof code: {bit}")
+            fail(f"docs/index.html workbench missing live WebGL2 proof or interactive tool code: {bit}")
     if nonzero_wait.search(workbench):
         fail("docs/index.html calls clientWaitSync with timeout > 0 (violates MAX_CLIENT_WAIT_TIMEOUT_WEBGL)")
-    ok("WebGL2 smoke fixture and docs/index.html workbench include VAO, std140 UBO, PBO+fenceSync (timeout=0), and context recovery")
+    ok("WebGL2 smoke fixture and docs/index.html workbench include offscreen FBO, VAO, std140 UBO, multi-frame PBO+fenceSync, and interactive tools")
 
 
 def check_validator_self_tests() -> None:
@@ -841,7 +962,23 @@ def check_validator_self_tests() -> None:
     if not check_module_set_equality(["skills/core/01-triage.md", "skills/core/99-fake.md"], ["skills/core/01-triage.md"]):
         fail("Self-test failed: check_module_set_equality accepted unmapped extra module")
 
-    ok("Validator negative self-tests passed (malformed XML, text overflow, bad schema, and extra modules rejected)")
+    # 5. Multilingual slop detector must catch banned phrases across all 4 locales
+    slop = load_json("registry/forbidden-slop.json")["banned_phrases_by_locale"]
+    for loc, sample in (
+        ("en", "This shader achieves photorealistic perfection with zero overhead."),
+        ("zh-CN", "该管线提供电影级画质与极致性能。"),
+        ("ja", "映画のような質感と圧倒的なパフォーマンスを実現します。"),
+        ("ko", "시네마틱한 느낌과 압도적인 성능을 제공합니다."),
+    ):
+        if not find_slop_hits(sample, slop[loc]):
+            fail(f"Self-test failed: find_slop_hits missed banned phrase for locale {loc}")
+
+    # 6. Conceptual drift detector in SVG must reject Lyapunov terms
+    drift_svg = '<svg xmlns="http://www.w3.org/2000/svg"><text x="10" y="20">Lyapunov stability</text></svg>'
+    if not validate_svg_xml_and_fit(drift_svg, "synthetic-drift.svg"):
+        fail("Self-test failed: validate_svg_xml_and_fit accepted conceptual drift term")
+
+    ok("Validator 6 negative self-tests passed (malformed XML, text overflow, bad schema, extra modules, 4-locale slop, and SVG drift rejected)")
 
 
 def main() -> None:

@@ -1,60 +1,53 @@
-# 01 - 작업 분류 및 의도 판별 (ko)
+# 01 - 의도 분류 및 범위 설정 (ko)
 
-## Purpose
+## 목적 (Purpose)
 
-WebGL 2.0 요청을 정확히 분류하여 필요한 모듈만 로드하고 불필요한 규칙 덤프를 방지한다. 모든 작업은 이 모듈에서 시작한다.
+셰이더 수식 유도, FBO 패스 설계 또는 성능 최적화에 착수하기 전에 사용자의 WebGL 2.0 작업을 단일 핵심 의도(Intent)와 프로젝트 분류(Project Class)로 정의하고 최소 모듈 세트를 확정한다. 분류 단계를 건너뛰고 구현부터 시작하지 마라.
 
-## When to load
+## 로드 시점 (When to load)
 
-모든 요청에서 다른 모듈보다 먼저 로드한다.
+모든 작업에서 가장 먼저 로드한다 (`architecture`, `implementation`, `debug`, `optimize`, `review`, `migration`).
 
-## Inputs
+## 입력 (Inputs)
 
-- 사용자 프롬프트 및 대상 언어 (`en`, `zh-CN`, `ja`, `ko`)
-- 기존 셰이더, JS/TS 코드, 패스 그래프 또는 저장소 파일 (제공된 경우)
-- 스크린샷, 캡처 영상, GPU 프로파일러 로그 또는 런타임 에러 로그 (제공된 경우)
-- 대상 기기, 브라우저 및 목표 FPS 제약 조건 (알려진 경우)
+- 사용자의 요구사항, 대상 플랫폼 및 목표 프레임 레이트
+- 제공된 코드, 셰이더, 스크린샷, 프로파일링 로그 또는 프롬프트 단독(`prompt-only`)
 
-## Rules
+## 핵심 규칙 (Rules)
 
-### 1. 네 가지 축으로 요청을 분류한다
+### 1. 주 엔지니어링 의도를 1가지로 결정한다
 
-1. **의도 (`intent`)**
-   - `architecture`: 시스템 설계, 패스 그래프, 하드웨어 티어 구성, 시작 오케스트레이션
-   - `implementation`: 신규 `#version 300 es` 셰이더, FBO 패스, VAO/UBO 파이프라인 또는 런타임 기능 구현
-   - `debug`: 렌더링 깨짐, `NaN`/정밀도 아티팩트, 불완전한 FBO, 상태 누수, 컨텍스트 손실 버그 수정
-   - `optimize`: FPS 저하, 필레이트 병목, 메모리 대역폭 압박, 셰이더 스톨, 동기식 리드백 병목 해결
-   - `review`: 코드 감사, 시각적 설득력 평가, 이식성 점검, 배포 준비 상태 검증
-   - `migration`: WebGL 1에서 WebGL 2.0으로 업그레이드하거나 WebGL 2.0에서 WebGPU/WGSL로 전환
+- **`architecture`**: 신규 멀티패스 WebGL 2.0 렌더러, SDF 레이마칭 파이프라인, FBO 토폴로지 또는 하이브리드 아키텍처를 설계한다.
+- **`implementation`**: 구체적인 `#version 300 es` 셰이더, VAO/UBO/Sampler 바인딩, FBO 구성 또는 호스트 JS/TS 렌더 코드를 작성한다.
+- **`debug`**: 블랙스크린, `FRAMEBUFFER_INCOMPLETE_*`, 비균일 분기 내 미분 아티팩트, NaN 전파, `webglcontextlost` 크래시, 동기 리드백 스톨을 진단한다.
+- **`optimize`**: 프레임 드롭, 고해상도 모바일 기기에서의 필레이트 과부하, 타일 메모리 대역폭 병목, CPU/GPU 동기 스톨을 해결한다.
+- **`review`**: 기존 셰이더나 렌더러 코드의 수치 안정성, 매직 넘버, 상태 누수, 검증 커버리지를 감사한다.
+- **`migration`**: WebGL 1.0에서 WebGL 2.0으로 업그레이드하거나, WebGL 2.0 폴백을 유지하며 WebGPU(`navigator.gpu` + WGSL) 듀얼 백엔드로 이관한다.
 
-2. **프로젝트 분류 (`project_class`)**
-   - `raster-mesh`, `sdf-raymarch`, `hybrid`, `postprocess`, `data-vis`, `ui`
+### 2. 프로젝트 분류를 1가지로 결정한다
 
-3. **피사체/주제 (`subject`)**
-   - `human face bust`, `terrain flyover`, `HDR bloom chain`, `WebGPU bind-group migration` 등 구체적인 대상을 명시한다.
+```text
+raster-mesh | sdf-raymarch | hybrid | postprocess | data-vis | ui
+```
 
-4. **증거 품질 (`hardware_data_quality`)**
-   - `measured` (타이머 쿼리 및 캡처 존재), `estimated` (기기 등급은 알지만 패스 비용은 추산), `unknown` (프롬프트만 존재; 가정 명시 필수).
+### 3. 입력 증거를 점검하고 하드웨어 데이터 품질을 기록한다
 
-### 2. 변경안을 제시하기 전에 제공된 아티팩트를 먼저 검사한다
+`inputs.hardware_data_quality`를 다음 4가지 등급 중 하나로 명시한다:
+- **`measured`**: `EXT_disjoint_timer_query_webgl2` 실측값이나 통제된 패스 토글 차등 측정값이 있는 경우.
+- **`partial`**: `gl.getParameter` 한계값이나 단편적인 FPS 로그는 있으나 패스별 타이밍이 없는 경우.
+- **`estimated`**: 기기 등급("중급 안드로이드", "모바일 Safari" 등)만 알려진 경우 (반드시 휴리스틱 추산임을 명시).
+- **`unknown`**: 대상 하드웨어 정보가 전혀 없는 경우.
 
-- 셰이더나 코드가 제공된 경우 `#version 300 es` 선언, VAO/UBO 바인딩, FBO 상태, 드로우 루프를 먼저 확인한다.
+### 4. `registry/module-map.json`의 최소 모듈 세트와 정확히 일치시킨다
 
-### 3. 의도별 모듈 선택 (`registry/module-map.json`과 정확히 일치)
+출력의 `modules` 배열은 `registry/module-map.json[intent]`와 정확히 일치해야 한다 (불필요한 모듈을 추가하거나 필수 모듈을 누락하지 않는다).
 
-- `architecture`: `skills/core/01-triage.md`, `skills/core/02-hardware-budget.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/04-subject-audit.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `implementation`: `skills/core/01-triage.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`
-- `debug`: `skills/core/01-triage.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `optimize`: `skills/core/01-triage.md`, `skills/core/02-hardware-budget.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `review`: `skills/core/01-triage.md`, `skills/core/04-subject-audit.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
-- `migration`: `skills/core/01-triage.md`, `skills/core/03-pipeline-and-concurrency.md`, `skills/core/05-shader-rules.md`, `skills/core/06-runtime-ops.md`, `skills/core/07-validation-and-ci.md`
+## 주요 실패 모드 (Failure modes)
 
-## Failure modes
+- 국소적인 `debug`나 `implementation` 작업에서 7개 모듈 전체를 로드하여 컨텍스트를 희석시키는 것
+- 기기 등급에 기반한 추정치를 실측(`measured`) 하드웨어 데이터로 포장하는 것
+- `registry/module-map.json`과 일치하지 않는 모듈 목록을 출력하는 것
 
-- 한 줄짜리 셰이더 수정을 위해 모든 모듈을 로드하는 것
-- 래스터 메시 파이프라인에 SDF 레이마칭 규칙을 강제하는 것
-- 병목 원인을 분류하기 전에 시각적 기능부터 삭제하는 것
+## 출력 계약 기여 (Output contribution)
 
-## Output contribution
-
-`task.intent`, `task.project_class`, `task.subject`, `inputs.hardware_data_quality`, `modules` 및 초기 `assumptions`를 채운다.
+`task`(또는 최상위 `intent`, `project_class`, `subject`, `locale`), `inputs`, `modules` 및 초기 `assumptions`를 채운다.

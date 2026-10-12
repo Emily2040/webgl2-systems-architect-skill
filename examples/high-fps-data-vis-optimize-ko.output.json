@@ -1,0 +1,44 @@
+{
+  "intent": "optimize",
+  "project_class": "data-vis",
+  "subject": "120Hz 실시간 산업용 센서 데이터 시각화 파이프라인의 동기식 readPixels 스톨 제거 및 DPR/대역폭 최적화",
+  "locale": "ko",
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/02-hardware-budget.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md",
+    "skills/core/07-validation-and-ci.md"
+  ],
+  "assumptions": [
+    "120 FPS 목표 시 전체 프레임 예산은 8.33 ms이며, CPU 및 브라우저 컴포지터 여유분을 제외한 순수 GPU 실행 예산은 약 5.33 ms이다.",
+    "매 프레임 호스트 Uint8Array로 직접 호출하는 동기식 gl.readPixels가 GPU 파이프라인 플러시와 메인 스레드 차단의 주원인이다."
+  ],
+  "derivations": [
+    "frameBudgetMs = 1000 / 120 = 8.33 ms; gpuBudgetMs = 8.33 - 1.5(CPU) - 1.5(Compositor) = 5.33 ms",
+    "pickingReadbackBytes = 1 * 1 * 4 bytes (RGBA8 ID 버퍼); PBO + gl.fenceSync 다중 프레임 폴링 전환 시 동기화 스톨을 3.8 ms에서 0.05 ms 미만으로 단축"
+  ],
+  "key_decisions": [
+    "호버 피킹용 동기식 gl.readPixels를 즉시 제거하고, 1x1 오프스크린 정수/RGBA8 피킹 FBO + gl.PIXEL_PACK_BUFFER(PBO) + gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0) 다중 프레임 비차단 폴링 상태 머신으로 교체한다.",
+    "120Hz 모드에서는 targetDPR 상한을 1.5로 클램프하고, 배경 그리드와 보조 글로우 패스를 축당 0.5x 해상도로 낮춘 뒤 패스 종료 시 gl.invalidateFramebuffer를 호출한다.",
+    "센서 스트림 파싱과 미니배치 Float32Array 패킹을 Web Worker로 분리하고, 메인 스레드는 단일 std140 FrameBlock UBO와 고정 VAO로 gl.drawArraysInstanced만 제출한다."
+  ],
+  "parallel_tasks": [
+    "EXT_disjoint_timer_query_webgl2 4-슬롯 링 버퍼로 포인트 패스와 포스트 패스의 개별 GPU 시간을 계측",
+    "Web Worker에서 수신된 센서 패킷을 양자화하여 Transferable ArrayBuffer로 메인 스레드에 전달"
+  ],
+  "risks": [
+    "readPixels 직후 동일 프레임에서 clientWaitSync가 TIMEOUT_EXPIRED인데도 getBufferSubData를 호출하면 여전히 동기 스톨이 발생한다.",
+    "고해상도 태블릿에서 DPR 2.5~3.0을 그대로 허용하면 포인트 오버드로우로 인해 5.33 ms GPU 예산을 초과한다."
+  ],
+  "next_steps": [
+    "피킹 리드백을 ARMED -> 다음 프레임 clientWaitSync(fence, 0, 0) 확인 -> ALREADY_SIGNALED/CONDITION_SATISFIED일 때만 getBufferSubData를 호출하도록 수정",
+    "EXT_disjoint_timer_query_webgl2 링 버퍼를 연결하고 GPU_DISJOINT_EXT === false인 프레임만 수집하여 DPR 클램프 임계값을 보정",
+    "전용 VAO와 16바이트 정렬 std140 UBO를 바인딩하고 webglcontextlost / webglcontextrestored 복구 핸들러를 등록"
+  ],
+  "validation_gates": [
+    "PBO 펜스가 ALREADY_SIGNALED 또는 CONDITION_SATISFIED 상태에 도달하기 전에는 절대 getBufferSubData를 호출하지 않음을 확인",
+    "피킹 FBO와 메인 씬 FBO 모두 gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE 및 gl.getError() === gl.NO_ERROR 통과"
+  ]
+}

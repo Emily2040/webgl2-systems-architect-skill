@@ -46,7 +46,7 @@
   <rect class="card-cyan" x="345" y="146" width="285" height="86" rx="4"/>
   <text class="t-title" x="361" y="168">[厳守] 02 · 6意図×6クラス分類</text>
   <text class="t-body" x="361" y="190">architecture / debug / optimize</text>
-  <text class="t-muted" x="361" y="210">review / implement / migration</text>
+  <text class="t-muted" x="361" y="210">review / implementation / migration</text>
 
   <rect class="card-gold" x="652" y="146" width="285" height="86" rx="4"/>
   <text class="t-title" x="668" y="168">[指針] 03 · 12.67ms 予算＆DPR制限</text>
@@ -63,13 +63,13 @@
   <text class="sec" x="48" y="292">第二層 · 5レーン並列準備パイプライン (Web Worker 並列計算とポカヨケ品質ゲート A〜E)</text>
 
   <rect class="card-verm" x="48" y="308" width="224" height="216" rx="4"/>
-  <text class="t-title" x="64" y="332">[検 A] 数学・SDF監査</text>
+  <text class="t-title" x="64" y="332">[検 A] 被写体・SDF監査</text>
   <text class="t-body" x="64" y="358">04-subject-audit.md</text>
-  <text class="t-muted" x="64" y="382">• リアプノフ有界安定性</text>
+  <text class="t-muted" x="64" y="382">• 5層観察構造とP0シルエット</text>
   <text class="t-muted" x="64" y="404">• 4点四面体SDF法線計算</text>
-  <text class="t-muted" x="64" y="426">• 6点軸勾配の冗長排除</text>
-  <text class="t-muted" x="64" y="448">• 流体・音響CFL境界検証</text>
-  <text class="t-body" x="64" y="496">成果物：数理不変条件表</text>
+  <text class="t-muted" x="64" y="426">• ステップ安全係数(0.65..0.85)</text>
+  <text class="t-muted" x="64" y="448">• P2-&gt;0.5x-&gt;DPR-&gt;P1削減順</text>
+  <text class="t-body" x="64" y="496">成果物：P0/P1/P2視覚優先表</text>
 
   <rect class="card-cyan" x="288" y="308" width="224" height="216" rx="4"/>
   <text class="t-title" x="304" y="332">[検 B] シェーダ・UBO</text>
@@ -104,7 +104,7 @@
   <text class="t-muted" x="1024" y="382">• PBO + fenceSync(0ns)</text>
   <text class="t-muted" x="1024" y="404">• コンテキスト喪失訓練</text>
   <text class="t-muted" x="1024" y="426">• 24項目 validate_repo</text>
-  <text class="t-muted" x="1024" y="448">• 4種ネガティブ自己検証</text>
+  <text class="t-muted" x="1024" y="448">• 6種ネガティブ自己検証</text>
   <text class="t-body" x="1024" y="496">成果物：実機GPU合格証跡</text>
 
   <!-- Tier 3: Single-Context Serial GL Submission & WebGPU Migration -->
@@ -126,11 +126,11 @@
   <rect class="card-gold" x="846" y="606" width="386" height="110" rx="4"/>
   <text class="t-title" x="862" y="630">ポカヨケ PBO 回読＆WebGPU 1:1 移行</text>
   <text class="t-body" x="862" y="654">MAX_CLIENT_WAIT_TIMEOUT_WEBGL == 0 厳守</text>
-  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 非ブロッキング</text>
+  <text class="t-body" x="862" y="676">gl.clientWaitSync(fence, 0, 0) 複数フレーム確認</text>
   <text class="t-muted" x="862" y="698">深度 [-1,1]-&gt;[0,1] と UV 反転を単一ヘルパーへ隔離</text>
 
   <rect class="card-cyan" x="48" y="732" width="1184" height="86" rx="4"/>
   <text class="t-title" x="68" y="756">構造化 JSON 出力スキーマ＆24項目自動検証ゲート (authoring-base.json / runtime-compact.json)</text>
-  <text class="t-body" x="68" y="780">locale="ja" 対応 · 4種のゴールデン入出力ペア (face-raymarch / terrain-midrange / postprocess-context-loss / webgpu-migration-hybrid)</text>
+  <text class="t-body" x="68" y="780">en / zh-CN / ja / ko 4言語対応 · 8種のゴールデン入出力ペア（全6意図 × 全6プロジェクト分類 × 4言語）</text>
   <text class="t-muted" x="68" y="802">検証コマンド: python scripts/validate_repo.py -&gt; 24スイート合格 · glError == 0 · XML整形式・テキスト境界検査クリア</text>
 </svg>

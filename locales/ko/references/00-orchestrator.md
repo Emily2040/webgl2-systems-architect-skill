@@ -28,7 +28,7 @@ WebGL 2.0 요청을 검증 가능한 아키텍처 설계안, 코드 리뷰, WebG
    - 모든 함수와 `#version 300 es` 셰이더 패치는 매개변수, uniform, `std140` UBO, 스테이지 `in`/`out` 변수 또는 `#define`을 통해 의존성을 선언해야 한다.
 
 4. **점진적 공개 (Progressive disclosure)** 를 적용한다.
-   - 단일 패스 수정이나 셰이더 1개 리뷰에 전체 문서를 덤프하지 않는다 (`references/01-redesign-rationale.md` 참조).
+   - 단일 패스 수정이나 셰이더 1개 리뷰에 전체 문서를 덤프하지 않는다 (`locales/ko/references/01-redesign-rationale.md` 및 `references/01-redesign-rationale.md` 참조).
 
 5. 작업이 실제로 독립적일 때만 **병렬 레인 (Parallel lanes)** 을 사용한다.
    - 단일 `WebGL2RenderingContext`는 GPU 명령 제출을 직렬화한다. `Promise.all`은 에셋 다운로드, Worker 전처리, 독립 분석 레인에만 유효하며 동일 컨텍스트의 드로우 콜을 병렬화하지 않는다.
@@ -50,7 +50,7 @@ WebGL 2.0 요청을 검증 가능한 아키텍처 설계안, 코드 리뷰, WebG
 - GLSL ES 3.00 수학, 미분, 정밀도, `std140` UBO, WGSL 변환이 포함된 모든 작업에는 `skills/core/05-shader-rules.md`를 로드한다.
 - 모든 의도에서 `skills/core/06-runtime-ops.md`를 로드한다.
 - `architecture`, `debug`, `optimize`, `review`, `migration` 작업에는 `skills/core/07-validation-and-ci.md`를 로드한다.
-- Khronos/MDN 명세 근거와 호환성 게이트가 필요할 때는 `references/02-webgl2-source-table.md`를 로드한다.
+- Khronos/MDN 명세 근거와 호환성 게이트가 필요할 때는 `locales/ko/references/02-webgl2-source-table.md` (영문판 `references/02-webgl2-source-table.md`)를 로드한다.
 
 ## 병렬 레인 및 병합 순서
 

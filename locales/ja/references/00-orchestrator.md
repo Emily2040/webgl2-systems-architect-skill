@@ -28,7 +28,7 @@ WebGL 2.0 に関する要求を、検証可能な設計計画、コードレビ�
    - すべての関数および `#version 300 es` シェーダーパッチは、引数、uniform、`std140` UBO、`in`/`out` 変数、または `#define` を通じて依存関係を明示する。
 
 4. **段階的開示 (Progressive disclosure)** を徹底する。
-   - 単一パスの修正やシェーダー 1 本のレビューで全モジュールを展開しない（設計背景は `references/01-redesign-rationale.md` を参照）。
+   - 単一パスの修正やシェーダー 1 本のレビューで全モジュールを展開しない（設計背景は `locales/ja/references/01-redesign-rationale.md` および `references/01-redesign-rationale.md` を参照）。
 
 5. 真に独立した作業にのみ **並列レーン (Parallel lanes)** を使用する。
    - 単一の `WebGL2RenderingContext` は GPU コマンド送出を直列化する。`Promise.all` はアセット取得、Worker 前処理、独立した分析レーンに有効であり、同一コンテキスト上の描画コールを並列化するものではない。
@@ -50,7 +50,7 @@ WebGL 2.0 に関する要求を、検証可能な設計計画、コードレビ�
 - GLSL ES 3.00 の数値規則、微分、精度、`std140` UBO、WGSL 変換が関わるタスクでは `skills/core/05-shader-rules.md` をロードする。
 - すべての意図で `skills/core/06-runtime-ops.md` をロードする。
 - `architecture` / `debug` / `optimize` / `review` / `migration` では `skills/core/07-validation-and-ci.md` をロードする。
-- 仕様書の根拠や互換性ゲートが必要な場合は `references/02-webgl2-source-table.md` をロードする。
+- 仕様書の根拠や互換性ゲートが必要な場合は `locales/ja/references/02-webgl2-source-table.md`（英語版 `references/02-webgl2-source-table.md`）をロードする。
 
 ## 並列レーンと統合順序
 

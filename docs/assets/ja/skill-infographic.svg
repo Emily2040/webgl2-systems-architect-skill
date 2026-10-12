@@ -28,32 +28,32 @@
 
   <rect class="box-verm" x="48" y="146" width="560" height="48" rx="4"/>
   <text class="t-b" x="64" y="166">1. architecture (基本設計)</text>
-  <text class="t-m" x="265" y="166">読込: 01, 02, 03, 04, 05, 06, 07 (全7モジュール)</text>
+  <text class="t-m" x="275" y="166">読込: 01, 02, 03, 04, 05, 06, 07 (全7)</text>
   <text class="t-s" x="64" y="184">新規マルチパス設計、SDFレイマーチング、std140 UBO設計、CI検証構築</text>
 
   <rect class="box-cyan" x="48" y="202" width="560" height="48" rx="4"/>
   <text class="t-b" x="64" y="222">2. debug (障害解析)</text>
-  <text class="t-m" x="265" y="222">読込: 01, 03, 05, 06, 07 (5モジュール)</text>
+  <text class="t-m" x="275" y="222">読込: 01, 05, 06, 07 (4モジュール)</text>
   <text class="t-s" x="64" y="240">FBO不完全エラー、コンテキスト喪失、dFdx/dFdy破綻、同期readPixels停止</text>
 
   <rect class="box-verm" x="48" y="258" width="560" height="48" rx="4"/>
   <text class="t-b" x="64" y="278">3. optimize (性能改善)</text>
-  <text class="t-m" x="265" y="278">読込: 01, 02, 03, 05, 06, 07 (6モジュール)</text>
+  <text class="t-m" x="275" y="278">読込: 01, 02, 03, 05, 06, 07 (6モジュール)</text>
   <text class="t-s" x="64" y="296">高DPIモバイルフレーム落ち対策、帯域削減、UBO統合、タイルGPU最適化</text>
 
   <rect class="box-cyan" x="48" y="314" width="560" height="48" rx="4"/>
   <text class="t-b" x="64" y="334">4. review (設計監査)</text>
-  <text class="t-m" x="265" y="334">読込: 01, 02, 03, 04, 05, 06, 07 (全7モジュール)</text>
-  <text class="t-s" x="64" y="352">数理安定性、GLSLマジック定数、VRAMリーク、検証網羅性の総合監査</text>
+  <text class="t-m" x="275" y="334">読込: 01, 04, 05, 06, 07 (5モジュール)</text>
+  <text class="t-s" x="64" y="352">P0/P1/P2視覚階層、GLSLマジック定数、VRAMリーク、検証網羅性の監査</text>
 
   <rect class="box-verm" x="48" y="370" width="560" height="48" rx="4"/>
-  <text class="t-b" x="64" y="390">5. implement (実装パッチ)</text>
-  <text class="t-m" x="265" y="390">読込: 01, 02, 03, 04, 05, 06, 07 (全7モジュール)</text>
+  <text class="t-b" x="64" y="390">5. implementation (実装パッチ)</text>
+  <text class="t-m" x="275" y="390">読込: 01, 03, 05, 06 (4モジュール)</text>
   <text class="t-s" x="64" y="408">専用VAO、std140 UBO、コンテキスト復旧、PBO非同期検証を備えた本番実装</text>
 
   <rect class="box-cyan" x="48" y="426" width="560" height="52" rx="4"/>
   <text class="t-b" x="64" y="446">6. migration (基盤移行)</text>
-  <text class="t-m" x="265" y="446">読込: 01, 02, 03, 05, 06, 07 (6モジュール)</text>
+  <text class="t-m" x="275" y="446">読込: 01, 03, 05, 06, 07 (5モジュール)</text>
   <text class="t-s" x="64" y="466">WebGL 1.0 -&gt; WebGL 2.0 移行、または WebGPU + WebGL 2.0 ハイブリッド設計</text>
 
   <!-- Right Column: Jidoka Quality Rules -->
@@ -89,8 +89,8 @@
   <text class="t-s" x="64" y="648">• forbidden-slop.json 禁止表現スキャン</text>
 
   <rect class="box-cyan" x="450" y="554" width="380" height="122" rx="4"/>
-  <text class="t-b" x="466" y="578">検印 2 · JSON契約＆4種逆テスト</text>
-  <text class="t-m" x="466" y="602">• 4例のJSON出力とmodule-map完全一致</text>
+  <text class="t-b" x="466" y="578">検印 2 · JSON契約＆6種逆テスト</text>
+  <text class="t-m" x="466" y="602">• 8例のJSON出力とmodule-map完全一致</text>
   <text class="t-m" x="466" y="624">• 壊れたXML/文字溢れ/不正Schemaを拒絶</text>
   <text class="t-s" x="466" y="648">• 形式だけのプロキシ検査を排除</text>
 

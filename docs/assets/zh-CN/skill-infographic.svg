@@ -28,32 +28,32 @@
 
   <rect class="box-jade" x="48" y="146" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="166">1. architecture (系统架构)</text>
-  <text class="t-m" x="260" y="166">加载模块：01, 02, 03, 04, 05, 06, 07 (全7模块)</text>
+  <text class="t-m" x="275" y="166">加载模块：01, 02, 03, 04, 05, 06, 07 (全7模块)</text>
   <text class="t-s" x="64" y="184">适用：从零设计多通道渲染器、SDF光线步进管线、UBO布局与无头验证体系</text>
 
   <rect class="box-gold" x="48" y="202" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="222">2. debug (故障诊断)</text>
-  <text class="t-m" x="260" y="222">加载模块：01, 03, 05, 06, 07 (5模块)</text>
+  <text class="t-m" x="275" y="222">加载模块：01, 05, 06, 07 (4模块)</text>
   <text class="t-s" x="64" y="240">适用：排查FBO不完整、上下文丢失白屏、导数破面、同步readPixels卡顿</text>
 
   <rect class="box-jade" x="48" y="258" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="278">3. optimize (性能调优)</text>
-  <text class="t-m" x="260" y="278">加载模块：01, 02, 03, 05, 06, 07 (6模块)</text>
+  <text class="t-m" x="275" y="278">加载模块：01, 02, 03, 05, 06, 07 (6模块)</text>
   <text class="t-s" x="64" y="296">适用：移动端高DPR掉帧修复、显存带宽削减、std140合并、瓦片GPU优化</text>
 
   <rect class="box-gold" x="48" y="314" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="334">4. review (代码审计)</text>
-  <text class="t-m" x="260" y="334">加载模块：01, 02, 03, 04, 05, 06, 07 (全7模块)</text>
-  <text class="t-s" x="64" y="352">适用：全面审计数学不变量、着色器魔法数字、资源泄漏与CI测试盲区</text>
+  <text class="t-m" x="275" y="334">加载模块：01, 04, 05, 06, 07 (5模块)</text>
+  <text class="t-s" x="64" y="352">适用：全面审计P0/P1/P2视觉层级、着色器魔法数字、资源泄漏与CI测试</text>
 
   <rect class="box-jade" x="48" y="370" width="560" height="48" rx="8"/>
-  <text class="t-b" x="64" y="390">5. implement (功能实现)</text>
-  <text class="t-m" x="260" y="390">加载模块：01, 02, 03, 04, 05, 06, 07 (全7模块)</text>
+  <text class="t-b" x="64" y="390">5. implementation (功能实现)</text>
+  <text class="t-m" x="275" y="390">加载模块：01, 03, 05, 06 (4模块)</text>
   <text class="t-s" x="64" y="408">适用：编写带完整VAO、std140 UBO、上下文恢复与PBO回读的生产级代码</text>
 
   <rect class="box-gold" x="48" y="426" width="560" height="52" rx="8"/>
   <text class="t-b" x="64" y="446">6. migration (架构迁移)</text>
-  <text class="t-m" x="260" y="446">加载模块：01, 02, 03, 05, 06, 07 (6模块)</text>
+  <text class="t-m" x="275" y="446">加载模块：01, 03, 05, 06, 07 (5模块)</text>
   <text class="t-s" x="64" y="466">适用：WebGL 1.0 升级 WebGL 2.0，或构建 WebGPU + WebGL 2.0 双栈渲染层</text>
 
   <!-- Right Column: Hardware Budget & Invariant Redlines -->
@@ -70,7 +70,7 @@
   <text class="t-b" x="688" y="284">四项核心 GPU 管线不变量 (Invariants)</text>
   <text class="t-m" x="688" y="308">1. 专属 VAO 常驻绑定 + layout(std140) 16字节对齐 UBO</text>
   <text class="t-m" x="688" y="330">2. 非均匀分支前预计算 dFdx/dFdy 并使用 textureGrad</text>
-  <text class="t-s" x="688" y="352">3. PBO + fenceSync (timeout=0) 零阻塞回读 · 4. 依赖序上下文恢复</text>
+  <text class="t-s" x="688" y="352">3. PBO + fenceSync (timeout=0) 跨帧回读 · 4. 依赖序上下文恢复</text>
 
   <rect class="box-jade" x="672" y="378" width="560" height="100" rx="8"/>
   <text class="t-b" x="688" y="400">WebGL 2.0 -&gt; WebGPU (WGSL) 1:1 架构映射</text>
@@ -90,8 +90,8 @@
 
   <rect class="box-gold" x="450" y="554" width="380" height="122" rx="8"/>
   <text class="t-b" x="466" y="578">门禁 2 · JSON 契约与逆向自测</text>
-  <text class="t-m" x="466" y="602">• 校验 4 组黄金案例与 module-map 完全一致</text>
-  <text class="t-m" x="466" y="624">• 执行 4 项逆向自测（拦截坏XML/越界/坏Schema）</text>
+  <text class="t-m" x="466" y="602">• 校验 8 组黄金案例与 module-map 完全一致</text>
+  <text class="t-m" x="466" y="624">• 执行 6 项逆向自测（含套话与代码块对等拦截）</text>
   <text class="t-s" x="466" y="648">• 确保检查器绝不因弱代理指标而假阳性通过</text>
 
   <rect class="box-jade" x="852" y="554" width="380" height="122" rx="8"/>

@@ -1,0 +1,42 @@
+{
+  "intent": "implementation",
+  "project_class": "raster-mesh",
+  "subject": "4,096-instance CAD mechanical pin pass using VAO, vertexAttribDivisor, and std140 FrameBlock UBO",
+  "locale": "en",
+  "modules": [
+    "skills/core/01-triage.md",
+    "skills/core/03-pipeline-and-concurrency.md",
+    "skills/core/05-shader-rules.md",
+    "skills/core/06-runtime-ops.md"
+  ],
+  "assumptions": [
+    "All 4,096 pins share one indexed triangle mesh and material shader, making gl.drawElementsInstanced the right submission path.",
+    "Per-frame camera matrices fit in a 128-byte std140 FrameBlock UBO at binding 0, while per-instance 4x4 matrices stream through a dynamic instance VBO with vertexAttribDivisor(loc, 1)."
+  ],
+  "derivations": [
+    "instanceMatrixBufferBytes = 4096 instances * 16 floats * 4 bytes = 262,144 bytes (256 KB), which exceeds guaranteed 16 KB MAX_UNIFORM_BLOCK_SIZE and therefore belongs in an instanced vertex buffer or RGBA32F texture rather than a single UBO",
+    "std140 FrameBlock size = mat4 uViewProj (64B) + vec4 uCameraPosAndTime (16B) + vec4 uLightDirAndExposure (16B) = 96 bytes (multiple of 16 bytes)"
+  ],
+  "key_decisions": [
+    "Record static mesh attributes (locations 0..1) and per-instance mat4 columns (locations 2..5 with gl.vertexAttribDivisor(2 + col, 1)) inside a single dedicated VAO at initialization.",
+    "Upload camera and light state once per frame via gl.bufferSubData(gl.UNIFORM_BUFFER, 0, frameData) on binding point 0 instead of issuing 4,096 individual uniformMatrix4fv calls.",
+    "Detach and delete temporary WebGLShader objects immediately after gl.linkProgram succeeds, and rebuild VAO/UBO/instance buffers cleanly on webglcontextrestored."
+  ],
+  "parallel_tasks": [
+    "pack the 4,096 instance transform matrices into a contiguous Float32Array inside a Web Worker using transferable ArrayBuffers",
+    "poll KHR_parallel_shader_compile across frames before querying LINK_STATUS on the instanced mesh program"
+  ],
+  "risks": [
+    "Packing 4,096 mat4 transforms (256 KB) into a single std140 UBO fails on GPUs where MAX_UNIFORM_BLOCK_SIZE is 16,384 or 65,536 bytes.",
+    "Forgetting to set gl.vertexAttribDivisor(loc, 1) on all four column locations (2, 3, 4, 5) causes every instance to read vertex-rate data instead of instance-rate transforms."
+  ],
+  "next_steps": [
+    "create and bind the dedicated VAO, configuring locations 2..5 with stride 64 bytes, offsets 0/16/32/48 bytes, and gl.vertexAttribDivisor(loc, 1)",
+    "allocate the 96-byte std140 FrameBlock UBO with gl.STATIC_DRAW or gl.DYNAMIC_DRAW and bind it to binding index 0 via gl.bindBufferBase",
+    "submit all 4,096 pins in a single gl.drawElementsInstanced(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0, 4096) call"
+  ],
+  "validation_gates": [
+    "gl.getProgramParameter(prog, gl.LINK_STATUS) === true with zero infoLog warnings and #version 300 es at byte 0",
+    "Single gl.drawElementsInstanced call renders all 4,096 instances with gl.getError() === gl.NO_ERROR"
+  ]
+}

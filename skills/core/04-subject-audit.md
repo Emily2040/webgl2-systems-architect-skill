@@ -62,7 +62,7 @@ Every subject audit must output 4-8 verifiable checks:
 
 - Spending 40 fragment ALU ops on procedural pore noise while the skull or jaw silhouette is deformed
 - Keeping P2 full-resolution postprocessing active while mobile FPS drops below 30
-- Using vague words ("photorealistic", "cinematic") instead of naming the P0/P1 cues and pass costs
+- Using vague marketing adjectives (see `registry/forbidden-slop.json`) instead of naming the P0/P1 cues and pass costs
 
 ## Output contribution
 

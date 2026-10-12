@@ -28,32 +28,32 @@
 
   <rect class="box-mint" x="48" y="146" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="166">1. architecture (아키텍처 설계)</text>
-  <text class="t-m" x="280" y="166">모듈: 01, 02, 03, 04, 05, 06, 07 (전체 7개)</text>
+  <text class="t-m" x="285" y="166">모듈: 01, 02, 03, 04, 05, 06, 07 (전체 7개)</text>
   <text class="t-s" x="64" y="184">신규 멀티패스 렌더러, SDF 레이마칭, std140 UBO 및 무헤드 CI 설계</text>
 
   <rect class="box-indigo" x="48" y="202" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="222">2. debug (결함 디버깅)</text>
-  <text class="t-m" x="280" y="222">모듈: 01, 03, 05, 06, 07 (5개 모듈)</text>
+  <text class="t-m" x="285" y="222">모듈: 01, 05, 06, 07 (4개 모듈)</text>
   <text class="t-s" x="64" y="240">FBO 불완전성, 컨텍스트 손실 블랙스크린, 미분 아티팩트, readPixels 스톨</text>
 
   <rect class="box-mint" x="48" y="258" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="278">3. optimize (성능 최적화)</text>
-  <text class="t-m" x="280" y="278">모듈: 01, 02, 03, 05, 06, 07 (6개 모듈)</text>
+  <text class="t-m" x="285" y="278">모듈: 01, 02, 03, 05, 06, 07 (6개 모듈)</text>
   <text class="t-s" x="64" y="296">고해상도/고주사율 프레임 드롭 해결, 대역폭 절감, 타일 GPU invalidateFBO</text>
 
   <rect class="box-indigo" x="48" y="314" width="560" height="48" rx="8"/>
   <text class="t-b" x="64" y="334">4. review (코드/설계 감사)</text>
-  <text class="t-m" x="280" y="334">모듈: 01, 02, 03, 04, 05, 06, 07 (전체 7개)</text>
-  <text class="t-s" x="64" y="352">수학적 안정성, 셰이더 매직 리터럴, GPU 리소스 누수 및 CI 게이트 감사</text>
+  <text class="t-m" x="285" y="334">모듈: 01, 04, 05, 06, 07 (5개 모듈)</text>
+  <text class="t-s" x="64" y="352">P0/P1/P2 시각 계층, 셰이더 매직 리터럴, GPU 리소스 누수 및 CI 감사</text>
 
   <rect class="box-mint" x="48" y="370" width="560" height="48" rx="8"/>
-  <text class="t-b" x="64" y="390">5. implement (기능 구현)</text>
-  <text class="t-m" x="280" y="390">모듈: 01, 02, 03, 04, 05, 06, 07 (전체 7개)</text>
+  <text class="t-b" x="64" y="390">5. implementation (기능 구현)</text>
+  <text class="t-m" x="285" y="390">모듈: 01, 03, 05, 06 (4개 모듈)</text>
   <text class="t-s" x="64" y="408">전용 VAO, std140 UBO, 컨텍스트 복구 및 PBO 판독을 포함한 프로덕션 패치</text>
 
   <rect class="box-indigo" x="48" y="426" width="560" height="52" rx="8"/>
   <text class="t-b" x="64" y="446">6. migration (플랫폼 이관)</text>
-  <text class="t-m" x="280" y="446">모듈: 01, 02, 03, 05, 06, 07 (6개 모듈)</text>
+  <text class="t-m" x="285" y="446">모듈: 01, 03, 05, 06, 07 (5개 모듈)</text>
   <text class="t-s" x="64" y="466">WebGL 1.0 -&gt; WebGL 2.0 업그레이드 또는 WebGPU + WebGL 2.0 하이브리드 이관</text>
 
   <!-- Right Column -->
@@ -70,7 +70,7 @@
   <text class="t-b" x="688" y="284">WebGL 2.0 4대 핵심 불변량 (Invariants)</text>
   <text class="t-m" x="688" y="308">1. 전용 VAO 상시 바인딩 + layout(std140) 16바이트 정렬 UBO</text>
   <text class="t-m" x="688" y="330">2. 비균일 분기 전 dFdx/dFdy 사전 계산 및 textureGrad 명시 호출</text>
-  <text class="t-s" x="688" y="352">3. PBO + fenceSync (timeout=0) 비차단 판독 · 4. 의존성 순서 컨텍스트 복구</text>
+  <text class="t-s" x="688" y="352">3. PBO + fenceSync (timeout=0) 다중 프레임 판독 · 4. 의존성 순서 컨텍스트 복구</text>
 
   <rect class="box-mint" x="672" y="378" width="560" height="100" rx="8"/>
   <text class="t-b" x="688" y="400">WebGL 2.0 -&gt; WebGPU (WGSL) 1:1 매핑</text>
@@ -90,9 +90,9 @@
 
   <rect class="box-indigo" x="450" y="554" width="380" height="122" rx="8"/>
   <text class="t-b" x="466" y="578">게이트 2 · JSON 스키마 &amp; 네거티브 테스트</text>
-  <text class="t-m" x="466" y="602">• 4개 골든 예제와 module-map 완전 일치</text>
+  <text class="t-m" x="466" y="602">• 8개 골든 예제와 module-map 완전 일치</text>
   <text class="t-m" x="466" y="624">• 잘못된 XML/텍스트 오버플로/스키마 즉시 차단</text>
-  <text class="t-s" x="466" y="648">• 허위 통과를 막는 4개 자체 역테스트 내장</text>
+  <text class="t-s" x="466" y="648">• 허위 통과를 막는 6개 자체 역테스트 내장</text>
 
   <rect class="box-mint" x="852" y="554" width="380" height="122" rx="8"/>
   <text class="t-b" x="868" y="578">게이트 3 · 무헤드 크롬 WebGL 2.0 실증</text>

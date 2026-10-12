@@ -29,7 +29,7 @@
    - 每个函数或 `#version 300 es` 着色器补丁必须通过函数参数、uniform、`std140` 统一缓冲对象 (UBO)、`in`/`out` 接口变量或 `#define` 显式声明依赖。
 
 4. **渐进式披露 (Progressive disclosure)**。
-   - 单通道修复或单个着色器审查只加载对应模块。设计依据参见 `references/01-redesign-rationale.md`。
+   - 单通道修复或单个着色器审查只加载对应模块。设计依据参见 `locales/zh-CN/references/01-redesign-rationale.md`（英文版 `references/01-redesign-rationale.md`）。
 
 5. 仅在任务真正独立时开启**并行分析通道 (Parallel lanes)**。
    - 单个 `WebGL2RenderingContext` 在驱动层串行提交绘制命令。`Promise.all` 适用于资源拉取、Worker 预处理或独立分析通道，不能将同一上下文的 GL 绘制伪装成并行执行。
@@ -53,7 +53,7 @@
 - 涉及 GLSL ES 3.00 数学、导数、精度、`std140` 布局或 WGSL 转换的任务加载 `skills/core/05-shader-rules.md`。
 - 所有意图均加载 `skills/core/06-runtime-ops.md`（VAO、UBO、不可变纹理、`invalidateFramebuffer`、上下文丢失恢复与 WebGPU 映射）。
 - `architecture`、`debug`、`optimize`、`review`、`migration` 任务加载 `skills/core/07-validation-and-ci.md`。
-- 需要 Khronos/MDN 规范锚点或兼容性测试矩阵时加载 `references/02-webgl2-source-table.md`。
+- 需要 Khronos/MDN 规范锚点或兼容性测试矩阵时加载 `locales/zh-CN/references/02-webgl2-source-table.md`（英文版 `references/02-webgl2-source-table.md`）。
 
 ## 并行通道与合并顺序
 

@@ -39,6 +39,14 @@ Every implementation or debug patch must specify checks across these five stages
 
 When debugging visual or numerical defects, recommend one-switch diagnostic outputs:
 
+```glsl
+// uDebugMode: 0=final, 1=normals, 2=step/overdraw heatmap, 3=UV derivative, 4=NaN/Inf guard
+if (uDebugMode == 1) { outColor = vec4(N * 0.5 + 0.5, 1.0); return; }
+if (uDebugMode == 2) { outColor = vec4(vec3(float(steps) / float(MAX_STEPS)), 1.0); return; }
+if (uDebugMode == 3) { outColor = vec4(fwidth(vUv) * 20.0, 0.0, 1.0); return; }
+if (any(isnan(color)) || any(isinf(color))) { outColor = vec4(1.0, 0.0, 1.0, 1.0); return; }
+```
+
 - world/view normal visualization (`outColor = vec4(N * 0.5 + 0.5, 1.0)`)
 - normalized raymarch step-count or overdraw heatmap
 - UV / mip-level discontinuity check (`fwidth(uv)`)
